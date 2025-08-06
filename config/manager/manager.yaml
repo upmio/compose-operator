@@ -1,0 +1,86 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    app.kubernetes.io/name: compose-operator
+    app.kubernetes.io/instance: compose-operator
+    app.kubernetes.io/component: controller
+    app.kubernetes.io/version: v1.2.3
+  name: system
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: controller-manager
+  namespace: system
+  labels:
+    app.kubernetes.io/name: compose-operator
+    app.kubernetes.io/instance: compose-operator
+    app.kubernetes.io/component: controller
+    app.kubernetes.io/version: v1.2.3
+    app: compose-operator
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: compose-operator
+      app.kubernetes.io/instance: compose-operator
+      app.kubernetes.io/component: controller
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: compose-operator
+        app.kubernetes.io/instance: compose-operator
+        app.kubernetes.io/component: controller
+        app.kubernetes.io/version: v1.2.3
+    spec:
+#      securityContext:
+#        runAsNonRoot: true
+        # TODO(user): For common cases that do not require escalating privileges
+        # it is recommended to ensure that all your Pods/Containers are restrictive.
+        # More info: https://kubernetes.io/docs/concepts/security/pod-security-standards/#restricted
+        # Please uncomment the following code if your project does NOT have to work on old Kubernetes
+        # versions < 1.19 or on vendors versions which do NOT support this field by default (i.e. Openshift < 4.11 ).
+        # seccompProfile:
+        #   type: RuntimeDefault
+      containers:
+      # IMPORTANT: This operator requires AES encryption key for database password encryption.
+      # Before installing, create a secret with AES_SECRET_KEY (32 characters):
+      #   kubectl create secret generic compose-operator-aes-secret \
+      #     --from-literal=AES_SECRET_KEY="your-32-char-aes-key" \
+      #     -n <operator-namespace>
+      - name: manager
+        image: quay.io/upmio/compose-operator:v2.0.1
+        imagePullPolicy: IfNotPresent
+        # Environment variables loaded from AES key secret
+        envFrom:
+        - secretRef:
+            name: compose-operator-aes-secret
+#        securityContext:
+#          allowPrivilegeEscalation: false
+#          capabilities:
+#            drop:
+#            - "ALL"
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8081
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 8081
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        # TODO(user): Configure the resources accordingly based on the project requirements.
+        # More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+        resources:
+          limits:
+            cpu: 2
+            memory: 4G
+          requests:
+            cpu: 1
+            memory: 2G
+      serviceAccountName: controller-manager
+      terminationGracePeriodSeconds: 10

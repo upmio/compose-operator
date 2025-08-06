@@ -1,0 +1,62 @@
+# Semi Sync MySQL Source-Replica Replication
+# This example demonstrates a simple MySQL replication setup with one source and one replica
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysql-semi-sync-credentials
+  namespace: default
+type: Opaque
+data:
+  # Encrypted passwords - replace with your encrypted values
+  # Get AES key: AES_KEY=$(kubectl get secret compose-operator-aes-secret -n upm-system -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)
+  # Method 1 (Recommended): Create binary files and use kubectl create secret
+  # aes-tool -key "$AES_KEY" -plaintext "mysql_password" -username "mysql"
+  # aes-tool -key "$AES_KEY" -plaintext "replication_password" -username "replication"
+  # kubectl create secret generic mysql-credentials --from-file=mysql=mysql.bin --from-file=replication=replication.bin
+  # Method 2 (Legacy): Use base64 encoded values directly
+  # aes-tool -key "$AES_KEY" -plaintext "password" | grep "Encrypted:" | cut -d' ' -f2
+  mysql: "your_encrypted_mysql_password_here"
+  replication: "your_encrypted_replication_password_here"
+
+---
+apiVersion: upm.syntropycloud.io/v1alpha1
+kind: MysqlReplication
+metadata:
+  name: mysql-semi-sync-replication
+  namespace: default
+  labels:
+    app.kubernetes.io/name: mysql-semi-sync-replication
+    app.kubernetes.io/instance: mysql-semi-sync
+    app.kubernetes.io/part-of: compose-operator
+spec:
+  # Replication mode: rpl_async (asynchronous) or rpl_semi_sync (semi-synchronous)
+  mode: rpl_semi_sync
+
+  # Secret containing encrypted database passwords
+  secret:
+    name: mysql-semi-sync-credentials
+    mysql: mysql          # Key for MySQL root/admin password
+    replication: replication  # Key for replication user password
+
+  # Source database configuration
+  source:
+    name: mysql-semi-sync-0
+    host: mysql-semi-sync-0.default.svc.cluster.local  # Kubernetes service name
+    port: 3306
+
+  # Replica database configuration
+  replica:
+    - name: mysql-semi-sync-1
+      host: mysql-semi-sync-1.default.svc.cluster.local  # Kubernetes service name
+      port: 3306
+    - name: mysql-semi-sync-2
+      host: mysql-semi-sync-2.default.svc.cluster.local  # Kubernetes service name
+      port: 3306
+
+  # Service configuration for read/write splitting
+  service:
+    type: ClusterIP  # Options: ClusterIP, NodePort, LoadBalancer
+    # The operator will create two services:
+    # - mysql-semi-sync-replication-readwrite: Points to source (read/write)
+    # - mysql-semi-sync-replication-readonly: Points to replicas (read-only)

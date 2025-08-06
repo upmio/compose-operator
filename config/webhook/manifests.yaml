@@ -1,0 +1,252 @@
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: mutating-webhook-configuration
+webhooks:
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /mutate-upm-syntropycloud-io-v1alpha1-mysqlgroupreplication
+  failurePolicy: Fail
+  name: mmysqlgroupreplication.kb.io
+  rules:
+  - apiGroups:
+    - upm.syntropycloud.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - mysqlgroupreplications
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /mutate-upm-syntropycloud-io-v1alpha1-mysqlreplication
+  failurePolicy: Fail
+  name: mmysqlreplication.kb.io
+  rules:
+  - apiGroups:
+    - upm.syntropycloud.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - mysqlreplications
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /mutate-upm-syntropycloud-io-v1alpha1-postgresreplication
+  failurePolicy: Fail
+  name: mpostgresreplication.kb.io
+  rules:
+  - apiGroups:
+    - upm.syntropycloud.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - postgresreplications
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /mutate-upm-syntropycloud-io-v1alpha1-proxysqlsync
+  failurePolicy: Fail
+  name: mproxysqlsync.kb.io
+  rules:
+  - apiGroups:
+    - upm.syntropycloud.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - proxysqlsyncs
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /mutate-upm-syntropycloud-io-v1alpha1-rediscluster
+  failurePolicy: Fail
+  name: mrediscluster.kb.io
+  rules:
+  - apiGroups:
+    - upm.syntropycloud.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - redisclusters
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /mutate-upm-syntropycloud-io-v1alpha1-redisreplication
+  failurePolicy: Fail
+  name: mredisreplication.kb.io
+  rules:
+  - apiGroups:
+    - upm.syntropycloud.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - redisreplications
+  sideEffects: None
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: validating-webhook-configuration
+webhooks:
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-upm-syntropycloud-io-v1alpha1-mysqlgroupreplication
+  failurePolicy: Fail
+  name: vmysqlgroupreplication.kb.io
+  rules:
+  - apiGroups:
+    - upm.syntropycloud.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - mysqlgroupreplications
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-upm-syntropycloud-io-v1alpha1-mysqlreplication
+  failurePolicy: Fail
+  name: vmysqlreplication.kb.io
+  rules:
+  - apiGroups:
+    - upm.syntropycloud.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - mysqlreplications
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-upm-syntropycloud-io-v1alpha1-postgresreplication
+  failurePolicy: Fail
+  name: vpostgresreplication.kb.io
+  rules:
+  - apiGroups:
+    - upm.syntropycloud.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - postgresreplications
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-upm-syntropycloud-io-v1alpha1-proxysqlsync
+  failurePolicy: Fail
+  name: vproxysqlsync.kb.io
+  rules:
+  - apiGroups:
+    - upm.syntropycloud.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - proxysqlsyncs
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-upm-syntropycloud-io-v1alpha1-rediscluster
+  failurePolicy: Fail
+  name: vrediscluster.kb.io
+  rules:
+  - apiGroups:
+    - upm.syntropycloud.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - redisclusters
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-upm-syntropycloud-io-v1alpha1-redisreplication
+  failurePolicy: Fail
+  name: vredisreplication.kb.io
+  rules:
+  - apiGroups:
+    - upm.syntropycloud.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - redisreplications
+  sideEffects: None

@@ -1,0 +1,43 @@
+- op: add
+  path: /spec/webhookdefinitions
+  value:
+    - type: MutatingAdmissionWebhook
+      admissionReviewVersions:
+        - v1
+      containerPort: 9443
+      targetPort: 9443
+      deploymentName: controller-manager
+      failurePolicy: Fail
+      generateName: mmysqlreplication.kb.io
+      rules:
+        - operations:
+            - CREATE
+            - UPDATE
+          apiGroups:
+            - upm.syntropycloud.io
+          apiVersions:
+            - v1alpha1
+          resources:
+            - mysqlreplications
+      sideEffects: None
+      webhookPath: /mutate-compose-operator-upm-io-v1alpha1-mysqlreplication
+    - type: ValidatingAdmissionWebhook
+      admissionReviewVersions:
+        - v1
+      containerPort: 9443
+      targetPort: 9443
+      deploymentName: controller-manager
+      failurePolicy: Fail
+      generateName: vmysqlreplication.kb.io
+      rules:
+        - operations:
+            - CREATE
+            - UPDATE
+          apiGroups:
+            - upm.syntropycloud.io
+          apiVersions:
+            - v1alpha1
+          resources:
+            - mysqlreplications
+      sideEffects: None
+      webhookPath: /validate-compose-operator-upm-io-v1alpha1-mysqlreplication

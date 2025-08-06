@@ -1,0 +1,53 @@
+# ProxySQL MySQL Integration Example
+# This example shows how to configure ProxySQL to work with MySQL backend servers
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: proxysql-mysql-credentials
+  namespace: default
+type: Opaque
+data:
+  # Encrypted passwords - replace with your encrypted values
+  # Get AES key: AES_KEY=$(kubectl get secret compose-operator-aes-secret -n upm-system -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)
+  # Method 1 (Recommended): Create binary files and use kubectl create secret
+  # aes-tool -key "$AES_KEY" -plaintext "proxysql_password" -username "proxysql"
+  # aes-tool -key "$AES_KEY" -plaintext "mysql_password" -username "mysql"
+  # kubectl create secret generic proxysql-credentials --from-file=proxysql=proxysql.bin --from-file=mysql=mysql.bin
+  # Method 2 (Legacy): Use base64 encoded values directly
+  # aes-tool -key "$AES_KEY" -plaintext "password" | grep "Encrypted:" | cut -d' ' -f2
+  proxysql: "your_encrypted_proxysql_admin_password_here"
+  mysql: "your_encrypted_mysql_password_here"
+
+---
+apiVersion: upm.syntropycloud.io/v1alpha1
+kind: ProxysqlSync
+metadata:
+  name: proxysql-mysql-integration
+  namespace: default  
+  labels:
+    app.kubernetes.io/name: proxysql-sync
+    app.kubernetes.io/instance: proxysql-mysql
+    app.kubernetes.io/part-of: compose-operator
+spec:
+  # Secret containing encrypted passwords
+  secret:
+    name: proxysql-mysql-credentials
+    proxysql: proxysql  # Key for ProxySQL admin password
+    mysql: mysql       # Key for MySQL backend password
+  
+  # ProxySQL instances configuration
+  proxysql:
+    - name: proxysql-0
+      host: proxysql-0.default.svc.cluster.local  # Kubernetes service name
+      port: 6032  # ProxySQL admin port
+  
+  # Reference to existing MysqlReplication resource
+  mysqlReplication: "mysql-replication-example"  # Name of existing MysqlReplication
+  
+  # Rule configuration for user synchronization
+  rule:
+    filter:
+      - "app_user"
+      - "read_user"
+    pattern: ".*"

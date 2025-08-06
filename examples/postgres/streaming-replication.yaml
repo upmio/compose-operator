@@ -1,0 +1,60 @@
+# PostgreSQL Streaming Replication Example  
+# This example demonstrates PostgreSQL primary-standby streaming replication
+# Note: Currently only compatible with PostgreSQL instances created using Unit CRDs from github.com/upmio/unit-operator
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgres-replication-credentials
+  namespace: default
+type: Opaque
+data:
+  # Encrypted passwords - replace with your encrypted values
+  # Get AES key: AES_KEY=$(kubectl get secret compose-operator-aes-secret -n upm-system -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)
+  # Method 1 (Recommended): Create binary files and use kubectl create secret
+  # aes-tool -key "$AES_KEY" -plaintext "postgresql_password" -username "postgresql"
+  # aes-tool -key "$AES_KEY" -plaintext "replication_password" -username "replication"
+  # kubectl create secret generic postgres-credentials --from-file=postgresql=postgresql.bin --from-file=replication=replication.bin
+  # Method 2 (Legacy): Use base64 encoded values directly
+  # aes-tool -key "$AES_KEY" -plaintext "password" | grep "Encrypted:" | cut -d' ' -f2
+  postgresql: "your_encrypted_postgresql_password_here"
+  replication: "your_encrypted_replication_password_here"
+
+---
+apiVersion: upm.syntropycloud.io/v1alpha1
+kind: PostgresReplication
+metadata:
+  name: postgres-streaming-replication
+  namespace: default
+  labels:
+    app.kubernetes.io/name: postgres-replication
+    app.kubernetes.io/instance: postgres-streaming
+    app.kubernetes.io/part-of: compose-operator
+spec:
+  # Secret containing encrypted database passwords
+  secret:
+    name: postgres-replication-credentials
+    postgres: postgresql    # Key for PostgreSQL admin password
+    replication: replication # Key for replication user password
+  
+  # Primary database configuration
+  primary:
+    name: postgres-replication-0
+    host: postgres-replication-0.default.svc.cluster.local  # Kubernetes service name
+    port: 5432
+  
+  # Standby database configuration  
+  standby:
+    - name: postgres-replication-1
+      host: postgres-replication-1.default.svc.cluster.local  # Kubernetes service name
+      port: 5432
+    - name: postgres-replication-2
+      host: postgres-replication-2.default.svc.cluster.local
+      port: 5432
+  
+  # Service configuration for read/write splitting
+  service:
+    type: ClusterIP
+    # Creates services:
+    # - postgres-streaming-replication-readwrite: Primary (read/write)
+    # - postgres-streaming-replication-readonly: Standby nodes (read-only)

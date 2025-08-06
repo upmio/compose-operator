@@ -1,0 +1,9 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: CatalogSource
+metadata:
+  name: compose-operator-catalog
+spec:
+  sourceType: grpc
+  image: quay.io/upmio/compose-operator-catalog:v1.0.1
+  displayName: compose-operator
+  publisher: BSG

@@ -1,0 +1,23 @@
+apiVersion: upm.syntropycloud.io/v1alpha1
+kind: ProxysqlSync
+metadata:
+  labels:
+    app.kubernetes.io/name: proxysqlsync
+    app.kubernetes.io/instance: proxysqlsync-sample
+    app.kubernetes.io/part-of: compose-operator
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: compose-operator
+  name: proxysqlsync-sample
+spec:
+  secret:
+    name: proxysqlsync-sample
+    mysql: mysql
+    proxysql: proxysql
+  mysqlReplication: mysqlreplication-sample
+  proxysql:
+    - name: proxy-pod-0
+      host: proxy-pod-0.demo
+      port: 6032
+    - name: proxy-pod-1
+      host: proxy-pod-1.demo
+      port: 6032
