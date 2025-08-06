@@ -6,35 +6,36 @@ This Helm chart installs the [Compose Operator](https://github.com/upmio/compose
 
 
 ```sh
-# Add the repo to helm (typically use a tag rather than main):
-helm repo add upm-charts https://upmio.github.io/helm-charts
+# Add the repo to helm:
+helm repo add compose-operator https://upmio.github.io/compose-operator
+helm repo update
 
 # Install the operator with auto-generated AES key (recommended for testing)
 helm install compose-operator --namespace upm-system --create-namespace \
-  --set crd.enabled=true \
-  upm-charts/compose-operator
+  --set crds.enabled=true \
+  compose-operator/compose-operator
 
 # Or install with custom AES key (recommended for production)
 helm install compose-operator --namespace upm-system --create-namespace \
-  --set crd.enabled=true \
+  --set crds.enabled=true \
   --set global.aesKey="your-32-character-aes-key-here" \
-  upm-charts/compose-operator
+  compose-operator/compose-operator
 ```
 
 ## Introduction
 
 The Compose operator is installed into the `upm-system` namespace for Kubernetes clusters.
 
-The Compose and ComposeSet Custom Resource Definitions (CRDs) can either be installed manually (the recommended approach, part of the Helm chart (`crd.enabled=true`).
+The Compose and ComposeSet Custom Resource Definitions (CRDs) can either be installed manually (the recommended approach, part of the Helm chart (`crds.enabled=true`).
 Installing the CRDs as part of the Helm chart is not recommended for production setups, since uninstalling the Helm chart will also uninstall the CRDs and subsequently delete any remaining CRs.
 The CRDs allow you to configure individual parts of your Compose setup:
 
-* [`MysqlReplication`](https://github.com/upmio/compose-operator/blob/dev/doc/compose-operator-api.md#mysqlreplication)
-* [`MysqlGroupReplication`](https://github.com/upmio/compose-operator/blob/dev/doc/compose-operator-api.md#mysqlgroupreplication)
-* [`ProxysqlSync`](https://github.com/upmio/compose-operator/blob/dev/doc/compose-operator-api.md#proxysqlsync)
-* [`PostgresReplication`](https://github.com/upmio/compose-operator/blob/dev/doc/compose-operator-api.md#postgresreplication)
-* [`RedisReplication`](https://github.com/upmio/compose-operator/blob/dev/doc/compose-operator-api.md#redisreplication)
-* [`RedisCluster`](https://github.com/upmio/compose-operator/blob/dev/doc/compose-operator-api.md#rediscluster)
+* [`MysqlGroupReplication`](https://github.com/upmio/compose-operator/blob/main/docs/compose-operator-api.md#mysqlgroupreplication)
+* [`MysqlReplication`](https://github.com/upmio/compose-operator/blob/main/docs/compose-operator-api.md#mysqlreplication)
+* [`PostgresReplication`](https://github.com/upmio/compose-operator/blob/main/docs/compose-operator-api.md#postgresreplication)
+* [`ProxysqlSync`](https://github.com/upmio/compose-operator/blob/main/docs/compose-operator-api.md#proxysqlsync)
+* [`RedisCluster`](https://github.com/upmio/compose-operator/blob/main/docs/compose-operator-api.md#rediscluster)
+* [`RedisReplication`](https://github.com/upmio/compose-operator/blob/main/docs/compose-operator-api.md#redisreplication)
 
 After the installation of the Compose-operator chart, you can start inject the Custom Resources (CRs) into your cluster.
 The Compose operator will then automatically start installing the components.
@@ -128,7 +129,7 @@ kubectl get secret redis-credentials -o jsonpath='{.data.redis}' | base64 -d > t
 Before removing the Compose operator from your cluster, you should first make sure that there are no instances of resources managed by the operator left:
 
 ```sh
-kubectl get MysqlReplication,MysqlGroupReplication,ProxysqlSync,PostgresReplication,RedisReplication,RedisCluster --all-namespaces
+kubectl get mysqlgroupreplications,mysqlreplications,postgresreplications,proxysqlsyncs,redisreplications,redisclusters --all-namespaces
 ```
 
 Now you can use Helm to uninstall the Compose operator:
@@ -138,12 +139,12 @@ Now you can use Helm to uninstall the Compose operator:
 helm uninstall --namespace upm-system compose-operator --wait
 
 # optionally remove repository from helm:
-helm repo remove upm-charts
+helm repo remove compose-operator
 ```
 
-**Important:** if you installed the CRDs with the Helm chart (by setting `crd.enabled=true`), the CRDs will be removed as well: this means any remaining Compose resources (e.g. Compose Pipelines) in the cluster will be deleted!
+**Important:** if you installed the CRDs with the Helm chart (by setting `crds.enabled=true`), the CRDs will be removed as well: this means any remaining Compose resources (e.g. Compose Pipelines) in the cluster will be deleted!
 
 If you installed the CRDs manually, you can use the following command to remove them (*this will remove all Compose resources from your cluster*):
 ```
-kubectl delete crd MysqlReplication,MysqlGroupReplication,ProxysqlSync,PostgresReplication,RedisReplication,RedisCluster --ignore-not-found
+kubectl delete crd mysqlgroupreplications.upm.syntropycloud.io,mysqlreplications.upm.syntropycloud.io,postgresreplications.upm.syntropycloud.io,proxysqlsyncs.upm.syntropycloud.io,redisreplications.upm.syntropycloud.io,redisclusters.upm.syntropycloud.io --ignore-not-found
 ```

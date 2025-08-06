@@ -33,7 +33,7 @@ The Compose Operator is a cloud-native solution that manages traditional databas
 - [Examples](#-examples)
 - [Configuration](#-configuration)
 - [Architecture](#-architecture)
-- [Monitoring](#-monitoring)
+- [Monitoring](#-monitoring-and-switchover)
 - [Development](#-development)
 - [Contributing](#-contributing)
 - [FAQ](#-faq)
@@ -52,18 +52,18 @@ The Compose Operator is a cloud-native solution that manages traditional databas
 
 ```bash
 # Add the Helm repository
-helm repo add upm https://upmio.github.io/helm-charts
+helm repo add compose-operator https://upmio.github.io/compose-operator
 helm repo update
 
 # Install the operator
-helm install compose-operator upm/compose-operator \
+helm install compose-operator compose-operator/compose-operator \
   --namespace upm-system \
   --create-namespace \
   --set crds.enabled=true \
   --set global.aesKey="your-32-character-aes-key-here"
 
 # Or use auto-generated AES key (recommended for testing)
-helm install compose-operator upm/compose-operator \
+helm install compose-operator compose-operator/compose-operator \
   --namespace upm-system \
   --create-namespace \
   --set crds.enabled=true

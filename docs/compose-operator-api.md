@@ -1,7 +1,7 @@
 # API Reference
 
 ## Packages
-- [upm.syntropycloud.io/v1alpha1](#compose-operatorbsgchinacomv1alpha1)
+- [upm.syntropycloud.io/v1alpha1](#upmsyntropolycloudiov1alpha1)
 
 
 ## upm.syntropycloud.io/v1alpha1
@@ -9,6 +9,8 @@
 Package v1alpha1 contains API Schema definitions for the compose-operator v1alpha1 API group
 
 ### Resource Types
+- [MysqlGroupReplication](#mysqlgroupreplication)
+- [MysqlGroupReplicationList](#mysqlgroupreplicationlist)
 - [MysqlReplication](#mysqlreplication)
 - [MysqlReplicationList](#mysqlreplicationlist)
 - [PostgresReplication](#postgresreplication)
@@ -52,6 +54,7 @@ CommonNodes array Node
 
 
 _Appears in:_
+- [MysqlGroupReplicationSpec](#mysqlgroupreplicationspec)
 - [MysqlReplicationSpec](#mysqlreplicationspec)
 - [PostgresReplicationSpec](#postgresreplicationspec)
 - [ProxysqlSyncSpec](#proxysqlsyncspec)
@@ -64,6 +67,146 @@ _Appears in:_
 | `host` _string_ | Host specifies the ip or hostname of node |  |  |
 | `port` _integer_ | Port specifies the port of node |  |  |
 
+
+
+
+#### MysqlGroupReplication
+
+
+
+MysqlGroupReplication is the Schema for the Mysql Group Replication API
+
+
+_Appears in:_
+- [MysqlGroupReplicationList](#mysqlgroupreplicationlist)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `apiVersion` _string_ | `upm.syntropycloud.io/v1alpha1` | | |
+| `kind` _string_ | `MysqlGroupReplication` | | |
+| `metadata` _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#objectmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
+| `spec` _[MysqlGroupReplicationSpec](#mysqlgroupreplicationspec)_ | Defines the desired state of the MysqlGroupReplication. |  |  |
+| `status` _[MysqlGroupReplicationStatus](#mysqlgroupreplicationstatus)_ | Populated by the system, it represents the current information about the MysqlGroupReplication. |  |  |
+
+
+
+
+#### MysqlGroupReplicationList
+
+
+
+MysqlGroupReplicationList contains a list of MysqlGroupReplication
+
+
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `apiVersion` _string_ | `upm.syntropycloud.io/v1alpha1` | | |
+| `kind` _string_ | `MysqlGroupReplicationList` | | |
+| `metadata` _[ListMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#listmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
+| `items` _[MysqlGroupReplication](#mysqlgroupreplication) array_ | Contains the list of MysqlGroupReplication. |  |  |
+
+
+
+
+#### MysqlGroupReplicationNode
+
+
+
+MysqlGroupReplicationNode represents a node in the MySQL Group Replication topology.
+
+_Appears in:_
+- [MysqlGroupReplicationTopology](#mysqlgroupreplicationtopology)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `host` _string_ | Host indicates the host of the MySQL node. |  |  |
+| `port` _integer_ | Port indicates the port of the MySQL node. |  |  |
+| `role` _[MysqlGroupReplicationRole](#mysqlgroupreplicationrole)_ | Role represents the role of the node in the group replication topology (e.g., primary, secondary). |  |  |
+| `status` _[NodeStatus](#nodestatus)_ | Ready indicates whether the node is ready for reads and writes. |  |  |
+| `gtidExecuted` _string_ | GtidExecuted indicates the gtid_executed of the MySQL node. |  |  |
+| `memberState` _string_ | MemberState indicates the member_state of the MySQL node. |  |  |
+| `readonly` _boolean_ | ReadOnly specifies whether the node is read-only. |  |  |
+| `superReadonly` _boolean_ | SuperReadOnly specifies whether the node is super-read-only (i.e., cannot even write to its own database). |  |  |
+
+
+
+
+#### MysqlGroupReplicationRole
+
+_Underlying type:_ _string_
+
+MysqlGroupReplicationRole defines the mysql group replication role
+
+_Validation:_
+- Enum: [Primary Secondary None]
+
+_Appears in:_
+- [MysqlGroupReplicationNode](#mysqlgroupreplicationnode)
+
+
+
+#### MysqlGroupReplicationSecret
+
+
+
+MysqlGroupReplicationSecret defines the secret information of MysqlGroupReplication
+
+_Appears in:_
+- [MysqlGroupReplicationSpec](#mysqlgroupreplicationspec)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `name` _string_ | Name is the name of the secret resource which store authentication information for MySQL. |  |  |
+| `mysql` _string_ | Mysql is the key of the secret, which contains the value used to connect to MySQL. | mysql |  |
+| `replication` _string_ | Replication is the key of the secret, which contains the value used to set up MySQL Group Replication. | replication |  |
+
+
+
+
+#### MysqlGroupReplicationSpec
+
+
+
+MysqlGroupReplicationSpec defines the desired state of MysqlGroupReplication
+
+_Appears in:_
+- [MysqlGroupReplication](#mysqlgroupreplication)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `secret` _[MysqlGroupReplicationSecret](#mysqlgroupreplicationsecret)_ | Secret is the reference to the secret resource containing authentication information, it must be in the same namespace as the MysqlGroupReplication object. |  |  |
+| `member` _[CommonNodes](#commonnodes)_ | Member is a list of nodes in the MySQL Group Replication topology. |  |  |
+
+
+
+
+#### MysqlGroupReplicationStatus
+
+
+
+MysqlGroupReplicationStatus defines the observed state of MysqlGroupReplication
+
+_Appears in:_
+- [MysqlGroupReplication](#mysqlgroupreplication)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `topology` _[MysqlGroupReplicationTopology](#mysqlgroupreplicationtopology)_ | Topology indicates the current MySQL Group Replication topology. |  |  |
+| `ready` _boolean_ | Ready indicates whether this MysqlGroupReplication object is ready or not. |  |  |
+| `conditions` _[Condition](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#condition-v1-meta) array_ | Represents a list of detailed status of the MysqlGroupReplication object. Each condition in the list provides real-time information about certain aspect of the MysqlGroupReplication object.<br /><br />This field is crucial for administrators and developers to monitor and respond to changes within the MysqlGroupReplication. It provides a history of state transitions and a snapshot of the current state that can be used for automated logic or direct inspection. |  |  |
+
+
+
+
+#### MysqlGroupReplicationTopology
+
+_Underlying type:_ _[map[string]*MysqlGroupReplicationNode](#map[string]*mysqlgroupreplicationnode)_
+
+
+
+_Appears in:_
+- [MysqlGroupReplicationStatus](#mysqlgroupreplicationstatus)
 
 
 
