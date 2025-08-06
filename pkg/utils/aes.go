@@ -22,7 +22,6 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
-	"encoding/base64"
 	"encoding/hex"
 	"fmt"
 	"os"
@@ -63,9 +62,8 @@ func getAESKey() (string, error) {
 	return aesKey, nil
 }
 
-
-// AES_CTR_EncryptToBytes encrypts plaintext and returns raw bytes (for file storage)
-func AES_CTR_EncryptToBytes(plainText []byte) ([]byte, error) {
+// AES_CTR_Encrypt encrypts plaintext and returns base64 encoded string (for backward compatibility)
+func AES_CTR_Encrypt(plainText []byte) ([]byte, error) {
 	keyStr, err := getAESKey()
 	if err != nil {
 		return nil, err
@@ -103,8 +101,8 @@ func AES_CTR_EncryptToBytes(plainText []byte) ([]byte, error) {
 	return encryptedData, nil
 }
 
-// AES_CTR_DecryptFromBytes decrypts raw bytes and returns plaintext (for file decryption)
-func AES_CTR_DecryptFromBytes(encryptedData []byte) ([]byte, error) {
+// AES_CTR_Decrypt decrypts base64 encoded string and returns plaintext (for backward compatibility)
+func AES_CTR_Decrypt(encryptedData []byte) ([]byte, error) {
 	keyStr, err := getAESKey()
 	if err != nil {
 		return nil, err
@@ -142,22 +140,4 @@ func AES_CTR_DecryptFromBytes(encryptedData []byte) ([]byte, error) {
 	stream.XORKeyStream(plaintext, ciphertext)
 
 	return plaintext, nil
-}
-
-// AES_CTR_Encrypt encrypts plaintext and returns base64 encoded string (for backward compatibility)
-func AES_CTR_Encrypt(plainText []byte) (string, error) {
-	encryptedData, err := AES_CTR_EncryptToBytes(plainText)
-	if err != nil {
-		return "", err
-	}
-	return base64.StdEncoding.EncodeToString(encryptedData), nil
-}
-
-// AES_CTR_Decrypt decrypts base64 encoded string and returns plaintext (for backward compatibility)
-func AES_CTR_Decrypt(base64EncryptedData string) ([]byte, error) {
-	encryptedData, err := base64.StdEncoding.DecodeString(base64EncryptedData)
-	if err != nil {
-		return nil, err
-	}
-	return AES_CTR_DecryptFromBytes(encryptedData)
 }
