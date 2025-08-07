@@ -13,7 +13,7 @@ require (
 	github.com/onsi/gomega v1.37.0
 	github.com/spf13/cobra v1.8.1
 	github.com/stretchr/testify v1.10.0
-	github.com/testcontainers/testcontainers-go/modules/mysql v0.32.0
+	github.com/testcontainers/testcontainers-go/modules/mysql v0.38.0
 	github.com/testcontainers/testcontainers-go/modules/postgres v0.33.0
 	github.com/testcontainers/testcontainers-go/modules/redis v0.38.0
 	github.com/upmio/unit-operator v0.0.0-20250806090351-5a9235debfe3
