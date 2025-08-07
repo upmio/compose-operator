@@ -1,0 +1,56 @@
+# Basic Redis Source-Replica Replication
+# This example demonstrates a simple Redis replication setup with one source and replicas
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: redis-basic-credentials
+  namespace: default
+type: Opaque
+data:
+  # Encrypted Redis password - replace with your encrypted value
+  # Get AES key: AES_KEY=$(kubectl get secret compose-operator-aes-secret -n upm-system -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)
+  # Method 1 (Recommended): Create binary files and use kubectl create secret
+  # aes-tool -key "$AES_KEY" -plaintext "redis_password" -username "redis"
+  # kubectl create secret generic redis-credentials --from-file=redis=redis.bin
+  # Method 2 (Legacy): Use base64 encoded values directly
+  # aes-tool -key "$AES_KEY" -plaintext "password" | grep "Encrypted:" | cut -d' ' -f2
+  redis: "your_encrypted_redis_password_here"
+
+---
+apiVersion: upm.syntropycloud.io/v1alpha1
+kind: RedisReplication
+metadata:
+  name: redis-basic-replication
+  namespace: default
+  labels:
+    app.kubernetes.io/name: redis-basic-replication
+    app.kubernetes.io/instance: redis-basic
+    app.kubernetes.io/part-of: compose-operator
+spec:
+  # Secret containing encrypted Redis password
+  secret:
+    name: redis-basic-credentials
+    redis: redis  # Key for Redis AUTH password
+  
+  # Source Redis instance
+  source:
+    name: redis-replication-0
+    host: redis-replication-0.default.svc.cluster.local  # Kubernetes service name
+    port: 6379
+  
+  # Replica Redis instances
+  replica:
+    - name: redis-replication-1
+      host: redis-replication-1.default.svc.cluster.local  # Kubernetes service name
+      port: 6379
+    - name: redis-replication-2
+      host: redis-replication-2.default.svc.cluster.local
+      port: 6379
+  
+  # Service configuration for read/write splitting
+  service:
+    type: ClusterIP
+    # The operator will create two services:
+    # - redis-basic-replication-readwrite: Points to source (read/write)
+    # - redis-basic-replication-readonly: Points to replicas (read-only)

@@ -1,0 +1,15 @@
+{{- if .Values.rbac.create -}}
+apiVersion: {{ include "common.capabilities.rbac.apiVersion" . }}
+kind: RoleBinding
+metadata:
+  name: {{ template "compose-operator.roleBindingName" . }}
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ template "compose-operator.roleName" . }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ template "compose-operator.serviceAccountName" . }}
+    namespace: {{ .Release.Namespace }}
+{{- end }}

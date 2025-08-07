@@ -1,0 +1,27 @@
+# permissions for end users to view proxysqlsyncs.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: clusterrole
+    app.kubernetes.io/instance: proxysqlsync-viewer-role
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: compose-operator
+    app.kubernetes.io/part-of: compose-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: proxysqlsync-viewer-role
+rules:
+- apiGroups:
+  - upm.syntropycloud.io
+  resources:
+  - proxysqlsyncs
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - upm.syntropycloud.io
+  resources:
+  - proxysqlsyncs/status
+  verbs:
+  - get

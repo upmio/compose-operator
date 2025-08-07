@@ -1,0 +1,16 @@
+{{- if and .Values.webhook.enabled .Values.webhook.certManager.enabled }}
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "compose-operator.fullname" . }}-serving-cert
+  namespace: {{ $.Release.Namespace }}
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
+spec:
+  dnsNames:
+  - {{ include "compose-operator.fullname" . }}-webhook-service.{{ $.Release.Namespace }}.svc
+  - {{ include "compose-operator.fullname" . }}-webhook-service.{{ $.Release.Namespace }}.svc.cluster.local
+  issuerRef:
+    kind: Issuer
+    name: {{ include "compose-operator.fullname" . }}-selfsigned-issuer
+  secretName: {{ include "compose-operator.fullname" . }}-webhook-server-certs
+{{- end }}

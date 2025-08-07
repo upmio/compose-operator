@@ -1,0 +1,49 @@
+# MySQL Group Replication Example
+# This example shows how to configure MySQL Group Replication for high availability
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysql-group-credentials
+  namespace: default
+type: Opaque
+data:
+  # Encrypted passwords - replace with your encrypted values
+  # Get AES key: AES_KEY=$(kubectl get secret compose-operator-aes-secret -n upm-system -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)
+  # Method 1 (Recommended): Create binary files and use kubectl create secret
+  # aes-tool -key "$AES_KEY" -plaintext "mysql_password" -username "mysql"
+  # aes-tool -key "$AES_KEY" -plaintext "replication_password" -username "replication"
+  # kubectl create secret generic mysql-credentials --from-file=mysql=mysql.bin --from-file=replication=replication.bin
+  # Method 2 (Legacy): Use base64 encoded values directly
+  # aes-tool -key "$AES_KEY" -plaintext "password" | grep "Encrypted:" | cut -d' ' -f2
+  mysql: "your_encrypted_mysql_password_here"
+  replication: "your_encrypted_replication_password_here"
+
+---
+apiVersion: upm.syntropycloud.io/v1alpha1
+kind: MysqlGroupReplication
+metadata:
+  name: mysql-group-replication
+  namespace: default
+  labels:
+    app.kubernetes.io/name: mysql-group-replication
+    app.kubernetes.io/instance: mysql-group
+    app.kubernetes.io/part-of: compose-operator
+spec:
+  # Secret containing encrypted database passwords
+  secret:
+    name: mysql-group-credentials
+    mysql: mysql          # Key for MySQL root/admin password
+    replication: replication  # Key for replication user password
+  
+  # Group replication members
+  member:
+    - name: mysql-group-replication-0
+      host: mysql-group-replication-0.default.svc.cluster.local
+      port: 3306
+    - name: mysql-group-replication-1
+      host: mysql-group-replication-1.default.svc.cluster.local
+      port: 3306
+    - name: mysql-group-replication-2
+      host: mysql-group-replication-2.default.svc.cluster.local
+      port: 3306

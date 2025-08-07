@@ -1,0 +1,29 @@
+apiVersion: upm.syntropycloud.io/v1alpha1
+kind: MysqlReplication
+metadata:
+  labels:
+    app.kubernetes.io/name: mysqlreplication
+    app.kubernetes.io/instance: mysqlreplication-sample
+    app.kubernetes.io/part-of: compose-operator
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: compose-operator
+  name: mysqlreplication-sample
+spec:
+  mode: rpl_async
+  secret:
+    name: mysqlreplication-sample
+    mysql: root
+    replication: replication
+  source:
+    name: mysql-source-0
+    host: mysqlreplication-0.default
+    port: 3306
+  replica:
+    - name: mysql-replica-1
+      host: mysql-replica-1.default
+      port: 3306
+    - name: mysql-replica-2
+      host: mysql-replica-2.default
+      port: 3306
+  service:
+    type: NodePort

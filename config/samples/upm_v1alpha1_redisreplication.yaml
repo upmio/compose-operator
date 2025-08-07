@@ -1,0 +1,27 @@
+apiVersion: upm.syntropycloud.io/v1alpha1
+kind: RedisReplication
+metadata:
+  labels:
+    app.kubernetes.io/name: redisreplication
+    app.kubernetes.io/instance: redisreplication-sample
+    app.kubernetes.io/part-of: compose-operator
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: compose-operator
+  name: redisreplication-sample
+spec:
+  secret:
+    name: redisreplication-sample
+    redis: root
+  source:
+    name: redis-source-0
+    host: redis-source-0.demo
+    port: 6379
+  replica:
+    - name: redis-replica-1
+      host: redis-replica-1.demo
+      port: 6379
+    - name: redis-replica-2
+      host: redis-replica-2.demo
+      port: 6379
+  service:
+    type: NodePort

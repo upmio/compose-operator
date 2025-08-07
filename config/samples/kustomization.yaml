@@ -1,0 +1,10 @@
+## Append samples of your project ##
+resources:
+- upm_v1alpha1_mysqlreplication.yaml
+- upm_v1alpha1_rediscluster.yaml
+- upm_v1alpha1_redisreplication.yaml
+- upm_v1alpha1_proxysqlsync.yaml
+- upm_v1alpha1_postgresreplication.yaml
+- upm_v1alpha1_mysqlgroupreplication.yaml
+
+#+kubebuilder:scaffold:manifestskustomizesamples

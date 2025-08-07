@@ -1,0 +1,61 @@
+# Redis Cluster Example
+# This example demonstrates Redis Cluster configuration with multiple shards
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: redis-cluster-credentials
+  namespace: default
+type: Opaque
+data:
+  # Encrypted Redis password - replace with your encrypted value
+  # Get AES key: AES_KEY=$(kubectl get secret compose-operator-aes-secret -n upm-system -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)
+  # Method 1 (Recommended): Create binary files and use kubectl create secret
+  # aes-tool -key "$AES_KEY" -plaintext "redis_password" -username "redis"
+  # kubectl create secret generic redis-credentials --from-file=redis=redis.bin
+  # Method 2 (Legacy): Use base64 encoded values directly
+  # aes-tool -key "$AES_KEY" -plaintext "password" | grep "Encrypted:" | cut -d' ' -f2
+  redis: "your_encrypted_redis_password_here"
+
+---
+apiVersion: upm.syntropycloud.io/v1alpha1
+kind: RedisCluster
+metadata:
+  name: redis-cluster-example
+  namespace: default
+  labels:
+    app.kubernetes.io/name: redis-cluster
+    app.kubernetes.io/instance: redis-cluster-example
+    app.kubernetes.io/part-of: compose-operator
+spec:
+  # Secret containing encrypted Redis passwords
+  secret:
+    name: redis-cluster-credentials
+    redis: redis  # Key for Redis AUTH password
+  
+  # Redis cluster members configuration
+  # Each member represents a Redis node in the cluster
+  members:
+    shard0:
+      - name: redis-cluster-0
+        host: redis-cluster-0.default.svc.cluster.local
+        port: 6379
+      - name: redis-cluster-1
+        host: redis-cluster-1.default.svc.cluster.local
+        port: 6379
+    
+    shard1:
+      - name: redis-cluster-2
+        host: redis-cluster-2.default.svc.cluster.local
+        port: 6379
+      - name: redis-cluster-3
+        host: redis-cluster-3.default.svc.cluster.local
+        port: 6379
+    
+    shard2:
+      - name: redis-cluster-4
+        host: redis-cluster-4.default.svc.cluster.local
+        port: 6379
+      - name: redis-cluster-5
+        host: redis-cluster-5.default.svc.cluster.local
+        port: 6379

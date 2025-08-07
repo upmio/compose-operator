@@ -1,0 +1,105 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: manager-role
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - pods/exec
+  verbs:
+  - create
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - services
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - upm.syntropycloud.io
+  resources:
+  - mysqlgroupreplications
+  - mysqlreplications
+  - postgresreplications
+  - proxysqlsyncs
+  - redisclusters
+  - redisreplications
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - upm.syntropycloud.io
+  resources:
+  - mysqlgroupreplications/finalizers
+  - mysqlreplications/finalizers
+  - postgresreplications/finalizers
+  - proxysqlsyncs/finalizers
+  - redisclusters/finalizers
+  - redisreplications/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - upm.syntropycloud.io
+  resources:
+  - mysqlgroupreplications/status
+  - mysqlreplications/status
+  - postgresreplications/status
+  - proxysqlsyncs/status
+  - redisclusters/status
+  - redisreplications/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - upm.syntropycloud.io
+  resources:
+  - units
+  verbs:
+  - get
+  - list
+  - patch
+  - update
+- apiGroups:
+  - upm.syntropycloud.io
+  resources:
+  - units/status
+  verbs:
+  - get

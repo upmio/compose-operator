@@ -1,0 +1,29 @@
+apiVersion: upm.syntropycloud.io/v1alpha1
+kind: PostgresReplication
+metadata:
+  labels:
+    app.kubernetes.io/name: postgresreplication
+    app.kubernetes.io/instance: postgresreplication-sample
+    app.kubernetes.io/part-of: compose-operator
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: compose-operator
+  name: postgresreplication-sample
+spec:
+  mode: rpl_async
+  secret:
+    name: postgresreplication-sample
+    postgres: postgres
+    replication: replication
+  primary:
+    name: postgres-primary-0
+    host: postgres-primary-0.default
+    port: 5432
+  standby:
+    - name: postgres-standby-1
+      host: postgres-standby-1.default
+      port: 5432
+    - name: postgres-standby-2
+      host: postgres-standby-2.default
+      port: 5432
+  service:
+    type: NodePort

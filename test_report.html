@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Compose Operator Test Report</title>
+    <style type="text/css">
+        body {
+            font-family: sans-serif;
+            background-color: #f3f3f3;
+            border-top: 2px #dee6e8 solid;
+            margin: 0;
+        }
+
+        div.pageHeader span.projectTitle {
+            font-family: serif;
+            font-size: 2em;
+            padding-left: 56px;
+            padding-top: 80px;
+            display: block;
+            color: #a5a5a5;
+            text-shadow: 0 -1px 1px white;
+        }
+
+        div.pageHeader div.testStats {
+            position: absolute;
+            top: 7px;
+            right: 52px;
+            font-size: 0.8em;
+            color: #a2a2a2;
+        }
+
+        div.pageHeader div.testStats span.indicator {
+            font-size: 2em;
+            position: relative;
+            top: 5px;
+            text-shadow: 0 1px 0 white;
+        }
+
+        div.pageHeader div.testStats span strong {
+            margin-right: 16px;
+        }
+
+        div.pageHeader div.testStats span.total {
+            border-right: 1px #afafaf dotted;
+            background: #8298af;
+        }
+
+        div.pageHeader div.testStats span.passed {
+            border-right: 1px #afafaf dotted;
+            background: #6fca83;
+        }
+
+        div.pageHeader div.testStats span.skipped {
+            background: #bababa;
+        }
+
+        div.pageHeader div.testStats span.failed {
+            background: #ff7676;
+        }
+
+        div.pageHeader div.testStats span {
+            margin-right: 1px;
+            height: 55px;
+            padding: 20px 8px 18px;
+            color: white;
+        }
+
+        div.pageHeader .testGroupsTitle {
+            margin: 16px 32px 8px 40px;
+            font-size: 0.9em;
+            color: darkgrey;
+            display: inline-block;
+        }
+
+        div.pageHeader .testExecutionDate {
+            display: inline-block;
+            position: absolute;
+            right: 10px;
+            margin: 14px 32px 8px 40px;
+            color: #9e9e9e;
+            font-size: 0.9em;
+        }
+
+        .testReportContainer {
+            padding: 0 32px 32px 32px;
+        }
+
+        .cardContainer {
+            padding: 16px 16px 16px;
+            box-shadow: 0 4px 4px #d4d4d4;
+            background-color: white;
+        }
+
+        #testResults {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .testResultGroup {
+            width: 24px;
+            height: 24px;
+            background-color: #43c143;
+            margin-left: 1px;
+            margin-bottom: 1px;
+            box-sizing: border-box;
+        }
+
+        .testResultGroup.selected {
+            border: 1px white solid;
+            background-color: black !important;
+        }
+
+        .testResultGroup.skipped {
+            border: 2px gray solid;
+        }
+
+        .testResultGroup.failed {
+            background-color: red;
+        }
+
+        .cardContainer.testGroupList,
+        .cardContainer.testDetail {
+            margin-top: 16px;
+            padding: 16px;
+        }
+
+        .cardContainer.testGroupList {
+            color: #9c9c9c;
+            padding: 0;
+        }
+
+        .cardContainer.testGroupList .testGroupRow {
+            cursor: default;
+            border-bottom: 1px #dadada dotted;
+        }
+
+        .cardContainer.testGroupList .testGroupRow span.testStatus {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #139e13;
+            pointer-events: none;
+            display: inline-block;
+            overflow: hidden;
+            float: left;
+            padding-top: 10px;
+            padding-left: 20px;
+            padding-right: 12px;
+        }
+
+        .cardContainer.testGroupList .testGroupRow span.testStatus.skipped {
+            color: gray;
+        }
+
+        .cardContainer.testGroupList .testGroupRow span.testStatus.failed {
+            color: red;
+        }
+
+        .cardContainer.testGroupList .testGroupRow span.testTitle {
+            font-size: 0.9em;
+            padding: 12px 0 10px;
+            display: inline-block;
+            pointer-events: none;
+            color: #525252;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            width: calc(100% - 110px);
+        }
+
+        .cardContainer.testGroupList .testGroupRow span.testDuration {
+            pointer-events: none;
+        }
+
+        .cardContainer.testGroupList .testGroupRow {
+            position: relative;
+            border-left: 4px #43c143 solid;
+        }
+
+        .cardContainer.testGroupList .testGroupRow.skipped {
+            color: gray;
+            border-left: 4px gray solid;
+        }
+
+        .cardContainer.testGroupList .testGroupRow.failed {
+            color: red;
+            border-left: 4px red solid;
+        }
+
+        .cardContainer.testGroupList .testGroupRow:hover {
+            background-color: #fffaea;
+            transition: 0.250s;
+        }
+
+        .cardContainer .testOutput {
+            padding: 8px 16px 24px 16px;
+        }
+
+        .cardContainer .console {
+            display: block;
+            font-family: monospace;
+            padding: 10px;
+            background-color: #424242;
+            color: #1aff00;
+            border-bottom: 1px #1aff00 dotted;
+            overflow: auto;
+            font-size: 1.1em;
+        }
+
+        .cardContainer .testOutput .testDetail {
+            border-bottom: 1px #d0d0d0 solid;
+            padding: 16px;
+            background-color: #e6e6e6;
+            border-radius: 0 0 4px 4px;
+            color: dimgrey;
+            font-size: 0.8em;
+        }
+
+        .cardContainer .console.skipped{
+            color: #d9d9d9;
+        }
+
+        .cardContainer .console.failed {
+            color: #ffb2b2;
+        }
+
+        .cardContainer .testDuration {
+            position: absolute;
+            top: 5px;
+            right: 8px;
+            text-align: right;
+            padding-right: 8px;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+<div class="pageHeader">
+    <span class="projectTitle">Compose Operator Test Report</span>
+    <div class="testStats">
+        <span class="total"><span class="indicator">&boxbox;</span> Total: <strong>69</strong>Duration: <strong>1m20.056s</strong>
+        </span><span class="passed"><span class="indicator">&check;</span> Passed: <strong>66</strong>
+        </span><span class="skipped"><span class="indicator">&dash;</span> Skipped: <strong>0</strong>
+        </span><span class="failed"><span class="indicator">&cross;</span> Failed: <strong>3</strong>
+        </span>
+    </div>
+    <span class="testGroupsTitle">Test Groups:</span>
+    <span class="testExecutionDate">August 7, 2025 11:02:47</span>
+</div>
+<div class="testReportContainer">
+    <div class="cardContainer">
+        <div id="testResults">
+            
+                <div class="testResultGroup failed " id="0"></div>
+            
+                <div class="testResultGroup failed " id="1"></div>
+            
+                <div class="testResultGroup  " id="2"></div>
+            
+                <div class="testResultGroup  " id="3"></div>
+            
+        </div>
+    </div>
+    <div class="cardContainer testGroupList" id="testGroupList"></div>
+</div>
+<script type="application/javascript">
+    /**
+ * @typedef TestStatus
+ * @property {string} TestName
+ * @property {string} Package
+ * @property {number} ElapsedTime
+ * @property {Array.<string>} Output
+ * @property {boolean} Passed
+ * @property {boolean} Skipped
+ */
+class TestStatus {}
+
+/**
+ * @typedef TestGroupData
+ * @type {object}
+ * @property {string} FailureIndicator
+ * @property {string} SkippedIndicator
+ * @property {Array.<TestStatus>}
+ */
+class TestGroupData {}
+
+/**
+ * @typedef TestResults
+ * @type {Array.<TestGroupData>}
+ */
+class TestResults extends Array {}
+
+/**
+ * @typedef SelectedItems
+ * @property {HTMLElement|EventTarget} testResults
+ * @property {String} selectedTestGroupColor
+ */
+class SelectedItems {}
+
+/**
+ * @typedef GoTestReportElements
+ * @property {TestResults} data
+ * @property {HTMLElement} testResultsElem
+ * @property {HTMLElement} testGroupListElem
+ */
+class GoTestReportElements {}
+
+
+/**
+ * Main entry point for GoTestReport.
+ * @param {GoTestReportElements} elements
+ * @returns {{testResultsClickHandler: testResultsClickHandler}}
+ * @constructor
+ */
+window.GoTestReport = function (elements) {
+  const /**@type {SelectedItems}*/ selectedItems = {
+    testResults: null,
+    selectedTestGroupColor: null
+  }
+
+  function addEventData(event) {
+    if (event.data == null) {
+      event.data = {target: event.target}
+    }
+    return event
+  }
+
+
+  const goTestReport = {
+    /**
+     * Invoked when a user clicks on one of the test group div elements.
+     * @param {HTMLElement} target The element associated with the test group.
+     * @param {boolean} shiftKey If pressed, all of test detail associated to the test group is shown.
+     * @param {TestResults} data
+     * @param {SelectedItems} selectedItems
+     * @param {function(target: Element, data: TestResults)} testGroupListHandler
+     */
+    testResultsClickHandler: function (target,
+                                       shiftKey,
+                                       data,
+                                       selectedItems,
+                                       testGroupListHandler) {
+
+      if (target.classList.contains('testResultGroup') === false) {
+        return
+      }
+      if (selectedItems.testResults != null) {
+        let testResultsElement = /**@type {HTMLElement}*/ selectedItems.testResults
+        testResultsElement.classList.remove("selected")
+        testResultsElement.style.backgroundColor = selectedItems.selectedTestGroupColor
+      }
+      const testGroupId = /**@type {number}*/ target.id
+      if ((target.id === undefined)
+        || (data[testGroupId] === undefined)
+        || (data[testGroupId]['TestResults'] === undefined)) {
+        return
+      }
+      const testResults = /**@type {TestResults}*/ data[testGroupId]['TestResults']
+      let testGroupList = /**@type {string}*/ ''
+      selectedItems.selectedTestGroupColor = getComputedStyle(target).getPropertyValue('background-color')
+      selectedItems.testResults = target
+      target.classList.add("selected")
+      for (let i = 0; i < testResults.length; i++) {
+        const testResult = /**@type {TestGroupData}*/ testResults[i]
+        const testPassed = /**@type {boolean}*/ testResult.Passed
+        const testSkipped = /**@type {boolean}*/ testResult.Skipped
+        const testPassedStatus = /**@type {string}*/ (testPassed) ? '' : (testSkipped ? 'skipped' : 'failed')
+        const testId = /**@type {string}*/ target.attributes['id'].value
+        testGroupList += `<div class="testGroupRow ${testPassedStatus}" data-groupid="${testId}" data-index="${i}">
+        <span class="testStatus ${testPassedStatus}">${(testPassed) ? '&check' : (testSkipped ? '&dash' : '&cross')};</span>
+        <span class="testTitle">${testResult.TestName}</span>
+        <span class="testDuration"><span>${testResult.ElapsedTime}s </span>⏱</span>
+      </div>`
+      }
+      const testGroupListElem = elements.testGroupListElem
+      testGroupListElem.innerHTML = ''
+      testGroupListElem.innerHTML = testGroupList
+
+      if (shiftKey) {
+        testGroupListElem.querySelectorAll('.testGroupRow')
+                         .forEach((elem) => testGroupListHandler(elem, data))
+      } else if (testResults.length === 1) {
+        testGroupListHandler(testGroupListElem.querySelector('.testGroupRow'), data)
+      }
+    },
+
+    /**
+     *
+     * @param {Element} target
+     * @param {TestResults} data
+     */
+    testGroupListHandler: function (target, data) {
+      const attribs = target['attributes']
+      if (attribs.hasOwnProperty('data-groupid')) {
+        const groupId = /**@type {number}*/ attribs['data-groupid'].value
+        const testIndex = /**@type {number}*/ attribs['data-index'].value
+        const testStatus = /**@type {TestStatus}*/ data[groupId]['TestResults'][testIndex]
+        const testOutputDiv = /**@type {HTMLDivElement}*/ target.querySelector('div.testOutput')
+
+        if (testOutputDiv == null) {
+          const testOutputDiv = document.createElement('div')
+          testOutputDiv.classList.add('testOutput')
+          const consolePre = document.createElement('pre')
+          consolePre.classList.add('console')
+          const testDetailDiv = document.createElement('div')
+          testDetailDiv.classList.add('testDetail')
+          const packageNameDiv = document.createElement('div')
+          packageNameDiv.classList.add('package')
+          packageNameDiv.innerHTML = `<strong>Package:</strong> ${testStatus.Package}`
+          const testFileNameDiv = document.createElement('div')
+          testFileNameDiv.classList.add('filename')
+          if (testStatus.TestFileName.trim() === "") {
+            testFileNameDiv.innerHTML = `<strong>Filename:</strong> n/a &nbsp;&nbsp;`
+          } else {
+            testFileNameDiv.innerHTML = `<strong>Filename:</strong> ${testStatus.TestFileName} &nbsp;&nbsp;`
+            testFileNameDiv.innerHTML += `<strong>Line:</strong> ${testStatus.TestFunctionDetail.Line} `
+            testFileNameDiv.innerHTML += `<strong>Col:</strong> ${testStatus.TestFunctionDetail.Col}`
+          }
+          testDetailDiv.insertAdjacentElement('beforeend', packageNameDiv)
+          testDetailDiv.insertAdjacentElement('beforeend', testFileNameDiv)
+          testOutputDiv.insertAdjacentElement('afterbegin', consolePre)
+          testOutputDiv.insertAdjacentElement('beforeend', testDetailDiv)
+          target.insertAdjacentElement('beforeend', testOutputDiv)
+
+          if (testStatus.Passed) {
+            consolePre.classList.remove('skipped')
+            consolePre.classList.remove('failed')
+          } else if (testStatus.Skipped) {
+            consolePre.classList.add('skipped')
+            consolePre.classList.remove('failed')
+          } else {
+            consolePre.classList.remove('skipped')
+            consolePre.classList.add('failed')
+          }
+          consolePre.textContent = testStatus.Output.join('')
+        } else {
+          testOutputDiv.remove()
+        }
+      }
+    }
+  }
+
+  //+------------------------+
+  //|    setup DOM events    |
+  //+------------------------+
+  elements.testResultsElem
+          .addEventListener('click', event =>
+            goTestReport.testResultsClickHandler(/**@type {HTMLElement}*/ addEventData(event).data.target,
+                                                 event.shiftKey,
+                                                 elements.data,
+                                                 selectedItems,
+                                                 goTestReport.testGroupListHandler))
+
+  elements.testGroupListElem
+          .addEventListener('click', event =>
+            goTestReport.testGroupListHandler(/**@type {Element}*/ event.target,
+                                              elements.data))
+
+  return goTestReport
+}
+
+
+    
+
+    const data = [{"FailureIndicator":"failed","SkippedIndicator":"","TestResults":[{"TestName":"TestCommonNode","Package":"github.com/upmio/compose-operator/api/v1alpha1","ElapsedTime":0,"Output":["","=== RUN   TestCommonNode\n","--- PASS: TestCommonNode (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"default_test.go","TestFunctionDetail":{"Line":97,"Col":1}},{"TestName":"TestCommonNodes","Package":"github.com/upmio/compose-operator/api/v1alpha1","ElapsedTime":0,"Output":["","=== RUN   TestCommonNodes\n","--- PASS: TestCommonNodes (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"default_test.go","TestFunctionDetail":{"Line":111,"Col":1}},{"TestName":"TestDefaultMysqlReplicationOwnerReferences","Package":"github.com/upmio/compose-operator/api/v1alpha1","ElapsedTime":0,"Output":["","=== RUN   TestDefaultMysqlReplicationOwnerReferences\n","--- PASS: TestDefaultMysqlReplicationOwnerReferences (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"default_test.go","TestFunctionDetail":{"Line":126,"Col":1}},{"TestName":"TestDefaultPostgresReplicationOwnerReferences","Package":"github.com/upmio/compose-operator/api/v1alpha1","ElapsedTime":0,"Output":["","=== RUN   TestDefaultPostgresReplicationOwnerReferences\n","--- PASS: TestDefaultPostgresReplicationOwnerReferences (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"default_test.go","TestFunctionDetail":{"Line":172,"Col":1}},{"TestName":"TestDefaultRedisReplicationOwnerReferences","Package":"github.com/upmio/compose-operator/api/v1alpha1","ElapsedTime":0,"Output":["","=== RUN   TestDefaultRedisReplicationOwnerReferences\n","--- PASS: TestDefaultRedisReplicationOwnerReferences (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"default_test.go","TestFunctionDetail":{"Line":149,"Col":1}},{"TestName":"TestGetReadSourceLogPos","Package":"github.com/upmio/compose-operator/pkg/mysqlutil","ElapsedTime":0,"Output":["","=== RUN   TestGetReadSourceLogPos\n","--- PASS: TestGetReadSourceLogPos (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"replicationnode_test.go","TestFunctionDetail":{"Line":53,"Col":1}},{"TestName":"TestGetReplicationStatus","Package":"github.com/upmio/compose-operator/pkg/mysqlutil","ElapsedTime":0,"Output":["","=== RUN   TestGetReplicationStatus\n","--- PASS: TestGetReplicationStatus (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"replicationadmin_test.go","TestFunctionDetail":{"Line":330,"Col":1}},{"TestName":"TestGetRole","Package":"github.com/upmio/compose-operator/pkg/mysqlutil","ElapsedTime":0,"Output":["","=== RUN   TestGetRole\n","--- PASS: TestGetRole (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"replicationnode_test.go","TestFunctionDetail":{"Line":27,"Col":1}},{"TestName":"TestGetSourcePort","Package":"github.com/upmio/compose-operator/pkg/mysqlutil","ElapsedTime":0,"Output":["","=== RUN   TestGetSourcePort\n","--- PASS: TestGetSourcePort (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"replicationnode_test.go","TestFunctionDetail":{"Line":44,"Col":1}},{"TestName":"TestGetUser","Package":"github.com/upmio/compose-operator/pkg/mysqlutil","ElapsedTime":0,"Output":["","=== RUN   TestGetUser\n","testuser01\u0026{testuser01 password}testuser02\u0026{testuser02 password}","--- PASS: TestGetUser (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"replicationadmin_test.go","TestFunctionDetail":{"Line":307,"Col":1}},{"TestName":"TestMysqlGroupReplicationControllers","Package":"github.com/upmio/compose-operator/controller/mysqlgroupreplication","ElapsedTime":61.99,"Output":["","=== RUN   TestMysqlGroupReplicationControllers\n","Running Suite: Mysql Group Replication Controller Suite - /Users/haolowkey/Dev/github.com/upmio/compose-operator/controller/mysqlgroupreplication\n","=================================================================================================================================================\n","Random Seed: \u001b[1m1754535690\u001b[0m\n","\n","Will run \u001b[1m1\u001b[0m of \u001b[1m1\u001b[0m specs\n","\u001b[38;5;243m------------------------------\u001b[0m\n","\u001b[38;5;9m• [FAILED] [56.434 seconds]\u001b[0m\n","\u001b[0mMysqlReplication Controller \u001b[38;5;243mwhen with default settings \u001b[38;5;9m\u001b[1mcreates a mysql group replication sample [BeforeEach] \u001b[38;5;243mshould successfully reconcile the resource\u001b[0m\n","  \u001b[38;5;9m[BeforeEach]\u001b[0m \u001b[38;5;243m/Users/haolowkey/Dev/github.com/upmio/compose-operator/controller/mysqlgroupreplication/mysqlgroupreplication_controller_test.go:145\u001b[0m\n","  \u001b[38;5;243m[It] /Users/haolowkey/Dev/github.com/upmio/compose-operator/controller/mysqlgroupreplication/mysqlgroupreplication_controller_test.go:271\u001b[0m\n","\n","  \u001b[38;5;243mTimeline \u003e\u003e\u001b[0m\n","  \u001b[1mSTEP:\u001b[0m creating first mysql container \u001b[38;5;243m@ 08/07/25 11:01:35.341\u001b[0m\n","  2025-08-07T11:01:35+08:00\tINFO\tStarting EventSource\t{\"controller\": \"mysqlgroupreplication\", \"controllerGroup\": \"upm.syntropycloud.io\", \"controllerKind\": \"MysqlGroupReplication\", \"source\": \"kind source: *v1alpha1.MysqlGroupReplication\"}\n","  2025-08-07T11:01:35+08:00\tINFO\tStarting EventSource\t{\"controller\": \"mysqlgroupreplication\", \"controllerGroup\": \"upm.syntropycloud.io\", \"controllerKind\": \"MysqlGroupReplication\", \"source\": \"kind source: *v1.Pod\"}\n","  2025-08-07T11:01:35+08:00\tINFO\tStarting Controller\t{\"controller\": \"mysqlgroupreplication\", \"controllerGroup\": \"upm.syntropycloud.io\", \"controllerKind\": \"MysqlGroupReplication\"}\n","  2025-08-07T11:01:35+08:00\tINFO\tStarting workers\t{\"controller\": \"mysqlgroupreplication\", \"controllerGroup\": \"upm.syntropycloud.io\", \"controllerKind\": \"MysqlGroupReplication\", \"worker count\": 10}\n","  \u001b[1mSTEP:\u001b[0m creating second mysql container \u001b[38;5;243m@ 08/07/25 11:02:02.261\u001b[0m\n","  \u001b[1mSTEP:\u001b[0m creating second mysql container \u001b[38;5;243m@ 08/07/25 11:02:11.705\u001b[0m\n","  \u001b[1mSTEP:\u001b[0m creating secret \u001b[38;5;243m@ 08/07/25 11:02:22.058\u001b[0m\n","  \u001b[38;5;9m[FAILED]\u001b[0m in [BeforeEach] - /Users/haolowkey/Dev/github.com/upmio/compose-operator/controller/mysqlgroupreplication/mysqlgroupreplication_controller_test.go:151 \u001b[38;5;243m@ 08/07/25 11:02:22.058\u001b[0m\n","  \u001b[1mSTEP:\u001b[0m clearing secret \u001b[38;5;243m@ 08/07/25 11:02:22.058\u001b[0m\n","  \u001b[1mSTEP:\u001b[0m clearing first mysql pod \u001b[38;5;243m@ 08/07/25 11:02:22.061\u001b[0m\n","  \u001b[1mSTEP:\u001b[0m clearing second mysql pod \u001b[38;5;243m@ 08/07/25 11:02:22.062\u001b[0m\n","  \u001b[1mSTEP:\u001b[0m clearing third mysql pod \u001b[38;5;243m@ 08/07/25 11:02:22.062\u001b[0m\n","  \u001b[1mSTEP:\u001b[0m clearing first mysql container \u001b[38;5;243m@ 08/07/25 11:02:22.063\u001b[0m\n","  \u001b[1mSTEP:\u001b[0m clearing second mysql container \u001b[38;5;243m@ 08/07/25 11:02:24.879\u001b[0m\n","  \u001b[1mSTEP:\u001b[0m clearing third mysql container \u001b[38;5;243m@ 08/07/25 11:02:28.383\u001b[0m\n","  \u001b[38;5;243m\u003c\u003c Timeline\u001b[0m\n","\n","  \u001b[38;5;9m[FAILED] Unexpected error:\n","      \u003c*errors.errorString | 0x14000b10900\u003e: \n","      cannot get AES key\n","      {\n","          s: \"cannot get AES key\",\n","      }\n","  occurred\u001b[0m\n","  \u001b[38;5;9mIn \u001b[1m[BeforeEach]\u001b[0m\u001b[38;5;9m at: \u001b[1m/Users/haolowkey/Dev/github.com/upmio/compose-operator/controller/mysqlgroupreplication/mysqlgroupreplication_controller_test.go:151\u001b[0m \u001b[38;5;243m@ 08/07/25 11:02:22.058\u001b[0m\n","\u001b[38;5;243m------------------------------\u001b[0m\n","\n","\u001b[38;5;9m\u001b[1mSummarizing 1 Failure:\u001b[0m\n","  \u001b[38;5;9m[FAIL]\u001b[0m \u001b[0mMysqlReplication Controller \u001b[38;5;243mwhen with default settings \u001b[38;5;9m\u001b[1mcreates a mysql group replication sample [BeforeEach] \u001b[38;5;243mshould successfully reconcile the resource\u001b[0m\n","  \u001b[38;5;243m/Users/haolowkey/Dev/github.com/upmio/compose-operator/controller/mysqlgroupreplication/mysqlgroupreplication_controller_test.go:151\u001b[0m\n","\n","\u001b[38;5;9m\u001b[1mRan 1 of 1 Specs in 61.990 seconds\u001b[0m\n","\u001b[38;5;9m\u001b[1mFAIL!\u001b[0m -- \u001b[38;5;10m\u001b[1m0 Passed\u001b[0m | \u001b[38;5;9m\u001b[1m1 Failed\u001b[0m | \u001b[38;5;11m\u001b[1m0 Pending\u001b[0m | \u001b[38;5;14m\u001b[1m0 Skipped\u001b[0m\n","--- FAIL: TestMysqlGroupReplicationControllers (61.99s)\n",""],"Passed":false,"Skipped":false,"TestFileName":"suite_test.go","TestFunctionDetail":{"Line":54,"Col":1}},{"TestName":"TestMysqlReplication","Package":"github.com/upmio/compose-operator/api/v1alpha1","ElapsedTime":0,"Output":["","=== RUN   TestMysqlReplication\n","--- PASS: TestMysqlReplication (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"mysqlreplication_types_test.go","TestFunctionDetail":{"Line":28,"Col":1}},{"TestName":"TestMysqlReplicationControllers","Package":"github.com/upmio/compose-operator/controller/mysqlreplication","ElapsedTime":48.94,"Output":["","=== RUN   TestMysqlReplicationControllers\n","Running Suite: Mysql Replication Controller Suite - /Users/haolowkey/Dev/github.com/upmio/compose-operator/controller/mysqlreplication\n","======================================================================================================================================\n","Random Seed: \u001b[1m1754535691\u001b[0m\n","\n","Will run \u001b[1m1\u001b[0m of \u001b[1m1\u001b[0m specs\n","\u001b[38;5;243m------------------------------\u001b[0m\n","\u001b[38;5;9m• [FAILED] [43.770 seconds]\u001b[0m\n","\u001b[0mMysqlReplication Controller \u001b[38;5;243mwhen with default settings \u001b[38;5;9m\u001b[1mcreates a mysql replication sample [BeforeEach] \u001b[38;5;243mshould successfully reconcile the resource\u001b[0m\n","  \u001b[38;5;9m[BeforeEach]\u001b[0m \u001b[38;5;243m/Users/haolowkey/Dev/github.com/upmio/compose-operator/controller/mysqlreplication/mysqlreplication_controller_test.go:121\u001b[0m\n","  \u001b[38;5;243m[It] /Users/haolowkey/Dev/github.com/upmio/compose-operator/controller/mysqlreplication/mysqlreplication_controller_test.go:213\u001b[0m\n","\n","  \u001b[38;5;243mTimeline \u003e\u003e\u001b[0m\n","  \u001b[1mSTEP:\u001b[0m creating source mysql container \u001b[38;5;243m@ 08/07/25 11:01:35.372\u001b[0m\n","  2025-08-07T11:01:35+08:00\tINFO\tStarting EventSource\t{\"controller\": \"mysqlreplication\", \"controllerGroup\": \"upm.syntropycloud.io\", \"controllerKind\": \"MysqlReplication\", \"source\": \"kind source: *v1alpha1.MysqlReplication\"}\n","  2025-08-07T11:01:35+08:00\tINFO\tStarting EventSource\t{\"controller\": \"mysqlreplication\", \"controllerGroup\": \"upm.syntropycloud.io\", \"controllerKind\": \"MysqlReplication\", \"source\": \"kind source: *v1.Pod\"}\n","  2025-08-07T11:01:35+08:00\tINFO\tStarting EventSource\t{\"controller\": \"mysqlreplication\", \"controllerGroup\": \"upm.syntropycloud.io\", \"controllerKind\": \"MysqlReplication\", \"source\": \"kind source: *v1.Service\"}\n","  2025-08-07T11:01:35+08:00\tINFO\tStarting Controller\t{\"controller\": \"mysqlreplication\", \"controllerGroup\": \"upm.syntropycloud.io\", \"controllerKind\": \"MysqlReplication\"}\n","  2025-08-07T11:01:35+08:00\tINFO\tStarting workers\t{\"controller\": \"mysqlreplication\", \"controllerGroup\": \"upm.syntropycloud.io\", \"controllerKind\": \"MysqlReplication\", \"worker count\": 10}\n","  \u001b[1mSTEP:\u001b[0m creating replica mysql container \u001b[38;5;243m@ 08/07/25 11:02:02.154\u001b[0m\n","  \u001b[1mSTEP:\u001b[0m creating secret \u001b[38;5;243m@ 08/07/25 11:02:12.54\u001b[0m\n","  \u001b[38;5;9m[FAILED]\u001b[0m in [BeforeEach] - /Users/haolowkey/Dev/github.com/upmio/compose-operator/controller/mysqlreplication/mysqlreplication_controller_test.go:126 \u001b[38;5;243m@ 08/07/25 11:02:12.54\u001b[0m\n","  \u001b[1mSTEP:\u001b[0m clearing secret \u001b[38;5;243m@ 08/07/25 11:02:12.54\u001b[0m\n","  \u001b[1mSTEP:\u001b[0m clearing source mysql pod \u001b[38;5;243m@ 08/07/25 11:02:12.544\u001b[0m\n","  \u001b[1mSTEP:\u001b[0m clearing replica mysql pod \u001b[38;5;243m@ 08/07/25 11:02:12.545\u001b[0m\n","  \u001b[1mSTEP:\u001b[0m clearing source mysql container \u001b[38;5;243m@ 08/07/25 11:02:12.546\u001b[0m\n","  \u001b[1mSTEP:\u001b[0m clearing replica mysql container \u001b[38;5;243m@ 08/07/25 11:02:15.819\u001b[0m\n","  \u001b[38;5;243m\u003c\u003c Timeline\u001b[0m\n","\n","  \u001b[38;5;9m[FAILED] Unexpected error:\n","      \u003c*errors.errorString | 0x14000591240\u003e: \n","      cannot get AES key\n","      {\n","          s: \"cannot get AES key\",\n","      }\n","  occurred\u001b[0m\n","  \u001b[38;5;9mIn \u001b[1m[BeforeEach]\u001b[0m\u001b[38;5;9m at: \u001b[1m/Users/haolowkey/Dev/github.com/upmio/compose-operator/controller/mysqlreplication/mysqlreplication_controller_test.go:126\u001b[0m \u001b[38;5;243m@ 08/07/25 11:02:12.54\u001b[0m\n","\u001b[38;5;243m------------------------------\u001b[0m\n","I0807 11:02:19.143272   39425 reflector.go:556] \"Warning: watch ended with error\" reflector=\"pkg/mod/k8s.io/client-go@v0.33.3/tools/cache/reflector.go:285\" type=\"*v1alpha1.MysqlReplication\" err=\"an error on the server (\\\"unable to decode an event from the watch stream: context canceled\\\") has prevented the request from succeeding\"\n","\n","\u001b[38;5;9m\u001b[1mSummarizing 1 Failure:\u001b[0m\n","  \u001b[38;5;9m[FAIL]\u001b[0m \u001b[0mMysqlReplication Controller \u001b[38;5;243mwhen with default settings \u001b[38;5;9m\u001b[1mcreates a mysql replication sample [BeforeEach] \u001b[38;5;243mshould successfully reconcile the resource\u001b[0m\n","  \u001b[38;5;243m/Users/haolowkey/Dev/github.com/upmio/compose-operator/controller/mysqlreplication/mysqlreplication_controller_test.go:126\u001b[0m\n","\n","\u001b[38;5;9m\u001b[1mRan 1 of 1 Specs in 48.943 seconds\u001b[0m\n","\u001b[38;5;9m\u001b[1mFAIL!\u001b[0m -- \u001b[38;5;10m\u001b[1m0 Passed\u001b[0m | \u001b[38;5;9m\u001b[1m1 Failed\u001b[0m | \u001b[38;5;11m\u001b[1m0 Pending\u001b[0m | \u001b[38;5;14m\u001b[1m0 Skipped\u001b[0m\n","--- FAIL: TestMysqlReplicationControllers (48.94s)\n",""],"Passed":false,"Skipped":false,"TestFileName":"suite_test.go","TestFunctionDetail":{"Line":54,"Col":1}},{"TestName":"TestMysqlReplicationList","Package":"github.com/upmio/compose-operator/api/v1alpha1","ElapsedTime":0,"Output":["","=== RUN   TestMysqlReplicationList\n","--- PASS: TestMysqlReplicationList (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"mysqlreplication_types_test.go","TestFunctionDetail":{"Line":114,"Col":1}},{"TestName":"TestMysqlReplicationMode","Package":"github.com/upmio/compose-operator/api/v1alpha1","ElapsedTime":0,"Output":["","=== RUN   TestMysqlReplicationMode\n","--- PASS: TestMysqlReplicationMode (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"default_test.go","TestFunctionDetail":{"Line":65,"Col":1}},{"TestName":"TestMysqlReplicationNode","Package":"github.com/upmio/compose-operator/api/v1alpha1","ElapsedTime":0,"Output":["","=== RUN   TestMysqlReplicationNode\n","--- PASS: TestMysqlReplicationNode (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"mysqlreplication_types_test.go","TestFunctionDetail":{"Line":209,"Col":1}},{"TestName":"TestMysqlReplicationRole","Package":"github.com/upmio/compose-operator/api/v1alpha1","ElapsedTime":0,"Output":["","=== RUN   TestMysqlReplicationRole\n","--- PASS: TestMysqlReplicationRole (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"default_test.go","TestFunctionDetail":{"Line":41,"Col":1}},{"TestName":"TestMysqlReplicationSecret","Package":"github.com/upmio/compose-operator/api/v1alpha1","ElapsedTime":0,"Output":["","=== RUN   TestMysqlReplicationSecret\n","--- PASS: TestMysqlReplicationSecret (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"mysqlreplication_types_test.go","TestFunctionDetail":{"Line":233,"Col":1}},{"TestName":"TestMysqlReplicationSpec","Package":"github.com/upmio/compose-operator/api/v1alpha1","ElapsedTime":0,"Output":["","=== RUN   TestMysqlReplicationSpec\n","--- PASS: TestMysqlReplicationSpec (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"mysqlreplication_types_test.go","TestFunctionDetail":{"Line":247,"Col":1}},{"TestName":"TestMysqlReplicationStatus","Package":"github.com/upmio/compose-operator/api/v1alpha1","ElapsedTime":0,"Output":["","=== RUN   TestMysqlReplicationStatus\n","--- PASS: TestMysqlReplicationStatus (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"mysqlreplication_types_test.go","TestFunctionDetail":{"Line":279,"Col":1}}]},{"FailureIndicator":"failed","SkippedIndicator":"","TestResults":[{"TestName":"TestMysqlReplicationTopology","Package":"github.com/upmio/compose-operator/api/v1alpha1","ElapsedTime":0,"Output":["","=== RUN   TestMysqlReplicationTopology\n","--- PASS: TestMysqlReplicationTopology (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"mysqlreplication_types_test.go","TestFunctionDetail":{"Line":333,"Col":1}},{"TestName":"TestNodeStatus","Package":"github.com/upmio/compose-operator/api/v1alpha1","ElapsedTime":0,"Output":["","=== RUN   TestNodeStatus\n","--- PASS: TestNodeStatus (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"default_test.go","TestFunctionDetail":{"Line":29,"Col":1}},{"TestName":"TestPostgresReplication","Package":"github.com/upmio/compose-operator/api/v1alpha1","ElapsedTime":0,"Output":["","=== RUN   TestPostgresReplication\n","--- PASS: TestPostgresReplication (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"postgresreplication_types_test.go","TestFunctionDetail":{"Line":28,"Col":1}},{"TestName":"TestPostgresReplicationControllers","Package":"github.com/upmio/compose-operator/controller/postgresreplication","ElapsedTime":27.54,"Output":["","=== RUN   TestPostgresReplicationControllers\n","Running Suite: Postgres Replication Controller Suite - /Users/haolowkey/Dev/github.com/upmio/compose-operator/controller/postgresreplication\n","============================================================================================================================================\n","Random Seed: \u001b[1m1754535691\u001b[0m\n","\n","Will run \u001b[1m1\u001b[0m of \u001b[1m1\u001b[0m specs\n","\u001b[38;5;243m------------------------------\u001b[0m\n","\u001b[38;5;9m• [FAILED] [22.877 seconds]\u001b[0m\n","\u001b[0mPostgresReplication Controller \u001b[38;5;243mwhen with default settings \u001b[38;5;9m\u001b[1mcreates a postgres replication sample [BeforeEach] \u001b[38;5;243mshould successfully reconcile the resource\u001b[0m\n","  \u001b[38;5;9m[BeforeEach]\u001b[0m \u001b[38;5;243m/Users/haolowkey/Dev/github.com/upmio/compose-operator/controller/postgresreplication/postgresreplication_controller_test.go:121\u001b[0m\n","  \u001b[38;5;243m[It] /Users/haolowkey/Dev/github.com/upmio/compose-operator/controller/postgresreplication/postgresreplication_controller_test.go:213\u001b[0m\n","\n","  \u001b[38;5;243mTimeline \u003e\u003e\u001b[0m\n","  \u001b[1mSTEP:\u001b[0m creating source postgres container \u001b[38;5;243m@ 08/07/25 11:01:35.212\u001b[0m\n","  2025-08-07T11:01:35+08:00\tINFO\tStarting EventSource\t{\"controller\": \"postgresreplication\", \"controllerGroup\": \"upm.syntropycloud.io\", \"controllerKind\": \"PostgresReplication\", \"source\": \"kind source: *v1alpha1.PostgresReplication\"}\n","  2025-08-07T11:01:35+08:00\tINFO\tStarting EventSource\t{\"controller\": \"postgresreplication\", \"controllerGroup\": \"upm.syntropycloud.io\", \"controllerKind\": \"PostgresReplication\", \"source\": \"kind source: *v1.Pod\"}\n","  2025-08-07T11:01:35+08:00\tINFO\tStarting EventSource\t{\"controller\": \"postgresreplication\", \"controllerGroup\": \"upm.syntropycloud.io\", \"controllerKind\": \"PostgresReplication\", \"source\": \"kind source: *v1.Service\"}\n","  2025-08-07T11:01:35+08:00\tINFO\tStarting Controller\t{\"controller\": \"postgresreplication\", \"controllerGroup\": \"upm.syntropycloud.io\", \"controllerKind\": \"PostgresReplication\"}\n","  2025-08-07T11:01:35+08:00\tINFO\tStarting workers\t{\"controller\": \"postgresreplication\", \"controllerGroup\": \"upm.syntropycloud.io\", \"controllerKind\": \"PostgresReplication\", \"worker count\": 10}\n","  \u001b[1mSTEP:\u001b[0m creating replica postgres container \u001b[38;5;243m@ 08/07/25 11:01:46.385\u001b[0m\n","  \u001b[1mSTEP:\u001b[0m creating secret \u001b[38;5;243m@ 08/07/25 11:01:46.592\u001b[0m\n","  \u001b[38;5;9m[FAILED]\u001b[0m in [BeforeEach] - /Users/haolowkey/Dev/github.com/upmio/compose-operator/controller/postgresreplication/postgresreplication_controller_test.go:126 \u001b[38;5;243m@ 08/07/25 11:01:46.592\u001b[0m\n","  \u001b[1mSTEP:\u001b[0m clearing secret \u001b[38;5;243m@ 08/07/25 11:01:46.592\u001b[0m\n","  \u001b[1mSTEP:\u001b[0m clearing source postgres pod \u001b[38;5;243m@ 08/07/25 11:01:46.596\u001b[0m\n","  \u001b[1mSTEP:\u001b[0m clearing replica postgres pod \u001b[38;5;243m@ 08/07/25 11:01:46.596\u001b[0m\n","  \u001b[1mSTEP:\u001b[0m clearing source postgres container \u001b[38;5;243m@ 08/07/25 11:01:46.597\u001b[0m\n","  \u001b[1mSTEP:\u001b[0m clearing replica postgres container \u001b[38;5;243m@ 08/07/25 11:01:57.109\u001b[0m\n","  \u001b[38;5;243m\u003c\u003c Timeline\u001b[0m\n","\n","  \u001b[38;5;9m[FAILED] Unexpected error:\n","      \u003c*errors.errorString | 0x14000064200\u003e: \n","      cannot get AES key\n","      {\n","          s: \"cannot get AES key\",\n","      }\n","  occurred\u001b[0m\n","  \u001b[38;5;9mIn \u001b[1m[BeforeEach]\u001b[0m\u001b[38;5;9m at: \u001b[1m/Users/haolowkey/Dev/github.com/upmio/compose-operator/controller/postgresreplication/postgresreplication_controller_test.go:126\u001b[0m \u001b[38;5;243m@ 08/07/25 11:01:46.592\u001b[0m\n","\u001b[38;5;243m------------------------------\u001b[0m\n","I0807 11:01:58.090397   39426 reflector.go:556] \"Warning: watch ended with error\" reflector=\"pkg/mod/k8s.io/client-go@v0.33.3/tools/cache/reflector.go:285\" type=\"*v1alpha1.PostgresReplication\" err=\"an error on the server (\\\"unable to decode an event from the watch stream: context canceled\\\") has prevented the request from succeeding\"\n","\n","\u001b[38;5;9m\u001b[1mSummarizing 1 Failure:\u001b[0m\n","  \u001b[38;5;9m[FAIL]\u001b[0m \u001b[0mPostgresReplication Controller \u001b[38;5;243mwhen with default settings \u001b[38;5;9m\u001b[1mcreates a postgres replication sample [BeforeEach] \u001b[38;5;243mshould successfully reconcile the resource\u001b[0m\n","  \u001b[38;5;243m/Users/haolowkey/Dev/github.com/upmio/compose-operator/controller/postgresreplication/postgresreplication_controller_test.go:126\u001b[0m\n","\n","\u001b[38;5;9m\u001b[1mRan 1 of 1 Specs in 27.537 seconds\u001b[0m\n","\u001b[38;5;9m\u001b[1mFAIL!\u001b[0m -- \u001b[38;5;10m\u001b[1m0 Passed\u001b[0m | \u001b[38;5;9m\u001b[1m1 Failed\u001b[0m | \u001b[38;5;11m\u001b[1m0 Pending\u001b[0m | \u001b[38;5;14m\u001b[1m0 Skipped\u001b[0m\n","--- FAIL: TestPostgresReplicationControllers (27.54s)\n",""],"Passed":false,"Skipped":false,"TestFileName":"suite_test.go","TestFunctionDetail":{"Line":55,"Col":1}},{"TestName":"TestPostgresReplicationList","Package":"github.com/upmio/compose-operator/api/v1alpha1","ElapsedTime":0,"Output":["","=== RUN   TestPostgresReplicationList\n","--- PASS: TestPostgresReplicationList (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"postgresreplication_types_test.go","TestFunctionDetail":{"Line":102,"Col":1}},{"TestName":"TestPostgresReplicationMode","Package":"github.com/upmio/compose-operator/api/v1alpha1","ElapsedTime":0,"Output":["","=== RUN   TestPostgresReplicationMode\n","--- PASS: TestPostgresReplicationMode (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"default_test.go","TestFunctionDetail":{"Line":70,"Col":1}},{"TestName":"TestPostgresReplicationNode","Package":"github.com/upmio/compose-operator/api/v1alpha1","ElapsedTime":0,"Output":["","=== RUN   TestPostgresReplicationNode\n","--- PASS: TestPostgresReplicationNode (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"postgresreplication_types_test.go","TestFunctionDetail":{"Line":184,"Col":1}},{"TestName":"TestPostgresReplicationRole","Package":"github.com/upmio/compose-operator/api/v1alpha1","ElapsedTime":0,"Output":["","=== RUN   TestPostgresReplicationRole\n","--- PASS: TestPostgresReplicationRole (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"default_test.go","TestFunctionDetail":{"Line":47,"Col":1}},{"TestName":"TestPostgresReplicationSecret","Package":"github.com/upmio/compose-operator/api/v1alpha1","ElapsedTime":0,"Output":["","=== RUN   TestPostgresReplicationSecret\n","--- PASS: TestPostgresReplicationSecret (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"postgresreplication_types_test.go","TestFunctionDetail":{"Line":200,"Col":1}},{"TestName":"TestPostgresReplicationSpec","Package":"github.com/upmio/compose-operator/api/v1alpha1","ElapsedTime":0,"Output":["","=== RUN   TestPostgresReplicationSpec\n","--- PASS: TestPostgresReplicationSpec (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"postgresreplication_types_test.go","TestFunctionDetail":{"Line":214,"Col":1}},{"TestName":"TestPostgresReplicationStatus","Package":"github.com/upmio/compose-operator/api/v1alpha1","ElapsedTime":0,"Output":["","=== RUN   TestPostgresReplicationStatus\n","--- PASS: TestPostgresReplicationStatus (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"postgresreplication_types_test.go","TestFunctionDetail":{"Line":244,"Col":1}},{"TestName":"TestPostgresReplicationTopology","Package":"github.com/upmio/compose-operator/api/v1alpha1","ElapsedTime":0,"Output":["","=== RUN   TestPostgresReplicationTopology\n","--- PASS: TestPostgresReplicationTopology (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"postgresreplication_types_test.go","TestFunctionDetail":{"Line":288,"Col":1}},{"TestName":"TestProxysqlSync","Package":"github.com/upmio/compose-operator/api/v1alpha1","ElapsedTime":0,"Output":["","=== RUN   TestProxysqlSync\n","--- PASS: TestProxysqlSync (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"proxysqlsync_types_test.go","TestFunctionDetail":{"Line":28,"Col":1}},{"TestName":"TestProxysqlSyncControllers","Package":"github.com/upmio/compose-operator/controller/proxysqlsync","ElapsedTime":6.26,"Output":["","=== RUN   TestProxysqlSyncControllers\n","Running Suite: Proxysql Sync Controller Suite - /Users/haolowkey/Dev/github.com/upmio/compose-operator/controller/proxysqlsync\n","==============================================================================================================================\n","Random Seed: \u001b[1m1754535692\u001b[0m\n","\n","Will run \u001b[1m1\u001b[0m of \u001b[1m1\u001b[0m specs\n","\u001b[38;5;10m•\u001b[0m\n","\n","\u001b[38;5;10m\u001b[1mRan 1 of 1 Specs in 6.257 seconds\u001b[0m\n","\u001b[38;5;10m\u001b[1mSUCCESS!\u001b[0m -- \u001b[38;5;10m\u001b[1m1 Passed\u001b[0m | \u001b[38;5;9m\u001b[1m0 Failed\u001b[0m | \u001b[38;5;11m\u001b[1m0 Pending\u001b[0m | \u001b[38;5;14m\u001b[1m0 Skipped\u001b[0m\n","--- PASS: TestProxysqlSyncControllers (6.26s)",""],"Passed":true,"Skipped":false,"TestFileName":"suite_test.go","TestFunctionDetail":{"Line":54,"Col":1}},{"TestName":"TestProxysqlSyncList","Package":"github.com/upmio/compose-operator/api/v1alpha1","ElapsedTime":0,"Output":["","=== RUN   TestProxysqlSyncList\n","--- PASS: TestProxysqlSyncList (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"proxysqlsync_types_test.go","TestFunctionDetail":{"Line":93,"Col":1}},{"TestName":"TestProxysqlSyncNode","Package":"github.com/upmio/compose-operator/api/v1alpha1","ElapsedTime":0,"Output":["","=== RUN   TestProxysqlSyncNode\n","--- PASS: TestProxysqlSyncNode (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"proxysqlsync_types_test.go","TestFunctionDetail":{"Line":168,"Col":1}},{"TestName":"TestProxysqlSyncSecret","Package":"github.com/upmio/compose-operator/api/v1alpha1","ElapsedTime":0,"Output":["","=== RUN   TestProxysqlSyncSecret\n","--- PASS: TestProxysqlSyncSecret (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"proxysqlsync_types_test.go","TestFunctionDetail":{"Line":183,"Col":1}},{"TestName":"TestProxysqlSyncSpec","Package":"github.com/upmio/compose-operator/api/v1alpha1","ElapsedTime":0,"Output":["","=== RUN   TestProxysqlSyncSpec\n","--- PASS: TestProxysqlSyncSpec (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"proxysqlsync_types_test.go","TestFunctionDetail":{"Line":197,"Col":1}},{"TestName":"TestProxysqlSyncStatus","Package":"github.com/upmio/compose-operator/api/v1alpha1","ElapsedTime":0,"Output":["","=== RUN   TestProxysqlSyncStatus\n","--- PASS: TestProxysqlSyncStatus (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"proxysqlsync_types_test.go","TestFunctionDetail":{"Line":227,"Col":1}},{"TestName":"TestProxysqlSyncTopology","Package":"github.com/upmio/compose-operator/api/v1alpha1","ElapsedTime":0,"Output":["","=== RUN   TestProxysqlSyncTopology\n","--- PASS: TestProxysqlSyncTopology (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"proxysqlsync_types_test.go","TestFunctionDetail":{"Line":261,"Col":1}}]},{"FailureIndicator":"","SkippedIndicator":"","TestResults":[{"TestName":"TestRedisCluster","Package":"github.com/upmio/compose-operator/api/v1alpha1","ElapsedTime":0,"Output":["","=== RUN   TestRedisCluster\n","--- PASS: TestRedisCluster (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"rediscluster_types_test.go","TestFunctionDetail":{"Line":28,"Col":1}},{"TestName":"TestRedisClusterControllers","Package":"github.com/upmio/compose-operator/controller/rediscluster","ElapsedTime":64.17,"Output":["","=== RUN   TestRedisClusterControllers\n","Running Suite: Redis Cluster Controller Suite - /Users/haolowkey/Dev/github.com/upmio/compose-operator/controller/rediscluster\n","==============================================================================================================================\n","Random Seed: \u001b[1m1754535698\u001b[0m\n","\n","Will run \u001b[1m1\u001b[0m of \u001b[1m1\u001b[0m specs\n","\u001b[38;5;10m•\u001b[0m\n","\n","\u001b[38;5;10m\u001b[1mRan 1 of 1 Specs in 64.170 seconds\u001b[0m\n","\u001b[38;5;10m\u001b[1mSUCCESS!\u001b[0m -- \u001b[38;5;10m\u001b[1m1 Passed\u001b[0m | \u001b[38;5;9m\u001b[1m0 Failed\u001b[0m | \u001b[38;5;11m\u001b[1m0 Pending\u001b[0m | \u001b[38;5;14m\u001b[1m0 Skipped\u001b[0m\n","--- PASS: TestRedisClusterControllers (64.17s)",""],"Passed":true,"Skipped":false,"TestFileName":"suite_test.go","TestFunctionDetail":{"Line":55,"Col":1}},{"TestName":"TestRedisClusterList","Package":"github.com/upmio/compose-operator/api/v1alpha1","ElapsedTime":0,"Output":["","=== RUN   TestRedisClusterList\n","--- PASS: TestRedisClusterList (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"rediscluster_types_test.go","TestFunctionDetail":{"Line":130,"Col":1}},{"TestName":"TestRedisClusterNode","Package":"github.com/upmio/compose-operator/api/v1alpha1","ElapsedTime":0,"Output":["","=== RUN   TestRedisClusterNode\n","--- PASS: TestRedisClusterNode (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"rediscluster_types_test.go","TestFunctionDetail":{"Line":240,"Col":1}},{"TestName":"TestRedisClusterNodeRole","Package":"github.com/upmio/compose-operator/api/v1alpha1","ElapsedTime":0,"Output":["","=== RUN   TestRedisClusterNodeRole\n","--- PASS: TestRedisClusterNodeRole (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"default_test.go","TestFunctionDetail":{"Line":59,"Col":1}},{"TestName":"TestRedisClusterSecret","Package":"github.com/upmio/compose-operator/api/v1alpha1","ElapsedTime":0,"Output":["","=== RUN   TestRedisClusterSecret\n","--- PASS: TestRedisClusterSecret (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"rediscluster_types_test.go","TestFunctionDetail":{"Line":260,"Col":1}},{"TestName":"TestRedisClusterSpec","Package":"github.com/upmio/compose-operator/api/v1alpha1","ElapsedTime":0,"Output":["","=== RUN   TestRedisClusterSpec\n","--- PASS: TestRedisClusterSpec (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"rediscluster_types_test.go","TestFunctionDetail":{"Line":273,"Col":1}},{"TestName":"TestRedisClusterStatus","Package":"github.com/upmio/compose-operator/api/v1alpha1","ElapsedTime":0,"Output":["","=== RUN   TestRedisClusterStatus\n","--- PASS: TestRedisClusterStatus (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"rediscluster_types_test.go","TestFunctionDetail":{"Line":311,"Col":1}},{"TestName":"TestRedisClusterTopology","Package":"github.com/upmio/compose-operator/api/v1alpha1","ElapsedTime":0,"Output":["","=== RUN   TestRedisClusterTopology\n","--- PASS: TestRedisClusterTopology (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"rediscluster_types_test.go","TestFunctionDetail":{"Line":375,"Col":1}},{"TestName":"TestRedisReplication","Package":"github.com/upmio/compose-operator/api/v1alpha1","ElapsedTime":0,"Output":["","=== RUN   TestRedisReplication\n","--- PASS: TestRedisReplication (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"redisreplication_types_test.go","TestFunctionDetail":{"Line":28,"Col":1}},{"TestName":"TestRedisReplicationList","Package":"github.com/upmio/compose-operator/api/v1alpha1","ElapsedTime":0,"Output":["","=== RUN   TestRedisReplicationList\n","--- PASS: TestRedisReplicationList (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"redisreplication_types_test.go","TestFunctionDetail":{"Line":103,"Col":1}},{"TestName":"TestRedisReplicationNode","Package":"github.com/upmio/compose-operator/api/v1alpha1","ElapsedTime":0,"Output":["","=== RUN   TestRedisReplicationNode\n","--- PASS: TestRedisReplicationNode (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"redisreplication_types_test.go","TestFunctionDetail":{"Line":185,"Col":1}},{"TestName":"TestRedisReplicationRole","Package":"github.com/upmio/compose-operator/api/v1alpha1","ElapsedTime":0,"Output":["","=== RUN   TestRedisReplicationRole\n","--- PASS: TestRedisReplicationRole (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"default_test.go","TestFunctionDetail":{"Line":53,"Col":1}},{"TestName":"TestRedisReplicationSecret","Package":"github.com/upmio/compose-operator/api/v1alpha1","ElapsedTime":0,"Output":["","=== RUN   TestRedisReplicationSecret\n","--- PASS: TestRedisReplicationSecret (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"redisreplication_types_test.go","TestFunctionDetail":{"Line":201,"Col":1}},{"TestName":"TestRedisReplicationSpec","Package":"github.com/upmio/compose-operator/api/v1alpha1","ElapsedTime":0,"Output":["","=== RUN   TestRedisReplicationSpec\n","--- PASS: TestRedisReplicationSpec (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"redisreplication_types_test.go","TestFunctionDetail":{"Line":214,"Col":1}},{"TestName":"TestRedisReplicationStatus","Package":"github.com/upmio/compose-operator/api/v1alpha1","ElapsedTime":0,"Output":["","=== RUN   TestRedisReplicationStatus\n","--- PASS: TestRedisReplicationStatus (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"redisreplication_types_test.go","TestFunctionDetail":{"Line":242,"Col":1}},{"TestName":"TestRedisReplicationTopology","Package":"github.com/upmio/compose-operator/api/v1alpha1","ElapsedTime":0,"Output":["","=== RUN   TestRedisReplicationTopology\n","--- PASS: TestRedisReplicationTopology (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"redisreplication_types_test.go","TestFunctionDetail":{"Line":288,"Col":1}},{"TestName":"TestResetReplica","Package":"github.com/upmio/compose-operator/pkg/mysqlutil","ElapsedTime":0,"Output":["","=== RUN   TestResetReplica\n","--- PASS: TestResetReplica (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"replicationadmin_test.go","TestFunctionDetail":{"Line":241,"Col":1}},{"TestName":"TestRule","Package":"github.com/upmio/compose-operator/api/v1alpha1","ElapsedTime":0,"Output":["","=== RUN   TestRule\n","--- PASS: TestRule (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"default_test.go","TestFunctionDetail":{"Line":75,"Col":1}},{"TestName":"TestService","Package":"github.com/upmio/compose-operator/api/v1alpha1","ElapsedTime":0,"Output":["","=== RUN   TestService\n","--- PASS: TestService (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"default_test.go","TestFunctionDetail":{"Line":88,"Col":1}}]},{"FailureIndicator":"","SkippedIndicator":"","TestResults":[{"TestName":"TestServiceType","Package":"github.com/upmio/compose-operator/api/v1alpha1","ElapsedTime":0,"Output":["","=== RUN   TestServiceType\n","--- PASS: TestServiceType (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"default_test.go","TestFunctionDetail":{"Line":34,"Col":1}},{"TestName":"TestSetReadOnly","Package":"github.com/upmio/compose-operator/pkg/mysqlutil","ElapsedTime":0,"Output":["","=== RUN   TestSetReadOnly\n","--- PASS: TestSetReadOnly (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"replicationadmin_test.go","TestFunctionDetail":{"Line":181,"Col":1}},{"TestName":"TestSetSemiSyncReplicaOFF","Package":"github.com/upmio/compose-operator/pkg/mysqlutil","ElapsedTime":0,"Output":["","=== RUN   TestSetSemiSyncReplicaOFF\n","--- PASS: TestSetSemiSyncReplicaOFF (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"replicationadmin_test.go","TestFunctionDetail":{"Line":161,"Col":1}},{"TestName":"TestSetSemiSyncReplicaON","Package":"github.com/upmio/compose-operator/pkg/mysqlutil","ElapsedTime":0,"Output":["","=== RUN   TestSetSemiSyncReplicaON\n","--- PASS: TestSetSemiSyncReplicaON (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"replicationadmin_test.go","TestFunctionDetail":{"Line":129,"Col":1}},{"TestName":"TestSetSemiSyncSourceOFF","Package":"github.com/upmio/compose-operator/pkg/mysqlutil","ElapsedTime":0,"Output":["","=== RUN   TestSetSemiSyncSourceOFF\n","--- PASS: TestSetSemiSyncSourceOFF (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"replicationadmin_test.go","TestFunctionDetail":{"Line":109,"Col":1}},{"TestName":"TestSetSemiSyncSourceON","Package":"github.com/upmio/compose-operator/pkg/mysqlutil","ElapsedTime":0,"Output":["","=== RUN   TestSetSemiSyncSourceON\n","--- PASS: TestSetSemiSyncSourceON (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"replicationadmin_test.go","TestFunctionDetail":{"Line":76,"Col":1}},{"TestName":"TestSetSuperReadOnly","Package":"github.com/upmio/compose-operator/pkg/mysqlutil","ElapsedTime":0,"Output":["","=== RUN   TestSetSuperReadOnly\n","--- PASS: TestSetSuperReadOnly (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"replicationadmin_test.go","TestFunctionDetail":{"Line":211,"Col":1}},{"TestName":"TestStartReplica","Package":"github.com/upmio/compose-operator/pkg/mysqlutil","ElapsedTime":0,"Output":["","=== RUN   TestStartReplica\n","--- PASS: TestStartReplica (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"replicationadmin_test.go","TestFunctionDetail":{"Line":267,"Col":1}},{"TestName":"TestStopReplica","Package":"github.com/upmio/compose-operator/pkg/mysqlutil","ElapsedTime":0,"Output":["","=== RUN   TestStopReplica\n","--- PASS: TestStopReplica (0.00s)",""],"Passed":true,"Skipped":false,"TestFileName":"replicationadmin_test.go","TestFunctionDetail":{"Line":287,"Col":1}}]}]
+
+    const report = window.GoTestReport({
+                                         data: data,
+                                         testResultsElem: document.getElementById('testResults'),
+                                         testGroupListElem: document.getElementById('testGroupList')
+                                       });
+
+
+</script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: GitHub Discussions
+    url: https://github.com/upmio/compose-operator/discussions
+    about: Ask questions, share ideas, and engage with the community
+  - name: Security Vulnerability
+    url: https://github.com/upmio/compose-operator/security/advisories/new
+    about: Report security vulnerabilities privately (DO NOT create public issues)
+  - name: Documentation
+    url: https://github.com/upmio/compose-operator/tree/main/docs
+    about: Browse comprehensive documentation for users, developers, and operators

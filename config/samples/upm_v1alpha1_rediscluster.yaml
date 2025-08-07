@@ -1,0 +1,36 @@
+apiVersion: upm.syntropycloud.io/v1alpha1
+kind: RedisCluster
+metadata:
+  labels:
+    app.kubernetes.io/name: rediscluster
+    app.kubernetes.io/instance: rediscluster-sample
+    app.kubernetes.io/part-of: compose-operator
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: compose-operator
+  name: rediscluster-sample
+spec:
+  members:
+    shard1:
+      - name: redis-cluster-0
+        host: redis-cluster-0.demo
+        port: 6379
+      - name: redis-cluster-1
+        host: redis-cluster-1.demo
+        port: 6379
+    shard2:
+      - name: redis-cluster-2
+        host: redis-cluster-2.demo
+        port: 6379
+      - name: redis-cluster-3
+        host: redis-cluster-3.demo
+        port: 6379
+    shard3:
+      - name: redis-cluster-4
+        host: redis-cluster-4.demo
+        port: 6379
+      - name: redis-cluster-5
+        host: redis-cluster-5.demo
+        port: 6379
+  secret:
+    name: rediscluster-sample
+    redis: root

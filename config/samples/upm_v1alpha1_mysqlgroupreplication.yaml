@@ -1,0 +1,25 @@
+apiVersion: upm.syntropycloud.io/v1alpha1
+kind: MysqlGroupReplication
+metadata:
+  labels:
+    app.kubernetes.io/name: mysqlgroupreplication
+    app.kubernetes.io/instance: mysqlgroupreplication-sample
+    app.kubernetes.io/part-of: compose-operator
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: compose-operator
+  name: mysqlgroupreplication-sample
+spec:
+  secret:
+    name: mysqlgroupreplication-sample
+    mysql: root
+    replication: replication
+  member:
+  - name: mysql-node-0
+    host: mysql-node-0.mysql-node-headless-svc.default
+    port: 3306
+  - name: mysql-node-1
+    host: mysql-node-1.mysql-node-headless-svc.default
+    port: 3306
+  - name: mysql-node-2
+    host: mysql-node-2.mysql-node-headless-svc.default
+    port: 3306
