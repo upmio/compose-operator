@@ -1,5 +1,5 @@
 # Build the compose-operator binary
-FROM golang:1.23.6 AS builder
+FROM golang:1.24.6 AS builder
 
 ARG TARGETOS
 ARG TARGETARCH
@@ -36,7 +36,7 @@ RUN CGO_ENABLED=0 GOOS=${TARGETOS:-linux} GOARCH=${TARGETARCH} go build -a -o di
 
 # Use distroless as minimal base image to package the compose-operator binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
-FROM rockylinux:8.9.20231119
+FROM rockylinux:9.3.20231119
 
 # set timezone
 ENV TZ=Asia/Shanghai
