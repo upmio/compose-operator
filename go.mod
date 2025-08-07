@@ -16,7 +16,7 @@ require (
 	github.com/testcontainers/testcontainers-go/modules/mysql v0.32.0
 	github.com/testcontainers/testcontainers-go/modules/postgres v0.33.0
 	github.com/testcontainers/testcontainers-go/modules/redis v0.32.0
-	github.com/upmio/unit-operator v1.22.0
+	github.com/upmio/unit-operator v0.0.0-20250806090351-5a9235debfe3
 	k8s.io/api v0.32.3
 	k8s.io/apimachinery v0.32.3
 	k8s.io/client-go v0.32.3
