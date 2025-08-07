@@ -4,7 +4,7 @@ go 1.23.6
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
-	github.com/go-logr/logr v1.4.2
+	github.com/go-logr/logr v1.4.3
 	github.com/go-sql-driver/mysql v1.9.1
 	github.com/google/go-cmp v0.7.0
 	github.com/lib/pq v1.10.9
