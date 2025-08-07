@@ -1,0 +1,119 @@
+name: Test
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.23.6'
+
+    - name: Cache Go modules
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-go-
+
+    - name: Verify dependencies
+      run: go mod verify
+
+    - name: Build
+      run: make build
+
+    - name: Run go vet
+      run: make vet
+
+    - name: Run go fmt check
+      run: |
+        if [ "$(gofmt -s -l . | wc -l)" -gt 0 ]; then
+          echo "The following files are not formatted:"
+          gofmt -s -l .
+          exit 1
+        fi
+
+    - name: Run tests
+      run: make test
+
+    - name: Install testcoverage
+      run: go install github.com/vladopajic/go-test-coverage/v2/cmd/go-test-coverage@latest
+
+    - name: Check test coverage
+      run: go-test-coverage --config=testcoverage.yml
+
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        file: ./cover.out
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  lint:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.23.6'
+
+    - name: Run golangci-lint
+      run: make lint
+
+  e2e-test:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || contains(github.event.pull_request.labels.*.name, 'e2e-test')
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.23.6'
+
+    - name: Set up Kind
+      uses: helm/kind-action@v1.10.0
+      with:
+        cluster_name: kind
+        kubectl_version: v1.32.0
+
+    - name: Wait for cluster to be ready
+      run: |
+        kubectl cluster-info
+        kubectl wait --for=condition=Ready nodes --all --timeout=300s
+
+    - name: Install CRDs
+      run: make install
+
+    - name: Run e2e tests
+      run: make test-e2e
+      timeout-minutes: 20
+
+    - name: Collect logs on failure
+      if: failure()
+      run: |
+        kubectl get pods --all-namespaces
+        kubectl describe pods --all-namespaces
+        kubectl logs -l control-plane=controller-manager -n system --tail=100
