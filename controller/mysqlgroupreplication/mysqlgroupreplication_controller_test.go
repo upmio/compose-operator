@@ -147,9 +147,9 @@ var _ = Describe("MysqlReplication Controller", func() {
 				By("creating secret")
 
 				err := os.Setenv(utils.AESKeyEnvVar, "bec62eddcb834ece8488c88263a5f248")
-			Expect(err).ShouldNot(HaveOccurred())
+				Expect(err).ShouldNot(HaveOccurred())
 				err = utils.ValidateAndSetAESKey()
-			Expect(err).ShouldNot(HaveOccurred())
+				Expect(err).ShouldNot(HaveOccurred())
 				encryptPwd, err := utils.AES_CTR_Encrypt([]byte(password))
 				Expect(err).ShouldNot(HaveOccurred())
 				secret := &corev1.Secret{

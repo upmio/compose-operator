@@ -87,8 +87,7 @@ func main() {
 		setupLog.Error(err, "unable to get environment variables")
 		os.Exit(1)
 	} else {
-		// debug
-		setupLog.Info("get env success", "aesKey", os.Getenv("AES_SECRET_KEY"))
+		setupLog.Info("AES key validation successful")
 	}
 
 	id, err := os.Hostname()

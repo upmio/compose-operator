@@ -273,7 +273,7 @@ metadata:
     operatorframework.io/suggested-namespace: upm-system
     operators.operatorframework.io/builder: operator-sdk-v1.39.2
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v4
-  name: compose-operator.v2.0.1
+  name: compose-operator.v1.0.0
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -477,7 +477,7 @@ spec:
               - envFrom:
                 - secretRef:
                     name: compose-operator-aes-secret
-                image: quay.io/upmio/compose-operator:v2.0.1
+                image: quay.io/upmio/compose-operator:v1.0.0
                 imagePullPolicy: IfNotPresent
                 livenessProbe:
                   httpGet:
@@ -566,7 +566,7 @@ spec:
   provider:
     name: syntropycloud
     url: syntropycloud.io
-  version: 2.0.1
+  version: 1.0.0
   webhookdefinitions:
   - admissionReviewVersions:
     - v1

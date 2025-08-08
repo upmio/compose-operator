@@ -24,7 +24,7 @@ assignees: ''
 
 **Environment details:**
 - **Kubernetes Version**: [e.g., v1.28.2]
-- **Operator Version**: [e.g., v2.0.1]
+- **Operator Version**: [e.g., v1.0.0]
 - **Database Type(s)**: [e.g., MySQL, Redis, PostgreSQL]
 - **Installation Method**: [e.g., Helm, manual]
 

@@ -28,17 +28,17 @@ The Compose Operator is a cloud-native solution that manages traditional databas
 
 ## 📋 Table of Contents
 
-- [Installation](#-installation)
-- [Quick Start](#-quick-start)
-- [Examples](#-examples)
-- [Configuration](#-configuration)
-- [Architecture](#-architecture)
-- [Monitoring](#-monitoring-and-switchover)
-- [Development](#-development)
-- [Contributing](#-contributing)
-- [FAQ](#-faq)
-- [Security](#-security)
-- [License](#-license)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Examples](#examples)
+- [Configuration](#configuration)
+- [Architecture](#architecture)
+- [Monitoring](#monitoring-and-switchover)
+- [Development](#development)
+- [Contributing](#contributing)
+- [FAQ](#faq)
+- [Security](#security)
+- [License](#license)
 
 ## 🛠️ Installation
 

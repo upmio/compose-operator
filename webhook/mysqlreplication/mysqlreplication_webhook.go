@@ -246,7 +246,7 @@ func (r *mysqlReplicationAdmission) validateCommonNode(nodeType string, node *v1
 			"port must be between 1 and 65535",
 		))
 	}
-	
+
 	return allErrs
 }
 

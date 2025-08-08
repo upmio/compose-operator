@@ -50,7 +50,7 @@ spec:
       #     --from-literal=AES_SECRET_KEY="your-32-char-aes-key" \
       #     -n <operator-namespace>
       - name: manager
-        image: quay.io/upmio/compose-operator:v2.0.1
+        image: quay.io/upmio/compose-operator:v1.0.0
         imagePullPolicy: IfNotPresent
         # Environment variables loaded from AES key secret
         envFrom:

@@ -30,7 +30,6 @@ import (
 	"github.com/go-logr/logr"
 )
 
-
 // IAdmin mysql admin interface
 type IAdmin interface {
 	// Connections returns the connection map of all clients

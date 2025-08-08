@@ -383,10 +383,6 @@ Update `CHANGELOG.md` for significant changes:
 ### Changed
 - Improved error messages for configuration validation
 
-### Deprecated
-- Old configuration format (will be removed in v2.0.0)
-```
-
 ## Community
 
 ### Communication

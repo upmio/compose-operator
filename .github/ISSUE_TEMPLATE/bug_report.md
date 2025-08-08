@@ -39,7 +39,7 @@ assignees: ''
 **Please complete the following information:**
 
 - **Kubernetes Version**: [e.g., v1.28.2]
-- **Operator Version**: [e.g., v2.0.1]
+- **Operator Version**: [e.g., v1.0.0]
 - **Installation Method**: [e.g., Helm, manual manifests]
 - **Database Versions**: 
   - MySQL: [e.g., 8.0.34]
