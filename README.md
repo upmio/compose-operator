@@ -4,7 +4,7 @@
 
 A Kubernetes operator for managing database replication topologies across MySQL, Redis, PostgreSQL, and ProxySQL instances.
 
-## 🚀 Overview
+## Overview
 
 The Compose Operator is a cloud-native solution that manages traditional database applications through Kubernetes Custom Resource Definitions (CRDs). Unlike other database operators, it focuses solely on managing replication relationships between existing database pods within Kubernetes clusters, without creating the underlying Pod resources itself.
 
@@ -26,21 +26,21 @@ The Compose Operator is a cloud-native solution that manages traditional databas
 | **PostgreSQL** | Primary-Standby | ✅ |
 | **ProxySQL** | User/Server Sync | ❌ |
 
-## 📋 Table of Contents
+## Table of Contents
 
 - [Installation](#installation)
 - [Quick Start](#quick-start)
-- [Examples](#examples)
-- [Configuration](#configuration)
-- [Architecture](#architecture)
 - [Monitoring](#monitoring-and-switchover)
+- [Examples](#examples)
+- [Architecture](#architecture)
+- [Configuration](#configuration)
 - [Development](#development)
 - [Contributing](#contributing)
 - [FAQ](#faq)
 - [Security](#security)
 - [License](#license)
 
-## 🛠️ Installation
+## Installation
 
 ### Prerequisites
 
@@ -86,7 +86,7 @@ kubectl get pods -n upm-system
 kubectl get crd | grep upm.syntropycloud.io
 ```
 
-## 🚀 Quick Start
+## Quick Start
 
 ### 1. Prepare Database Credentials
 
@@ -160,7 +160,7 @@ kubectl get services | grep mysql-replication-semi-sync-sample
 kubectl get mysqlreplication mysql-replication-semi-sync-sample -w
 ```
 
-## 🔍 Monitoring and Switchover
+## Monitoring and Switchover
 
 ### Status Monitoring
 
@@ -209,7 +209,7 @@ kubectl get mysqlreplication mysql-replication-semi-sync-sample -w
 ```
 
 
-## 📚 Examples
+## Examples
 
 Comprehensive examples are available in the [examples/](examples/) directory:
 
@@ -220,7 +220,7 @@ Comprehensive examples are available in the [examples/](examples/) directory:
 - [PostgreSQL Streaming Replication](examples/postgres/streaming-replication.yaml)
 - [ProxySQL with MySQL Integration](examples/proxysql/mysql-integration.yaml)
 
-## 🏗️ Architecture
+## Architecture
 
 ### Overview
 
@@ -299,7 +299,7 @@ Located in `pkg/`, these provide database-specific functionality:
 - **proxysqlutil**: ProxySQL administration and configuration
 - **k8sutil**: Kubernetes API operations
 
-## ⚙️ Configuration
+## Configuration
 
 ### Database User Requirements
 
@@ -372,7 +372,7 @@ resources:
     memory: 128Mi
 ```
 
-## 🔧 Development
+## Development
 
 ### Building from Source
 
@@ -404,7 +404,7 @@ make run
 make generate manifests
 ```
 
-## 🤝 Contributing
+## Contributing
 
 We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details on:
 
@@ -421,7 +421,7 @@ We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for deta
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## ❓ FAQ
+## FAQ
 
 ### General Questions
 
@@ -471,7 +471,7 @@ A: Verify:
 - Database user has necessary privileges
 - Firewall rules allow connections on specified ports
 
-## 🔐 Security
+## Security
 
 ### Password Encryption
 
@@ -549,20 +549,20 @@ The operator uses minimal RBAC permissions:
 - Store sensitive data only in Kubernetes Secrets
 - Use separate secrets for different database instances
 
-## 📄 License
+## License
 
 This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
 
-## 🆘 Support
+## Support
 
 - **Documentation**: [docs/](docs/)
 - **Issues**: [GitHub Issues](https://github.com/upmio/compose-operator/issues)
 
-## 🗺️ Roadmap
+## Roadmap
 
 - [ ] Cross-cluster database management (manage databases across different Kubernetes clusters)
 - [ ] External database support (manage databases outside Kubernetes clusters)
 
-## 📈 Project Status
+## Project Status
 
 This project is actively maintained. We follow semantic versioning and maintain backward compatibility.
