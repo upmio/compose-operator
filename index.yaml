@@ -21,4 +21,24 @@ entries:
     urls:
     - https://github.com/upmio/compose-operator/releases/download/compose-operator-2.0.1/compose-operator-2.0.1.tgz
     version: 2.0.1
-generated: "2025-08-07T01:02:11.424536742Z"
+  - apiVersion: v2
+    appVersion: v1.0.0
+    created: "2025-08-08T06:42:17.152724964Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      tags:
+      - bitnami-common
+      version: 2.x.x
+    - condition: crds.enabled
+      name: crds
+      repository: ""
+      version: 1.0.0
+    description: Chart for upm compose-operator
+    digest: 23e553e3d44560127552780bf3aaf937b177f6b895d2144e6e104fde8e4e70aa
+    name: compose-operator
+    type: application
+    urls:
+    - https://github.com/upmio/compose-operator/releases/download/compose-operator-1.0.0/compose-operator-1.0.0.tgz
+    version: 1.0.0
+generated: "2025-08-08T06:42:17.152736776Z"
