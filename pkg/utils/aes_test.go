@@ -19,6 +19,7 @@ SPDX-License-Identifier: Apache-2.0
 package utils
 
 import (
+	"os"
 	"testing"
 )
 
@@ -69,4 +70,149 @@ func TestAES_CTR_EncryptDecrypt(t *testing.T) {
 			}
 		})
 	}
+}
+
+// TestValidateAndSetAESKey tests the ValidateAndSetAESKey function
+func TestValidateAndSetAESKey(t *testing.T) {
+	// Save original environment to restore later
+	originalKey := os.Getenv(AESKeyEnvVar)
+	defer func() {
+		if originalKey != "" {
+			os.Setenv(AESKeyEnvVar, originalKey)
+		} else {
+			os.Unsetenv(AESKeyEnvVar)
+		}
+		// Reset global aesKey
+		aesKey = ""
+	}()
+
+	tests := []struct {
+		name          string
+		envKeyValue   string
+		shouldSetEnv  bool
+		expectError   bool
+		expectedError string
+	}{
+		{
+			name:         "Valid 32-character key",
+			envKeyValue:  "bec62eddcb834ece8488c88263a5f248",
+			shouldSetEnv: true,
+			expectError:  false,
+		},
+		{
+			name:          "Missing environment variable",
+			shouldSetEnv:  false,
+			expectError:   true,
+			expectedError: "AES encryption key not found",
+		},
+		{
+			name:          "Invalid key length - too short",
+			envKeyValue:   "shortkey",
+			shouldSetEnv:  true,
+			expectError:   true,
+			expectedError: "invalid AES key length",
+		},
+		{
+			name:          "Invalid key length - too long",
+			envKeyValue:   "verylongkeythatismorethan32characters",
+			shouldSetEnv:  true,
+			expectError:   true,
+			expectedError: "invalid AES key length",
+		},
+		{
+			name:          "Empty string key",
+			envKeyValue:   "",
+			shouldSetEnv:  true,
+			expectError:   true,
+			expectedError: "AES encryption key not found",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Reset global aesKey for each test
+			aesKey = ""
+
+			// Setup environment
+			if tt.shouldSetEnv {
+				os.Setenv(AESKeyEnvVar, tt.envKeyValue)
+			} else {
+				os.Unsetenv(AESKeyEnvVar)
+			}
+
+			// Test the function
+			err := ValidateAndSetAESKey()
+
+			// Check error expectation
+			if tt.expectError {
+				if err == nil {
+					t.Errorf("Expected error but got none")
+				} else if tt.expectedError != "" && !containsString(err.Error(), tt.expectedError) {
+					t.Errorf("Expected error containing '%s', got '%s'", tt.expectedError, err.Error())
+				}
+			} else {
+				if err != nil {
+					t.Errorf("Expected no error but got: %v", err)
+				}
+				// For successful case, verify the key was set
+				if aesKey != tt.envKeyValue {
+					t.Errorf("Expected aesKey to be '%s', got '%s'", tt.envKeyValue, aesKey)
+				}
+			}
+		})
+	}
+}
+
+// TestGetAESKey tests the getAESKey function
+func TestGetAESKey(t *testing.T) {
+	tests := []struct {
+		name        string
+		setupKey    string
+		expectError bool
+		expectedKey string
+	}{
+		{
+			name:        "Valid key set",
+			setupKey:    "bec62eddcb834ece8488c88263a5f248",
+			expectError: false,
+			expectedKey: "bec62eddcb834ece8488c88263a5f248",
+		},
+		{
+			name:        "No key set",
+			setupKey:    "",
+			expectError: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Setup
+			aesKey = tt.setupKey
+
+			// Test
+			key, err := getAESKey()
+
+			// Verify
+			if tt.expectError {
+				if err == nil {
+					t.Errorf("Expected error but got none")
+				}
+			} else {
+				if err != nil {
+					t.Errorf("Expected no error but got: %v", err)
+				}
+				if key != tt.expectedKey {
+					t.Errorf("Expected key '%s', got '%s'", tt.expectedKey, key)
+				}
+			}
+		})
+	}
+}
+
+// Helper function to check if a string contains a substring
+func containsString(s, substr string) bool {
+	return len(s) >= len(substr) &&
+		(len(substr) == 0 ||
+			len(s) > 0 && (s[:len(substr)] == substr ||
+				(len(s) > len(substr) && containsString(s[1:], substr))))
 }

@@ -110,3 +110,68 @@ func TestCompareStringValue(t *testing.T) {
 		})
 	}
 }
+
+// TestCompareIntPoint test to compare int pointer value.
+func TestCompareIntPoint(t *testing.T) {
+	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&zap.Options{
+		Development: true,
+	})))
+
+	oldInt := 5
+	newInt := 10
+	sameInt := 5
+
+	tests := []struct {
+		// name of the test (for helpful errors)
+		name string
+
+		// old int pointer input for the function
+		oldIntPtr *int
+
+		// new int pointer input for the function
+		newIntPtr *int
+
+		// expected result for the function
+		expected bool
+	}{
+		{
+			name:      "Compare different int pointers",
+			oldIntPtr: &oldInt,
+			newIntPtr: &newInt,
+			expected:  true,
+		},
+		{
+			name:      "Compare same int pointers",
+			oldIntPtr: &oldInt,
+			newIntPtr: &sameInt,
+			expected:  false,
+		},
+		{
+			name:      "Compare nil old pointer",
+			oldIntPtr: nil,
+			newIntPtr: &newInt,
+			expected:  false,
+		},
+		{
+			name:      "Compare nil new pointer",
+			oldIntPtr: &oldInt,
+			newIntPtr: nil,
+			expected:  false,
+		},
+		{
+			name:      "Compare both nil pointers",
+			oldIntPtr: nil,
+			newIntPtr: nil,
+			expected:  false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := CompareIntPoint("intPtr", tt.oldIntPtr, tt.newIntPtr, ctrl.Log.WithName("CompareIntPoint"))
+			if result != tt.expected {
+				t.Errorf("CompareIntPoint test failed.\nExpected: %t\nActual: %t\n", tt.expected, result)
+			}
+		})
+	}
+}
