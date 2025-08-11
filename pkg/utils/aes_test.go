@@ -78,9 +78,9 @@ func TestValidateAndSetAESKey(t *testing.T) {
 	originalKey := os.Getenv(AESKeyEnvVar)
 	defer func() {
 		if originalKey != "" {
-			os.Setenv(AESKeyEnvVar, originalKey)
+			_ = os.Setenv(AESKeyEnvVar, originalKey)
 		} else {
-			os.Unsetenv(AESKeyEnvVar)
+			_ = os.Unsetenv(AESKeyEnvVar)
 		}
 		// Reset global aesKey
 		aesKey = ""
@@ -135,9 +135,9 @@ func TestValidateAndSetAESKey(t *testing.T) {
 
 			// Setup environment
 			if tt.shouldSetEnv {
-				os.Setenv(AESKeyEnvVar, tt.envKeyValue)
+				_ = os.Setenv(AESKeyEnvVar, tt.envKeyValue)
 			} else {
-				os.Unsetenv(AESKeyEnvVar)
+				_ = os.Unsetenv(AESKeyEnvVar)
 			}
 
 			// Test the function

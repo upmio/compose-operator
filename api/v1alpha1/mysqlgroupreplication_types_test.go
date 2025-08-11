@@ -62,6 +62,7 @@ func TestMysqlGroupReplicationDeepCopy(t *testing.T) {
 	copied := original.DeepCopy()
 	if copied == nil {
 		t.Error("DeepCopy() returned nil")
+		return
 	}
 	if copied == original {
 		t.Error("DeepCopy() returned same instance")
@@ -109,9 +110,7 @@ func TestMysqlGroupReplicationListDeepCopy(t *testing.T) {
 
 	// Test DeepCopy
 	copied := original.DeepCopy()
-	if copied == nil {
-		t.Error("DeepCopy() returned nil")
-	}
+
 	if len(copied.Items) != len(original.Items) {
 		t.Errorf("Items length not copied correctly: expected %d, got %d", len(original.Items), len(copied.Items))
 	}
@@ -139,9 +138,7 @@ func TestMysqlGroupReplicationSecretDeepCopy(t *testing.T) {
 
 	// Test DeepCopy
 	copied := original.DeepCopy()
-	if copied == nil {
-		t.Error("DeepCopy() returned nil")
-	}
+
 	if copied == original {
 		t.Error("DeepCopy() returned same instance")
 	}
@@ -171,9 +168,7 @@ func TestMysqlGroupReplicationSpecDeepCopy(t *testing.T) {
 
 	// Test DeepCopy
 	copied := original.DeepCopy()
-	if copied == nil {
-		t.Error("DeepCopy() returned nil")
-	}
+
 	if copied == original {
 		t.Error("DeepCopy() returned same instance")
 	}
@@ -195,9 +190,7 @@ func TestMysqlGroupReplicationStatusDeepCopy(t *testing.T) {
 
 	// Test DeepCopy
 	copied := original.DeepCopy()
-	if copied == nil {
-		t.Error("DeepCopy() returned nil")
-	}
+
 	if copied == original {
 		t.Error("DeepCopy() returned same instance")
 	}
