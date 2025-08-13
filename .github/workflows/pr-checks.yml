@@ -47,6 +47,7 @@ jobs:
           refactor
           test
           ci
+          deps
         requireScope: false
 
   test-go:
