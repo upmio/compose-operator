@@ -60,12 +60,16 @@ helm install compose-operator compose-operator/compose-operator \
   --namespace upm-system \
   --create-namespace \
   --set crds.enabled=true \
+  --set webhook.enabled=true \
+  --set webhook.certManager.enabled=true \
   --set global.aesKey="your-32-character-aes-key-here"
 
 # Or use auto-generated AES key (recommended for testing)
 helm install compose-operator compose-operator/compose-operator \
   --namespace upm-system \
   --create-namespace \
+  --set webhook.enabled=true \
+  --set webhook.certManager.enabled=true \
   --set crds.enabled=true
 ```
 
@@ -75,8 +79,17 @@ helm install compose-operator compose-operator/compose-operator \
 # Install CRDs
 kubectl apply -f https://github.com/upmio/compose-operator/releases/latest/download/crds.yaml
 
+# Create namespace
+kubectl create namespace upm-system
+
+# Create AES secret for password encryption
+# Note: AES key must be exactly 32 characters long for AES-256 encryption
+kubectl create secret generic compose-operator-aes-secret \
+  --namespace=upm-system \
+  --from-literal=AES_SECRET_KEY="your-32-character-secret-key-here"
+
 # Install the operator  
-kubectl apply -f https://github.com/upmio/compose-operator/releases/latest/download/operator.yaml
+kubectl apply -f https://github.com/upmio/compose-operator/releases/latest/download/operator.yaml -n upm-system
 ```
 
 ### Verify Installation
