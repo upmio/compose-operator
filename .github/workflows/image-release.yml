@@ -87,3 +87,13 @@ jobs:
           context: .
           push: true
           tags: quay.io/upmio/compose-operator:${{ github.ref_name }}
+      - name: Build CRDs
+        run: kubectl kustomize config/crd > crds.yaml
+      - name: Build Operator
+        run: kubectl kustomize config/default > operator.yaml
+      - name: Upload CRDs
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            crds.yaml
+            operator.yaml

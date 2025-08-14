@@ -455,7 +455,7 @@ spec:
           app.kubernetes.io/component: controller
           app.kubernetes.io/instance: compose-operator
           app.kubernetes.io/name: compose-operator
-          app.kubernetes.io/version: v1.2.3
+          app.kubernetes.io/version: v1.0.0
         name: compose-operator-controller-manager
         spec:
           replicas: 1
@@ -471,7 +471,7 @@ spec:
                 app.kubernetes.io/component: controller
                 app.kubernetes.io/instance: compose-operator
                 app.kubernetes.io/name: compose-operator
-                app.kubernetes.io/version: v1.2.3
+                app.kubernetes.io/version: v1.0.0
             spec:
               containers:
               - envFrom:
