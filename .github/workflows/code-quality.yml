@@ -58,7 +58,7 @@ jobs:
         # Validate all example YAML files
         find examples -name "*.yaml" -exec kubeconform -summary -verbose {} \;
 
-  code-analysis:
+  test-and-analysis:
     runs-on: ubuntu-latest
     
     steps:
@@ -67,9 +67,39 @@ jobs:
       with:
         fetch-depth: 0  # Shallow clones should be disabled for better analysis
 
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.24'
+
+    - name: Cache Go modules
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-go-
+
+    - name: Run tests and generate coverage
+      run: make test
+
+    - name: Run linting
+      run: make lint
+
+    - name: Check test coverage
+      run: |
+        go install github.com/vladopajic/go-test-coverage/v2/cmd/go-test-coverage@latest
+        go-test-coverage --config=testcoverage.yml
+
     - name: SonarCloud Scan
       uses: SonarSource/sonarcloud-github-action@master
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      with:
+        args: >
+          -Dsonar.qualitygate.wait=true
+          -Dsonar.coverage.exclusions=cmd/main.go,controller/setup.go,tool/**,pkg/version/**,**/zz_generated.*.go
       continue-on-error: true

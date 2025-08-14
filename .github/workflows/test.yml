@@ -1,14 +1,17 @@
 name: Test
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  workflow_call:
+    outputs:
+      test_result:
+        description: "Test execution result"
+        value: ${{ jobs.test.outputs.result }}
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    outputs:
+      result: ${{ steps.test-result.outputs.result }}
     
     steps:
     - name: Checkout
@@ -54,6 +57,10 @@ jobs:
 
     - name: Check test coverage
       run: go-test-coverage --config=testcoverage.yml
+      
+    - name: Set test result
+      id: test-result
+      run: echo "result=success" >> $GITHUB_OUTPUT
 
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v5
