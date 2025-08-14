@@ -51,14 +51,9 @@ jobs:
         requireScope: false
 
   test-go:
-    uses: ./.github/workflows/test.yml
+    runs-on: ubuntu-latest
     needs: changes
     if: needs.changes.outputs.go == 'true'
-    
-  coverage-report:
-    runs-on: ubuntu-latest
-    needs: [changes, test-go]
-    if: needs.changes.outputs.go == 'true' && github.event_name == 'pull_request'
     
     steps:
     - name: Checkout
@@ -69,10 +64,29 @@ jobs:
       with:
         go-version: '1.24'
 
-    - name: Generate coverage
+    - name: Cache Go modules
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-go-
+
+    - name: Run tests with coverage
       run: make test
 
+    - name: Run linting
+      run: make lint
+
+    - name: Check test coverage
+      run: |
+        go install github.com/vladopajic/go-test-coverage/v2@latest
+        go-test-coverage --config=testcoverage.yml
+
     - name: Comment PR with coverage
+      if: github.event_name == 'pull_request'
       run: |
         COVERAGE=$(go tool cover -func=cover.out | tail -1 | awk '{print $3}')
         gh pr comment ${{ github.event.number }} --body "**Test Coverage**: $COVERAGE"
