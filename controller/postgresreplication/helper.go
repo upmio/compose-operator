@@ -20,7 +20,6 @@ package postgresreplication
 
 import (
 	"context"
-	"fmt"
 	"net"
 	"reflect"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -32,8 +31,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	composev1alpha1 "github.com/upmio/compose-operator/api/v1alpha1"
+	"github.com/upmio/compose-operator/pkg/k8sutil"
 	"github.com/upmio/compose-operator/pkg/postgresutil"
-	"github.com/upmio/compose-operator/pkg/utils"
 )
 
 // newPostgresAdmin builds and returns new postgres.Admin from the list of postgres address
@@ -57,29 +56,18 @@ func newPostgresAdmin(instance *composev1alpha1.PostgresReplication, password st
 	return postgresutil.NewAdmin(nodesAddrs, &adminConfig, reqLogger)
 }
 
-// decryptSecret return current postgres password & replication password.
+// decryptSecret returns the current postgres password and replication password.
 func decryptSecret(client client.Client, instance *composev1alpha1.PostgresReplication, reqLogger logr.Logger) (string, string, error) {
-	secret := &corev1.Secret{}
-	err := client.Get(context.TODO(), types.NamespacedName{
-		Name:      instance.Spec.Secret.Name,
-		Namespace: instance.Namespace,
-	}, secret)
-
+	passwords, err := k8sutil.DecryptSecretPasswords(
+		client,
+		instance.Spec.Secret.Name,
+		instance.Namespace,
+		[]string{instance.Spec.Secret.Postgresql, instance.Spec.Secret.Replication},
+	)
 	if err != nil {
-		return "", "", fmt.Errorf("failed to fetch secret [%s]: %v", instance.Spec.Secret, err)
+		return "", "", err
 	}
-
-	postgresPassword, err := utils.AES_CTR_Decrypt(secret.Data[instance.Spec.Secret.Postgresql])
-	if err != nil {
-		return "", "", fmt.Errorf("failed to decrypt secret [%s] key '%s': %v", instance.Spec.Secret, instance.Spec.Secret.Postgresql, err)
-	}
-
-	replicationPassword, err := utils.AES_CTR_Decrypt(secret.Data[instance.Spec.Secret.Replication])
-	if err != nil {
-		return "", "", fmt.Errorf("failed to decrypt secret [%s] key '%s': %v", instance.Spec.Secret, instance.Spec.Secret.Replication, err)
-	}
-
-	return string(postgresPassword), string(replicationPassword), nil
+	return passwords[instance.Spec.Secret.Postgresql], passwords[instance.Spec.Secret.Replication], nil
 }
 
 func compareService(serviceA, serviceB *corev1.Service) bool {

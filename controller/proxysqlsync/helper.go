@@ -20,13 +20,11 @@ package proxysqlsync
 
 import (
 	"context"
-	"fmt"
 	"github.com/go-logr/logr"
 	composev1alpha1 "github.com/upmio/compose-operator/api/v1alpha1"
+	"github.com/upmio/compose-operator/pkg/k8sutil"
 	"github.com/upmio/compose-operator/pkg/mysqlutil"
 	"github.com/upmio/compose-operator/pkg/proxysqlutil"
-	"github.com/upmio/compose-operator/pkg/utils"
-	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/types"
 	"net"
@@ -70,29 +68,18 @@ func newProxysqlAdmin(instance *composev1alpha1.ProxysqlSync, password string, r
 	return proxysqlutil.NewAdmin(nodesAddrs, &adminConfig, reqLogger)
 }
 
-// decryptSecret return current proxysql's password & mysql's password.
+// decryptSecret returns the current proxysql password and mysql password.
 func decryptSecret(client client.Client, instance *composev1alpha1.ProxysqlSync, reqLogger logr.Logger) (string, string, error) {
-	secret := &corev1.Secret{}
-	err := client.Get(context.TODO(), types.NamespacedName{
-		Name:      instance.Spec.Secret.Name,
-		Namespace: instance.Namespace,
-	}, secret)
-
+	passwords, err := k8sutil.DecryptSecretPasswords(
+		client,
+		instance.Spec.Secret.Name,
+		instance.Namespace,
+		[]string{instance.Spec.Secret.Mysql, instance.Spec.Secret.Proxysql},
+	)
 	if err != nil {
-		return "", "", fmt.Errorf("failed to fetch secret [%s]: %v", instance.Spec.Secret, err)
+		return "", "", err
 	}
-
-	mysqlPassword, err := utils.AES_CTR_Decrypt(secret.Data[instance.Spec.Secret.Mysql])
-	if err != nil {
-		return "", "", fmt.Errorf("failed to decrypt secret [%s] key '%s': %v", instance.Spec.Secret, instance.Spec.Secret.Mysql, err)
-	}
-
-	proxysqlPassword, err := utils.AES_CTR_Decrypt(secret.Data[instance.Spec.Secret.Proxysql])
-	if err != nil {
-		return "", "", fmt.Errorf("failed to decrypt secret [%s] key '%s': %v", instance.Spec.Secret, instance.Spec.Secret.Proxysql, err)
-	}
-
-	return string(mysqlPassword), string(proxysqlPassword), nil
+	return passwords[instance.Spec.Secret.Mysql], passwords[instance.Spec.Secret.Proxysql], nil
 }
 
 func (r *ReconcileProxysqlSync) triggerReconcileBecauseMysqlReplicationHasChanged(ctx context.Context, mysqlReplication client.Object) []reconcile.Request {

@@ -20,7 +20,6 @@ package redisreplication
 
 import (
 	"context"
-	"fmt"
 	"net"
 	"reflect"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -33,8 +32,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	composev1alpha1 "github.com/upmio/compose-operator/api/v1alpha1"
+	"github.com/upmio/compose-operator/pkg/k8sutil"
 	"github.com/upmio/compose-operator/pkg/redisutil"
-	"github.com/upmio/compose-operator/pkg/utils"
 )
 
 // newRedisAdmin builds and returns new redis.ReplicationAdmin from the list of redis address
@@ -57,24 +56,18 @@ func newRedisAdmin(instance *composev1alpha1.RedisReplication, password string, 
 	return redisutil.NewReplicationAdmin(nodesAddrs, &adminConfig, reqLogger)
 }
 
-// decryptSecret return current redis password.
+// decryptSecret returns the current redis password.
 func decryptSecret(client client.Client, instance *composev1alpha1.RedisReplication) (string, error) {
-	secret := &corev1.Secret{}
-	err := client.Get(context.TODO(), types.NamespacedName{
-		Name:      instance.Spec.Secret.Name,
-		Namespace: instance.Namespace,
-	}, secret)
-
+	passwords, err := k8sutil.DecryptSecretPasswords(
+		client,
+		instance.Spec.Secret.Name,
+		instance.Namespace,
+		[]string{instance.Spec.Secret.Redis},
+	)
 	if err != nil {
-		return "", fmt.Errorf("failed to fetch secret [%s]: %v", instance.Spec.Secret, err)
+		return "", err
 	}
-
-	password, err := utils.AES_CTR_Decrypt(secret.Data[instance.Spec.Secret.Redis])
-	if err != nil {
-		return "", fmt.Errorf("failed to decrypt secret [%s] key '%s': %v", instance.Spec.Secret, instance.Spec.Secret.Redis, err)
-	}
-
-	return string(password), nil
+	return passwords[instance.Spec.Secret.Redis], nil
 }
 
 func compareService(serviceA, serviceB *corev1.Service) bool {

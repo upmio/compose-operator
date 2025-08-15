@@ -19,19 +19,16 @@ SPDX-License-Identifier: Apache-2.0
 package rediscluster
 
 import (
-	"context"
 	"fmt"
 	"net"
 	"time"
 
 	"github.com/go-logr/logr"
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	composev1alpha1 "github.com/upmio/compose-operator/api/v1alpha1"
+	"github.com/upmio/compose-operator/pkg/k8sutil"
 	"github.com/upmio/compose-operator/pkg/redisutil"
-	"github.com/upmio/compose-operator/pkg/utils"
 )
 
 func newRedisAdmin(cluster *composev1alpha1.RedisCluster, password string, reqLogger logr.Logger) redisutil.IClusterAdmin {
@@ -62,22 +59,16 @@ func newRedisAdmin(cluster *composev1alpha1.RedisCluster, password string, reqLo
 	return redisutil.NewClusterAdmin(nodesAddrs, &adminConfig, reqLogger)
 }
 
-// decryptSecret return current redis password.
+// decryptSecret returns the current redis password.
 func decryptSecret(client client.Client, instance *composev1alpha1.RedisCluster, reqLogger logr.Logger) (string, error) {
-	secret := &corev1.Secret{}
-	err := client.Get(context.TODO(), types.NamespacedName{
-		Name:      instance.Spec.Secret.Name,
-		Namespace: instance.Namespace,
-	}, secret)
-
+	passwords, err := k8sutil.DecryptSecretPasswords(
+		client,
+		instance.Spec.Secret.Name,
+		instance.Namespace,
+		[]string{instance.Spec.Secret.Redis},
+	)
 	if err != nil {
-		return "", fmt.Errorf("failed to fetch secret [%s]: %v", instance.Spec.Secret, err)
+		return "", err
 	}
-
-	password, err := utils.AES_CTR_Decrypt(secret.Data[instance.Spec.Secret.Redis])
-	if err != nil {
-		return "", fmt.Errorf("failed to decrypt secret [%s] key '%s': %v", instance.Spec.Secret, instance.Spec.Secret.Redis, err)
-	}
-
-	return string(password), nil
+	return passwords[instance.Spec.Secret.Redis], nil
 }

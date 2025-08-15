@@ -20,7 +20,6 @@ package mysqlgroupreplication
 
 import (
 	"context"
-	"fmt"
 	"net"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"strconv"
@@ -31,8 +30,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	composev1alpha1 "github.com/upmio/compose-operator/api/v1alpha1"
+	"github.com/upmio/compose-operator/pkg/k8sutil"
 	"github.com/upmio/compose-operator/pkg/mysqlutil"
-	"github.com/upmio/compose-operator/pkg/utils"
 )
 
 // newMysqlAdmin builds and returns new mysql.ReplicationAdmin from the list of mysql address
@@ -53,29 +52,18 @@ func newMysqlAdmin(instance *composev1alpha1.MysqlGroupReplication, password str
 	return mysqlutil.NewGroupAdmin(nodesAddrs, &adminConfig, reqLogger)
 }
 
-// decryptSecret return current mysql password & replication password.
+// decryptSecret returns the current mysql password and replication password.
 func decryptSecret(client client.Client, instance *composev1alpha1.MysqlGroupReplication) (string, string, error) {
-	secret := &corev1.Secret{}
-	err := client.Get(context.TODO(), types.NamespacedName{
-		Name:      instance.Spec.Secret.Name,
-		Namespace: instance.Namespace,
-	}, secret)
-
+	passwords, err := k8sutil.DecryptSecretPasswords(
+		client,
+		instance.Spec.Secret.Name,
+		instance.Namespace,
+		[]string{instance.Spec.Secret.Mysql, instance.Spec.Secret.Replication},
+	)
 	if err != nil {
-		return "", "", fmt.Errorf("failed to fetch secret [%s]: %v", instance.Spec.Secret, err)
+		return "", "", err
 	}
-
-	mysqlPassword, err := utils.AES_CTR_Decrypt(secret.Data[instance.Spec.Secret.Mysql])
-	if err != nil {
-		return "", "", fmt.Errorf("failed to decrypt secret [%s] key '%s': %v", instance.Spec.Secret, instance.Spec.Secret.Mysql, err)
-	}
-
-	replicationPassword, err := utils.AES_CTR_Decrypt(secret.Data[instance.Spec.Secret.Replication])
-	if err != nil {
-		return "", "", fmt.Errorf("failed to decrypt secret [%s] key '%s': %v", instance.Spec.Secret, instance.Spec.Secret.Replication, err)
-	}
-
-	return string(mysqlPassword), string(replicationPassword), nil
+	return passwords[instance.Spec.Secret.Mysql], passwords[instance.Spec.Secret.Replication], nil
 }
 
 func podMapFunc(_ context.Context, o client.Object) []reconcile.Request {
