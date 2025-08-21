@@ -54,8 +54,9 @@ const (
 	SyncResourceFailed  = "SyncResourceFailed"
 	SyncResourceSucceed = "SyncResourceSucceed"
 
-	readOnlyKey = "compose-operator.redisreplication.readonly"
-	defaultKey  = "compose-operator.redisreplication.name"
+	readOnlyKey       = "compose-operator.redisreplication.readonly"
+	defaultKey        = "compose-operator.redisreplication.name"
+	sentinelSourceKey = "compose-operator.redisreplication.source"
 
 	portName = "redis"
 )
@@ -150,7 +151,6 @@ func (r *ReconcileRedisReplication) Reconcile(ctx context.Context, req ctrl.Requ
 	r.updateInstanceIfNeed(instance, oldStatus, reqLogger)
 
 	return reconcile.Result{
-		Requeue:      true,
 		RequeueAfter: requeueAfter,
 	}, nil
 
