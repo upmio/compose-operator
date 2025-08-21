@@ -44,6 +44,9 @@ type RedisReplicationSpec struct {
 
 	// Service references the service providing the Redis replication endpoint.
 	Service *Service `json:"service"`
+
+	// Sentinel is a list of Redis Sentinel node addresses for high availability monitoring.
+	Sentinel []string `json:"sentinel,omitempty"`
 }
 
 // RedisReplicationNode represents a node in the Redis replication topology.

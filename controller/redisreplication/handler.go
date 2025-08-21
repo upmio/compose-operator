@@ -21,13 +21,15 @@ package redisreplication
 import (
 	"errors"
 	"fmt"
+	"net"
+	"strconv"
+	"strings"
+
 	corev1 "k8s.io/api/core/v1"
 	kubeErrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"net"
-	"strconv"
 
 	composev1alpha1 "github.com/upmio/compose-operator/api/v1alpha1"
 	"github.com/upmio/compose-operator/pkg/redisutil"
@@ -92,6 +94,13 @@ func (r *ReconcileRedisReplication) handleResources(syncCtx *syncContext) error 
 		if err := r.ensureService(syncCtx, readOnlyService, "true", false); err != nil {
 			errs = append(errs, err)
 
+		}
+	}
+
+	//ensure sentinel pod labels
+	if len(instance.Spec.Sentinel) != 0 {
+		if err := r.ensureSentinelPodLabels(syncCtx); err != nil {
+			errs = append(errs, err)
 		}
 	}
 
@@ -193,7 +202,6 @@ func (r *ReconcileRedisReplication) ensureService(syncCtx *syncContext, serviceN
 	}
 
 	//ensure service object
-	//ensure service object
 	foundService := &corev1.Service{}
 	err := r.client.Get(ctx, types.NamespacedName{
 		Name:      serviceName,
@@ -262,4 +270,68 @@ func (r *ReconcileRedisReplication) ensurePodLabels(syncCtx *syncContext, podNam
 	}
 
 	return nil
+}
+
+func (r *ReconcileRedisReplication) ensureSentinelPodLabels(syncCtx *syncContext) error {
+	ctx := syncCtx.ctx
+	instance := syncCtx.instance
+
+	// Find source nodes from topology
+	var sourceNodes []string
+	for address, node := range instance.Status.Topology {
+		if node.Role == composev1alpha1.RedisReplicationNodeRoleSource {
+			sourceNodes = append(sourceNodes, address)
+		}
+	}
+
+	// Determine the label value based on source node count
+	labelValue := "unknown"
+
+	if len(sourceNodes) == 1 {
+		// Extract pod name from address (format: host:port)
+		// This assumes the address format is "pod-name:port" or "pod-name.namespace:port"
+		podName := sourceNodes[0]
+		if portIndex := strings.Index(podName, ":"); portIndex != -1 {
+			podName = podName[:portIndex]
+		}
+		// Remove namespace if present
+		if nsIndex := strings.Index(podName, "."); nsIndex != -1 {
+			podName = podName[:nsIndex]
+		}
+		labelValue = podName
+	}
+
+	var errs []error
+
+	// Iterate through sentinel pod names
+	for _, sentinelPodName := range instance.Spec.Sentinel {
+		foundPod := &corev1.Pod{}
+		if err := r.client.Get(ctx, types.NamespacedName{
+			Name:      sentinelPodName,
+			Namespace: instance.Namespace,
+		}, foundPod); err != nil {
+			errs = append(errs, fmt.Errorf("failed to fetch sentinel pod [%s]: %v", sentinelPodName, err))
+			continue
+		}
+
+		// Check if labels map exists, create if not
+		if foundPod.Labels == nil {
+			foundPod.Labels = make(map[string]string)
+		}
+
+		// Check if the sentinel source label already has the correct value
+		if currentValue, ok := foundPod.Labels[sentinelSourceKey]; !ok || currentValue != labelValue {
+			// Update the sentinel source label
+			foundPod.Labels[sentinelSourceKey] = labelValue
+
+			// Update pod
+			if err := r.client.Update(ctx, foundPod); err != nil {
+				errs = append(errs, fmt.Errorf("failed to update sentinel pod [%s]: %v", sentinelPodName, err))
+				continue
+			}
+			r.recorder.Eventf(instance, corev1.EventTypeNormal, Synced, "sentinel pod [%s] update source label to [%s] successfully", sentinelPodName, labelValue)
+		}
+	}
+
+	return errors.Join(errs...)
 }
