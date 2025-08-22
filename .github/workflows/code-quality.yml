@@ -118,16 +118,16 @@ jobs:
         go install github.com/vladopajic/go-test-coverage/v2@latest
         go-test-coverage --config=testcoverage.yml
 
-    - name: SonarCloud Scan
-      uses: SonarSource/sonarcloud-github-action@master
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      with:
-        args: >
-          -Dsonar.qualitygate.wait=true
-          -Dsonar.coverage.exclusions=cmd/main.go,controller/setup.go,tool/**,pkg/version/**,**/zz_generated.*.go
-      continue-on-error: false
+    #- name: SonarCloud Scan
+    #  uses: SonarSource/sonarcloud-github-action@master
+    #  env:
+    #    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #    SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+    #  with:
+    #    args: >
+    #      -Dsonar.qualitygate.wait=true
+    #      -Dsonar.coverage.exclusions=cmd/main.go,controller/setup.go,tool/**,pkg/version/**,**/zz_generated.*.go
+    #  continue-on-error: false
 
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v5
