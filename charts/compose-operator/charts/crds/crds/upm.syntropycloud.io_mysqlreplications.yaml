@@ -63,11 +63,18 @@ spec:
                 description: Replica is a list of replica nodes in the MySQL replication
                   topology.
                 items:
-                  description: CommonNode information for node to connect
+                  description: ReplicaNode is a CommonNode with additional replication-specific
+                    info
                   properties:
                     host:
                       description: Host specifies the ip or hostname of node
                       type: string
+                    isolated:
+                      default: false
+                      description: |-
+                        Isolated indicates whether this node will be isolated.
+                        If not specified, it defaults to false.
+                      type: boolean
                     name:
                       description: Name specifies the identifier of node
                       type: string

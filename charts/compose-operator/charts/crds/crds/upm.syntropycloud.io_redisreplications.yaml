@@ -86,6 +86,12 @@ spec:
                 - name
                 - redis
                 type: object
+              sentinel:
+                description: Sentinel is a list of Redis Sentinel node addresses for
+                  high availability monitoring.
+                items:
+                  type: string
+                type: array
               service:
                 description: Service references the service providing the Redis replication
                   endpoint.
