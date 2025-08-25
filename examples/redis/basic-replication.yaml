@@ -54,3 +54,11 @@ spec:
     # The operator will create two services:
     # - redis-basic-replication-readwrite: Points to source (read/write)
     # - redis-basic-replication-readonly: Points to replicas (read-only)
+
+  # Optional: List of Sentinel pod names to label with the current source pod.
+  # The controller writes label `compose-operator.redisreplication.source` on each listed Sentinel pod.
+  # Your Sentinel container can read this label at startup to update its configuration.
+  # sentinel:
+  #   - redis-sentinel-0
+  #   - redis-sentinel-1
+  #   - redis-sentinel-2

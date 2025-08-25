@@ -25,3 +25,8 @@ spec:
       port: 6379
   service:
     type: NodePort
+  # Optional: List Sentinel pod names for labeling with current source pod
+  # sentinel:
+  #   - redis-sentinel-0
+  #   - redis-sentinel-1
+  #   - redis-sentinel-2

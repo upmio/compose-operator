@@ -829,7 +829,7 @@ _Appears in:_
 | `source` _[CommonNode](#commonnode)_ | Source references the source Redis node. |  |  |
 | `replica` _[CommonNodes](#commonnodes)_ | Replica is a list of replica nodes in the Redis replication topology. |  |  |
 | `service` _[Service](#service)_ | Service references the service providing the Redis replication endpoint. |  |  |
-
+| `sentinel` _string array_ | List of Sentinel pod names to label with the current Redis source pod name. The operator writes label `compose-operator.redisreplication.source` on each listed Sentinel pod to the detected source pod (or `unknown` when not determinable). This enables the Sentinel container to inject the active master into its configuration after restarts. Optional; when empty, Sentinel labeling is skipped. |  |  |
 
 
 
