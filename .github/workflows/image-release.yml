@@ -67,7 +67,7 @@ jobs:
           tags: quay.io/upmio/compose-operator:${{ github.ref_name }}
           platforms: linux/amd64,linux/arm64
       - name: Set up kubectl
-        uses: azure/setup-kubectl@v3
+        uses: azure/setup-kubectl@v4
         with:
           version: 'v1.32.0'
       - name: Build CRDs
