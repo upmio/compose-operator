@@ -21,6 +21,7 @@ package k8sutil
 import (
 	"context"
 	"fmt"
+	"time"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -32,7 +33,9 @@ import (
 // DecryptSecretPasswords decrypts multiple passwords from a Kubernetes Secret, returning a map of key->password
 func DecryptSecretPasswords(client client.Client, secretName, namespace string, keys []string) (map[string]string, error) {
 	secret := &corev1.Secret{}
-	err := client.Get(context.TODO(), types.NamespacedName{
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	err := client.Get(ctx, types.NamespacedName{
 		Name:      secretName,
 		Namespace: namespace,
 	}, secret)

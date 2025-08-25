@@ -46,7 +46,7 @@ spec:
       containers:
       # IMPORTANT: This operator requires AES encryption key for database password encryption.
       # Before installing, create a secret with AES_SECRET_KEY (32 characters):
-      #   kubectl create secret generic compose-operator-aes-secret \
+      #   kubectl create secret generic aes-secret-key \
       #     --from-literal=AES_SECRET_KEY="your-32-char-aes-key" \
       #     -n <operator-namespace>
       - name: manager
@@ -55,7 +55,7 @@ spec:
         # Environment variables loaded from AES key secret
         envFrom:
         - secretRef:
-            name: compose-operator-aes-secret
+            name: aes-secret-key
 #        securityContext:
 #          allowPrivilegeEscalation: false
 #          capabilities:

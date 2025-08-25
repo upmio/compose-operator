@@ -34,12 +34,12 @@ import (
 	"github.com/upmio/compose-operator/pkg/utils"
 )
 
-func (r *ReconcilePostgresReplication) updateInstanceIfNeed(instance *composev1alpha1.PostgresReplication,
+func (r *ReconcilePostgresReplication) updateInstanceIfNeed(ctx context.Context, instance *composev1alpha1.PostgresReplication,
 	oldStatus *composev1alpha1.PostgresReplicationStatus,
 	reqLogger logr.Logger) {
 
 	if compareStatus(&instance.Status, oldStatus, reqLogger) {
-		if err := r.client.Status().Update(context.TODO(), instance); err != nil {
+		if err := r.client.Status().Update(ctx, instance); err != nil {
 			reqLogger.Error(err, "failed to update postgres replication status")
 		}
 	}

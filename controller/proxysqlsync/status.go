@@ -21,10 +21,12 @@ package proxysqlsync
 import (
 	"context"
 	"fmt"
-	"github.com/upmio/compose-operator/pkg/proxysqlutil"
 	"net"
 	"reflect"
 	"strconv"
+	"time"
+
+	"github.com/upmio/compose-operator/pkg/proxysqlutil"
 
 	"github.com/go-logr/logr"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -32,12 +34,12 @@ import (
 	composev1alpha1 "github.com/upmio/compose-operator/api/v1alpha1"
 )
 
-func (r *ReconcileProxysqlSync) updateInstanceIfNeed(instance *composev1alpha1.ProxysqlSync,
+func (r *ReconcileProxysqlSync) updateInstanceIfNeed(ctx context.Context, instance *composev1alpha1.ProxysqlSync,
 	oldStatus *composev1alpha1.ProxysqlSyncStatus,
 	reqLogger logr.Logger) {
 
 	if compareStatus(&instance.Status, oldStatus, reqLogger) {
-		if err := r.client.Status().Update(context.TODO(), instance); err != nil {
+		if err := r.client.Status().Update(ctx, instance); err != nil {
 			reqLogger.Error(err, "failed to update proxysql sync status")
 		}
 	}
@@ -123,7 +125,9 @@ func generateTopologyStatusByReplicationInfo(admin proxysqlutil.IAdmin, instance
 	for _, node := range instance.Spec.Proxysql {
 		address := net.JoinHostPort(node.Host, strconv.Itoa(node.Port))
 
-		users, err := admin.GetRuntimeMysqlUsers(context.TODO(), address)
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		users, err := admin.GetRuntimeMysqlUsers(ctx, address)
 		if err != nil {
 			instance.Status.Ready = false
 			instance.Status.Topology[node.Name].Synced = false

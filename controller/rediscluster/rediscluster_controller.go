@@ -20,8 +20,9 @@ package rediscluster
 
 import (
 	"context"
-	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"time"
+
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
@@ -126,7 +127,7 @@ func (r *ReconcileRedisCluster) Reconcile(ctx context.Context, req ctrl.Request)
 		generateTopologyStatusByReplicationInfo(info, instance)
 	}
 
-	r.updateInstanceIfNeed(instance, oldStatus, reqLogger)
+	r.updateInstanceIfNeed(ctx, instance, oldStatus, reqLogger)
 
 	return reconcile.Result{
 		Requeue:      true,

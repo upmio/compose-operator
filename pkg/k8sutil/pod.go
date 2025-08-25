@@ -21,6 +21,8 @@ package k8sutil
 import (
 	"context"
 
+	"time"
+
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -51,17 +53,23 @@ func NewPodController(client client.Client) IPodControl {
 
 // CreatePod implement the IPodControl.Interface.
 func (p *PodController) CreatePod(pod *corev1.Pod) error {
-	return p.client.Create(context.TODO(), pod)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	return p.client.Create(ctx, pod)
 }
 
 // UpdatePod implement the IPodControl.Interface.
 func (p *PodController) UpdatePod(pod *corev1.Pod) error {
-	return p.client.Update(context.TODO(), pod)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	return p.client.Update(ctx, pod)
 }
 
 // DeletePod implement the IPodControl.Interface.
 func (p *PodController) DeletePod(pod *corev1.Pod) error {
-	return p.client.Delete(context.TODO(), pod)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	return p.client.Delete(ctx, pod)
 }
 
 // DeletePod implement the IPodControl.Interface.
@@ -70,13 +78,17 @@ func (p *PodController) DeletePodByName(namespace, name string) error {
 	if err != nil {
 		return err
 	}
-	return p.client.Delete(context.TODO(), pod)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	return p.client.Delete(ctx, pod)
 }
 
 // GetPod implement the IPodControl.Interface.
 func (p *PodController) GetPod(namespace, name string) (*corev1.Pod, error) {
 	pod := &corev1.Pod{}
-	err := p.client.Get(context.TODO(), types.NamespacedName{
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	err := p.client.Get(ctx, types.NamespacedName{
 		Name:      name,
 		Namespace: namespace,
 	}, pod)

@@ -33,12 +33,12 @@ import (
 	"github.com/upmio/compose-operator/pkg/utils"
 )
 
-func (r *ReconcileMongoDBReplicaset) updateInstanceIfNeed(instance *composev1alpha1.MongoDBReplicaset,
+func (r *ReconcileMongoDBReplicaset) updateInstanceIfNeed(ctx context.Context, instance *composev1alpha1.MongoDBReplicaset,
 	oldStatus *composev1alpha1.MongoDBReplicasetStatus,
 	reqLogger logr.Logger) {
 
 	if compareStatus(&instance.Status, oldStatus, reqLogger) {
-		if err := r.client.Status().Update(context.TODO(), instance); err != nil {
+		if err := r.client.Status().Update(ctx, instance); err != nil {
 			reqLogger.Error(err, "failed to update mongodb replicaset status")
 		}
 	}

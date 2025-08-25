@@ -20,6 +20,8 @@ package proxysqlsync
 
 import (
 	"context"
+	"time"
+
 	"github.com/go-logr/logr"
 	composev1alpha1 "github.com/upmio/compose-operator/api/v1alpha1"
 	"github.com/upmio/compose-operator/pkg/mysqlutil"
@@ -37,7 +39,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	"time"
 )
 
 const (
@@ -117,7 +118,7 @@ func (r *ReconcileProxysqlSync) Reconcile(ctx context.Context, req ctrl.Request)
 
 		r.recorder.Eventf(instance, corev1.EventTypeWarning, ErrSynced, "failed to get mysql replication instance [%s]: %s", instance.Spec.MysqlReplication, err.Error())
 
-		r.updateInstanceIfNeed(instance, oldStatus, reqLogger)
+		r.updateInstanceIfNeed(ctx, instance, oldStatus, reqLogger)
 
 		return reconcile.Result{
 			Requeue:      true,
@@ -174,7 +175,7 @@ func (r *ReconcileProxysqlSync) Reconcile(ctx context.Context, req ctrl.Request)
 		generateTopologyStatusByReplicationInfo(proxysqlAdmin, instance)
 	}
 
-	r.updateInstanceIfNeed(instance, oldStatus, reqLogger)
+	r.updateInstanceIfNeed(ctx, instance, oldStatus, reqLogger)
 
 	return reconcile.Result{
 		Requeue:      true,

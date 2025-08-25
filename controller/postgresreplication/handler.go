@@ -19,7 +19,6 @@ SPDX-License-Identifier: Apache-2.0
 package postgresreplication
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"net"
@@ -233,6 +232,7 @@ func (r *ReconcilePostgresReplication) ensureStandbyNode(syncCtx *syncContext,
 
 	instance := syncCtx.instance
 	admin := syncCtx.admin
+	ctx := syncCtx.ctx
 
 	address := net.JoinHostPort(standby.Host, strconv.Itoa(standby.Port))
 	nodeName := standby.Name
@@ -266,7 +266,7 @@ func (r *ReconcilePostgresReplication) ensureStandbyNode(syncCtx *syncContext,
 		}()
 
 		pod := &corev1.Pod{}
-		if err := r.client.Get(context.TODO(), types.NamespacedName{
+		if err := r.client.Get(ctx, types.NamespacedName{
 			Name:      nodeName,
 			Namespace: instance.Namespace,
 		}, pod); err != nil {
@@ -313,7 +313,7 @@ func (r *ReconcilePostgresReplication) ensureStandbyNode(syncCtx *syncContext,
 			select {
 			case <-ticker1.C:
 				pod := &corev1.Pod{}
-				if err := r.client.Get(context.TODO(), types.NamespacedName{
+				if err := r.client.Get(ctx, types.NamespacedName{
 					Name:      nodeName,
 					Namespace: instance.Namespace,
 				}, pod); err != nil {
@@ -409,7 +409,7 @@ func (r *ReconcilePostgresReplication) ensureStandbyNode(syncCtx *syncContext,
 			select {
 			case <-ticker2.C:
 				pod := &corev1.Pod{}
-				if err := r.client.Get(context.TODO(), types.NamespacedName{
+				if err := r.client.Get(ctx, types.NamespacedName{
 					Name:      nodeName,
 					Namespace: instance.Namespace,
 				}, pod); err != nil {

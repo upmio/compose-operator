@@ -73,7 +73,7 @@ go build -o aes-tool ./tool/
 
 # Get the AES key used by the compose-operator
 # Replace 'compose-operator' with your actual Helm release name and namespace
-AES_KEY=$(kubectl get secret compose-operator-aes-secret -n upm-system -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)
+AES_KEY=$(kubectl get secret aes-secret-key -n upm-system -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)
 
 # Examples for different CRD types:
 
@@ -113,7 +113,7 @@ To decrypt passwords stored in existing Kubernetes Secrets:
 
 ```bash
 # Get the AES key used by the compose-operator
-AES_KEY=$(kubectl get secret compose-operator-aes-secret -n upm-system -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)
+AES_KEY=$(kubectl get secret aes-secret-key -n upm-system -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)
 
 # Extract and decrypt a password from a secret
 kubectl get secret mysql-credentials -o jsonpath='{.data.mysql}' | base64 -d > mysql.bin
