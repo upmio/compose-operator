@@ -18,9 +18,9 @@ require (
 	github.com/testcontainers/testcontainers-go/modules/redis v0.38.0
 	github.com/upmio/unit-operator v0.0.0-20250806090351-5a9235debfe3
 	go.mongodb.org/mongo-driver v1.15.0
-	k8s.io/api v0.33.3
-	k8s.io/apimachinery v0.33.3
-	k8s.io/client-go v0.33.3
+	k8s.io/api v0.33.4
+	k8s.io/apimachinery v0.33.4
+	k8s.io/client-go v0.33.4
 	sigs.k8s.io/controller-runtime v0.21.0
 )
 
