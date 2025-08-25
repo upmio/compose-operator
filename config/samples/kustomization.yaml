@@ -6,5 +6,6 @@ resources:
 - upm_v1alpha1_proxysqlsync.yaml
 - upm_v1alpha1_postgresreplication.yaml
 - upm_v1alpha1_mysqlgroupreplication.yaml
+- upm_v1alpha1_mongodbreplicaset.yaml
 
 #+kubebuilder:scaffold:manifestskustomizesamples

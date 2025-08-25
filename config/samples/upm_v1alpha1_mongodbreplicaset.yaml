@@ -1,0 +1,22 @@
+apiVersion: upm.syntropycloud.io/v1alpha1
+kind: MongoDBReplicaset
+metadata:
+  labels:
+    app.kubernetes.io/name: compose-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: mongodbreplicaset-sample
+spec:
+  secret:
+    name: mongodb-secret
+    mongod: mongod
+  replicaSetName: rs0
+  member:
+    - name: mongodb-0
+      host: mongodb-0.mongodb.default.svc.cluster.local
+      port: 27017
+    - name: mongodb-1
+      host: mongodb-1.mongodb.default.svc.cluster.local
+      port: 27017
+    - name: mongodb-2
+      host: mongodb-2.mongodb.default.svc.cluster.local
+      port: 27017

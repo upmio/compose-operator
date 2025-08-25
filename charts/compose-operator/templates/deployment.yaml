@@ -35,7 +35,7 @@ spec:
         imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
         envFrom:
         - secretRef:
-            name: {{ include "compose-operator.fullname" . }}-aes-secret
+            name: aes-secret-key
         {{- if .Values.livenessProbe.enabled }}
         livenessProbe: {{- include "common.tplvalues.render" (dict "value" (omit .Values.livenessProbe "enabled") "context" $) | nindent 10 }}
           httpGet:

@@ -18,7 +18,7 @@ image:
   # Repository for container
   registry: quay.io
   repository: upmio/compose-operator
-  tag: v1.0.0
+  tag: v1.1.0
   digest: ""
   ## Specify a imagePullPolicy
   ## Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'
@@ -39,21 +39,21 @@ replicaCount: 1
 ## Install Unit Operator CRDs
 ##
 crds:
-  enabled: false
+  enabled: true
 
 ## Webhook configuration
 ##
 webhook:
   ## @param webhook.enabled Enable admission webhook
   ##
-  enabled: false
+  enabled: true
   ## @param webhook.port Webhook server port
   ##
   port: 9443
   ## @param webhook.certManager.enabled Use cert-manager to manage TLS certificates
   ##
   certManager:
-    enabled: false
+    enabled: true
   ## @param webhook.tls.crt TLS certificate (base64 encoded)
   ##
   tls:
