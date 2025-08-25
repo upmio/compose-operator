@@ -96,7 +96,7 @@ func NewMongoClient(address string, opts *AdminOptions) (IMongoClient, error) {
 		clientOptions = clientOptions.SetServerSelectionTimeout(opts.ConnectionTimeout)
 	}
 
-	// 设置直接连接，允许连接到未初始化的副本集节点
+	// Enable direct connection to allow connecting to uninitialized replica set nodes
 	clientOptions = clientOptions.SetDirect(true)
 
 	if opts.Username != "" && opts.Password != "" {
