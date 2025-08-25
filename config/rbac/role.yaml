@@ -50,6 +50,7 @@ rules:
 - apiGroups:
   - upm.syntropycloud.io
   resources:
+  - mongodbreplicasets
   - mysqlgroupreplications
   - mysqlreplications
   - postgresreplications
@@ -67,6 +68,7 @@ rules:
 - apiGroups:
   - upm.syntropycloud.io
   resources:
+  - mongodbreplicasets/finalizers
   - mysqlgroupreplications/finalizers
   - mysqlreplications/finalizers
   - postgresreplications/finalizers
@@ -78,6 +80,7 @@ rules:
 - apiGroups:
   - upm.syntropycloud.io
   resources:
+  - mongodbreplicasets/status
   - mysqlgroupreplications/status
   - mysqlreplications/status
   - postgresreplications/status

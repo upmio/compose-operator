@@ -51,136 +51,12 @@ rules:
   - apiGroups:
       - upm.syntropycloud.io
     resources:
+      - mongodbreplicasets
       - mysqlgroupreplications
-    verbs:
-      - create
-      - delete
-      - get
-      - list
-      - patch
-      - update
-      - watch
-  - apiGroups:
-      - upm.syntropycloud.io
-    resources:
-      - mysqlgroupreplications/finalizers
-    verbs:
-      - update
-  - apiGroups:
-      - upm.syntropycloud.io
-    resources:
-      - mysqlgroupreplications/status
-    verbs:
-      - get
-      - patch
-      - update
-  - apiGroups:
-      - upm.syntropycloud.io
-    resources:
       - mysqlreplications
-    verbs:
-      - create
-      - delete
-      - get
-      - list
-      - patch
-      - update
-      - watch
-  - apiGroups:
-      - upm.syntropycloud.io
-    resources:
-      - mysqlreplications/finalizers
-    verbs:
-      - update
-  - apiGroups:
-      - upm.syntropycloud.io
-    resources:
-      - mysqlreplications/status
-    verbs:
-      - get
-      - patch
-      - update
-  - apiGroups:
-      - upm.syntropycloud.io
-    resources:
       - postgresreplications
-    verbs:
-      - create
-      - delete
-      - get
-      - list
-      - patch
-      - update
-      - watch
-  - apiGroups:
-      - upm.syntropycloud.io
-    resources:
-      - postgresreplications/finalizers
-    verbs:
-      - update
-  - apiGroups:
-      - upm.syntropycloud.io
-    resources:
-      - postgresreplications/status
-    verbs:
-      - get
-      - patch
-      - update
-  - apiGroups:
-      - upm.syntropycloud.io
-    resources:
       - proxysqlsyncs
-    verbs:
-      - create
-      - delete
-      - get
-      - list
-      - patch
-      - update
-      - watch
-  - apiGroups:
-      - upm.syntropycloud.io
-    resources:
-      - proxysqlsyncs/finalizers
-    verbs:
-      - update
-  - apiGroups:
-      - upm.syntropycloud.io
-    resources:
-      - proxysqlsyncs/status
-    verbs:
-      - get
-      - patch
-      - update
-  - apiGroups:
-      - upm.syntropycloud.io
-    resources:
       - redisclusters
-    verbs:
-      - create
-      - delete
-      - get
-      - list
-      - patch
-      - update
-      - watch
-  - apiGroups:
-      - upm.syntropycloud.io
-    resources:
-      - redisclusters/finalizers
-    verbs:
-      - update
-  - apiGroups:
-      - upm.syntropycloud.io
-    resources:
-      - redisclusters/status
-    verbs:
-      - get
-      - patch
-      - update
-  - apiGroups:
-      - upm.syntropycloud.io
-    resources:
       - redisreplications
     verbs:
       - create
@@ -193,12 +69,24 @@ rules:
   - apiGroups:
       - upm.syntropycloud.io
     resources:
+      - mongodbreplicasets/finalizers
+      - mysqlgroupreplications/finalizers
+      - mysqlreplications/finalizers
+      - postgresreplications/finalizers
+      - proxysqlsyncs/finalizers
+      - redisclusters/finalizers
       - redisreplications/finalizers
     verbs:
       - update
   - apiGroups:
       - upm.syntropycloud.io
     resources:
+      - mongodbreplicasets/status
+      - mysqlgroupreplications/status
+      - mysqlreplications/status
+      - postgresreplications/status
+      - proxysqlsyncs/status
+      - redisclusters/status
       - redisreplications/status
     verbs:
       - get

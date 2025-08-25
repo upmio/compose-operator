@@ -154,6 +154,20 @@ const (
 	RedisClusterNodeRoleNone RedisClusterNodeRole = "None"
 )
 
+// MongoDBReplicasetRole defines the mongodb replica set role
+type MongoDBReplicasetRole string
+
+const (
+	// MongoDBReplicasetNodeRolePrimary MongoDB Replica Set Primary node role
+	MongoDBReplicasetNodeRolePrimary MongoDBReplicasetRole = "Primary"
+	// MongoDBReplicasetNodeRoleSecondary MongoDB Replica Set Secondary node role
+	MongoDBReplicasetNodeRoleSecondary MongoDBReplicasetRole = "Secondary"
+	// MongoDBReplicasetNodeRoleArbiter MongoDB Replica Set Arbiter node role
+	MongoDBReplicasetNodeRoleArbiter MongoDBReplicasetRole = "Arbiter"
+	// MongoDBReplicasetNodeRoleNone MongoDB Replica Set None node role
+	MongoDBReplicasetNodeRoleNone MongoDBReplicasetRole = "None"
+)
+
 // MysqlReplicationMode describes how the mysql replication will be handled.
 // Only one of the following sync mode must be specified.
 // +kubebuilder:validation:Enum=rpl_async;rpl_semi_sync
@@ -213,6 +227,16 @@ func DefaultPostgresReplicationOwnerReferences(instance *PostgresReplication) []
 			Group:   GroupVersion.Group,
 			Version: GroupVersion.Version,
 			Kind:    "PostgresReplication",
+		}),
+	}
+}
+
+func DefaultMongoDBReplicasetOwnerReferences(instance *MongoDBReplicaset) []metav1.OwnerReference {
+	return []metav1.OwnerReference{
+		*metav1.NewControllerRef(instance, schema.GroupVersionKind{
+			Group:   GroupVersion.Group,
+			Version: GroupVersion.Version,
+			Kind:    "MongoDBReplicaset",
 		}),
 	}
 }

@@ -59,18 +59,12 @@ helm repo update
 helm install compose-operator compose-operator/compose-operator \
   --namespace upm-system \
   --create-namespace \
-  --set crds.enabled=true \
-  --set webhook.enabled=true \
-  --set webhook.certManager.enabled=true \
   --set global.aesKey="your-32-character-aes-key-here"
 
 # Or use auto-generated AES key (recommended for testing)
 helm install compose-operator compose-operator/compose-operator \
   --namespace upm-system \
   --create-namespace \
-  --set webhook.enabled=true \
-  --set webhook.certManager.enabled=true \
-  --set crds.enabled=true
 ```
 
 ### Manual Installation

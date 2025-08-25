@@ -19,6 +19,7 @@ SPDX-License-Identifier: Apache-2.0
 package controller
 
 import (
+	"github.com/upmio/compose-operator/controller/mongodbreplicaset"
 	"github.com/upmio/compose-operator/controller/mysqlgroupreplication"
 	ctrl "sigs.k8s.io/controller-runtime"
 
@@ -33,6 +34,7 @@ import (
 // them to the supplied manager.
 func Setup(mgr ctrl.Manager) error {
 	for _, setup := range []func(ctrl.Manager) error{
+		mongodbreplicaset.Setup,
 		mysqlgroupreplication.Setup,
 		rediscluster.Setup,
 		mysqlreplication.Setup,

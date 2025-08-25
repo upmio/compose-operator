@@ -5,7 +5,7 @@ metadata:
     app.kubernetes.io/name: compose-operator
     app.kubernetes.io/instance: compose-operator
     app.kubernetes.io/component: controller
-    app.kubernetes.io/version: v1.0.0
+    app.kubernetes.io/version: v1.1.0
   name: system
 ---
 apiVersion: apps/v1
@@ -17,7 +17,7 @@ metadata:
     app.kubernetes.io/name: compose-operator
     app.kubernetes.io/instance: compose-operator
     app.kubernetes.io/component: controller
-    app.kubernetes.io/version: v1.0.0
+    app.kubernetes.io/version: v1.1.0
     app: compose-operator
 spec:
   selector:
@@ -32,7 +32,7 @@ spec:
         app.kubernetes.io/name: compose-operator
         app.kubernetes.io/instance: compose-operator
         app.kubernetes.io/component: controller
-        app.kubernetes.io/version: v1.0.0
+        app.kubernetes.io/version: v1.1.0
     spec:
 #      securityContext:
 #        runAsNonRoot: true
@@ -50,7 +50,7 @@ spec:
       #     --from-literal=AES_SECRET_KEY="your-32-char-aes-key" \
       #     -n <operator-namespace>
       - name: manager
-        image: quay.io/upmio/compose-operator:v1.0.0
+        image: quay.io/upmio/compose-operator:v1.1.0
         imagePullPolicy: IfNotPresent
         # Environment variables loaded from AES key secret
         envFrom:
