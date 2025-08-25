@@ -283,6 +283,8 @@ The Compose Operator follows the Kubernetes operator pattern, extending the Kube
   >       \- This ensures spec-status consistency and maintains ready state
   >
   >    This design pattern allows Redis Sentinel's high availability features while preserving the declarative nature of Kubernetes resources.
+  >
+  >    Additionally, when `spec.sentinel` is provided, the controller writes the label `compose-operator.redisreplication.source=<current-source-pod>` onto each listed Sentinel pod (or `unknown` if not determinable). Your Sentinel container can read this label at startup to inject the active master into its configuration.
 - **RedisCluster**: Manages Redis cluster topology
 - **PostgresReplication**: Manages PostgreSQL primary-standby streaming replication
   > **Note**: Currently only compatible with PostgreSQL instances created using Unit CRDs from [github.com/upmio/unit-operator](https://github.com/upmio/unit-operator), as it requires access to Unit CRD start and stop service capabilities.

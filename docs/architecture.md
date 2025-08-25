@@ -253,6 +253,7 @@ Manages Redis master-slave replication with the following features:
 3. **Service Management**: Creates read and write services for Redis master and slave nodes respectively by updating Redis Pod labels and creating Services, enabling applications to implement read-write separation.
 
 4. **Sentinel Compatibility**: Compatible with Redis Sentinel Architecture by adding `skip-reconcile=true` key-value pairs in Annotation, avoiding operation of Redis master-slave clusters and delivering master-slave role settings to the Sentinel Manager.
+   - When `spec.sentinel` is provided, the controller writes the label `compose-operator.redisreplication.source=<current-source-pod>` to each listed Sentinel pod (or `unknown` if the source cannot be determined). Sentinel containers can read this label at startup to inject the active master into their configuration after restarts.
 
 ### RedisCluster
 
@@ -923,8 +924,7 @@ api/v1alpha1/
 ├── newdb_types.go          # CRD definition
 controller/newdb/
 ├── newdb_controller.go     # Controller logic
-├── handler.go              # Business logic
-├── helper.go               # Helper functions
+├── helper.go              # Helper functions
 └── status.go               # Status management
 pkg/newdbutil/
 ├── client.go               # Database client
