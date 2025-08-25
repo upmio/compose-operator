@@ -40,7 +40,7 @@ jobs:
           context: .
           push: true
           tags: quay.io/upmio/compose-operator:${{ github.ref_name }}-${{ steps.vars.outputs.sha_short }}
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
   build-release-image:
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
@@ -65,6 +65,7 @@ jobs:
           context: .
           push: true
           tags: quay.io/upmio/compose-operator:${{ github.ref_name }}
+          platforms: linux/amd64,linux/arm64
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
         with:
