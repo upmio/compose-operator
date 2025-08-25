@@ -39,7 +39,7 @@ cd .. && go build -o aes-tool ./tool/ && cd examples
 
 # Get the AES key used by the compose-operator
 # Replace 'compose-operator' with your actual Helm release name and namespace
-AES_KEY=$(kubectl get secret compose-operator-aes-secret -n upm-system -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)
+AES_KEY=$(kubectl get secret aes-secret-key -n upm-system -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)
 
 # Examples for different CRD types:
 
@@ -81,7 +81,7 @@ If you need to decrypt passwords from secrets that have already been created:
 
 ```bash
 # Get the AES key used by the compose-operator
-AES_KEY=$(kubectl get secret compose-operator-aes-secret -n upm-system -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)
+AES_KEY=$(kubectl get secret aes-secret-key -n upm-system -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)
 
 # Extract and decrypt passwords from different secret types:
 

@@ -9,7 +9,7 @@ metadata:
 type: Opaque
 data:
   # Encrypted passwords - replace with your encrypted values
-  # Get AES key: AES_KEY=$(kubectl get secret compose-operator-aes-secret -n upm-system -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)
+  # Get AES key: AES_KEY=$(kubectl get secret aes-secret-key -n upm-system -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)
   # Method 1 (Recommended): Create binary files and use kubectl create secret
   # aes-tool -key "$AES_KEY" -plaintext "mysql_password" -username "mysql"
   # aes-tool -key "$AES_KEY" -plaintext "replication_password" -username "replication"

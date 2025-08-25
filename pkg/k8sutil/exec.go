@@ -24,6 +24,7 @@ import (
 	"io"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
@@ -130,7 +131,9 @@ func execute(method string, url *url.URL, config *rest.Config, stdin io.Reader, 
 	if err != nil {
 		return err
 	}
-	return exec.StreamWithContext(context.TODO(), remotecommand.StreamOptions{
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	return exec.StreamWithContext(ctx, remotecommand.StreamOptions{
 		Stdin:  stdin,
 		Stdout: stdout,
 		Stderr: stderr,

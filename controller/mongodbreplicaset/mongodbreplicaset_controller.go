@@ -21,6 +21,7 @@ package mongodbreplicaset
 import (
 	"context"
 	"fmt"
+
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/event"
@@ -153,7 +154,7 @@ func (r *ReconcileMongoDBReplicaset) Reconcile(ctx context.Context, req ctrl.Req
 		meta.SetStatusCondition(&instance.Status.Conditions, newSucceedSyncResourceCondition())
 	}
 
-	r.updateInstanceIfNeed(instance, oldStatus, reqLogger)
+	r.updateInstanceIfNeed(ctx, instance, oldStatus, reqLogger)
 
 	return reconcile.Result{
 		RequeueAfter: requeueAfter,

@@ -52,7 +52,7 @@ spec:
     operator, you MUST create a Secret containing the AES encryption key:\n\n```bash\n#
     Generate a 32-character AES key\nAES_KEY=$(openssl rand -hex 16)  # Generates
     32 characters\n\n# Create the required secret in the same namespace where the
-    operator will be installed\nkubectl create secret generic compose-operator-aes-secret
+    operator will be installed\nkubectl create secret generic aes-secret-key
     \\\n  --from-literal=AES_SECRET_KEY=\"$AES_KEY\" \\\n  -n <operator-namespace>\n```\n\nThe
     operator requires this AES key to encrypt and decrypt database passwords. \nWithout
     this secret, the operator will fail to start.\n\n## Supported Database Operations\n\n-
@@ -86,7 +86,7 @@ spec:
               containers:
               - envFrom:
                 - secretRef:
-                    name: compose-operator-aes-secret
+                    name: aes-secret-key
                 image: quay.io/upmio/compose-operator:v1.1.0
                 imagePullPolicy: IfNotPresent
                 livenessProbe:

@@ -106,7 +106,7 @@ rm mysql.bin replication.bin
 go build -o aes-tool ./tool/
 
 # 2. Get the AES key from operator secret
-AES_KEY=$(kubectl get secret compose-operator-aes-secret -n upm-system -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)
+AES_KEY=$(kubectl get secret aes-secret-key -n upm-system -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)
 
 # 3. Encrypt individual passwords to binary files
 aes-tool -key "$AES_KEY" -plaintext "mysql_root_password" -username "mysql"
@@ -127,7 +127,7 @@ If you need to manually create a secret with encrypted passwords, follow these s
 
 ```bash
 # Method 1: Using the AES tool to generate binary files
-AES_KEY=$(kubectl get secret compose-operator-aes-secret -n upm-system -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)
+AES_KEY=$(kubectl get secret aes-secret-key -n upm-system -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)
 go run tool/main.go -key "$AES_KEY" -plaintext "mysql_password" -username "mysql"
 go run tool/main.go -key "$AES_KEY" -plaintext "repl_password" -username "replication"
 
@@ -148,7 +148,7 @@ kubectl create secret generic ${SECRET_NAME} \
 
 #### MySQL Replication & Group Replication
 ```bash
-AES_KEY=$(kubectl get secret compose-operator-aes-secret -n upm-system -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)
+AES_KEY=$(kubectl get secret aes-secret-key -n upm-system -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)
 aes-tool -key "$AES_KEY" -plaintext "mysql_root_password" -username "mysql"
 aes-tool -key "$AES_KEY" -plaintext "replication_password" -username "replication"
 kubectl create secret generic mysql-credentials \
@@ -158,7 +158,7 @@ kubectl create secret generic mysql-credentials \
 
 #### Redis Replication & Cluster
 ```bash
-AES_KEY=$(kubectl get secret compose-operator-aes-secret -n upm-system -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)
+AES_KEY=$(kubectl get secret aes-secret-key -n upm-system -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)
 aes-tool -key "$AES_KEY" -plaintext "redis_auth_password" -username "redis"
 kubectl create secret generic redis-credentials \
   --from-file=redis=redis.bin
@@ -166,7 +166,7 @@ kubectl create secret generic redis-credentials \
 
 #### PostgreSQL Replication
 ```bash
-AES_KEY=$(kubectl get secret compose-operator-aes-secret -n upm-system -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)
+AES_KEY=$(kubectl get secret aes-secret-key -n upm-system -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)
 aes-tool -key "$AES_KEY" -plaintext "postgresql_admin_password" -username "postgresql"
 aes-tool -key "$AES_KEY" -plaintext "replication_password" -username "replication"
 kubectl create secret generic postgres-credentials \
@@ -176,7 +176,7 @@ kubectl create secret generic postgres-credentials \
 
 #### ProxySQL Sync
 ```bash
-AES_KEY=$(kubectl get secret compose-operator-aes-secret -n upm-system -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)
+AES_KEY=$(kubectl get secret aes-secret-key -n upm-system -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)
 aes-tool -key "$AES_KEY" -plaintext "proxysql_admin_password" -username "proxysql"
 aes-tool -key "$AES_KEY" -plaintext "mysql_backend_password" -username "mysql"
 kubectl create secret generic proxysql-credentials \
@@ -190,7 +190,7 @@ If you need to decrypt passwords stored in Kubernetes Secrets that were created 
 
 ```bash
 # Get the AES key used by the compose-operator
-AES_KEY=$(kubectl get secret compose-operator-aes-secret -n upm-system -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)
+AES_KEY=$(kubectl get secret aes-secret-key -n upm-system -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)
 
 # Method 1: Extract and decrypt a specific key from a secret
 kubectl get secret mysql-credentials -o jsonpath='{.data.mysql}' | base64 -d > mysql.bin
@@ -212,7 +212,7 @@ rm mysql.bin replication.bin
 
 #### Decrypt MySQL credentials
 ```bash
-AES_KEY=$(kubectl get secret compose-operator-aes-secret -n upm-system -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)
+AES_KEY=$(kubectl get secret aes-secret-key -n upm-system -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)
 kubectl get secret mysql-credentials -o jsonpath='{.data.mysql}' | base64 -d > mysql.bin
 kubectl get secret mysql-credentials -o jsonpath='{.data.replication}' | base64 -d > replication.bin
 echo "MySQL password:"
@@ -224,7 +224,7 @@ rm mysql.bin replication.bin
 
 #### Decrypt Redis credentials
 ```bash
-AES_KEY=$(kubectl get secret compose-operator-aes-secret -n upm-system -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)
+AES_KEY=$(kubectl get secret aes-secret-key -n upm-system -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)
 kubectl get secret redis-credentials -o jsonpath='{.data.redis}' | base64 -d > redis.bin
 echo "Redis password:"
 aes-tool -key "$AES_KEY" -file "redis.bin"
@@ -233,7 +233,7 @@ rm redis.bin
 
 #### Decrypt PostgreSQL credentials
 ```bash
-AES_KEY=$(kubectl get secret compose-operator-aes-secret -n upm-system -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)
+AES_KEY=$(kubectl get secret aes-secret-key -n upm-system -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)
 kubectl get secret postgres-credentials -o jsonpath='{.data.postgresql}' | base64 -d > postgresql.bin
 kubectl get secret postgres-credentials -o jsonpath='{.data.replication}' | base64 -d > replication.bin
 echo "PostgreSQL password:"
@@ -245,7 +245,7 @@ rm postgresql.bin replication.bin
 
 #### Decrypt ProxySQL credentials
 ```bash
-AES_KEY=$(kubectl get secret compose-operator-aes-secret -n upm-system -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)
+AES_KEY=$(kubectl get secret aes-secret-key -n upm-system -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)
 kubectl get secret proxysql-credentials -o jsonpath='{.data.proxysql}' | base64 -d > proxysql.bin
 kubectl get secret proxysql-credentials -o jsonpath='{.data.mysql}' | base64 -d > mysql.bin
 echo "ProxySQL admin password:"
@@ -259,7 +259,7 @@ rm proxysql.bin mysql.bin
 
 ```bash
 # Get the AES key used by the compose-operator
-AES_KEY=$(kubectl get secret compose-operator-aes-secret -n upm-system -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)
+AES_KEY=$(kubectl get secret aes-secret-key -n upm-system -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)
 
 # Test complete workflow: encrypt -> create secret -> extract -> decrypt
 aes-tool -key "$AES_KEY" -plaintext "test_password" -username "test"
@@ -284,7 +284,7 @@ The compose-operator uses an AES key stored in a Kubernetes secret. To encrypt p
 # Get the AES key from the operator's secret
 # Replace 'compose-operator' with your Helm release name
 # Replace 'upm-system' with your installation namespace
-AES_KEY=$(kubectl get secret compose-operator-aes-secret -n upm-system -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)
+AES_KEY=$(kubectl get secret aes-secret-key -n upm-system -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)
 
 # Verify the key length (should be 32 characters)
 echo "AES key length: ${#AES_KEY}"
@@ -319,7 +319,7 @@ kubectl get secret my-operator-aes-secret -n my-ns -o jsonpath='{.data.AES_SECRE
 **4. Key validation**
 ```bash
 # Verify the key length (should be 32)
-AES_KEY=$(kubectl get secret compose-operator-aes-secret -n upm-system -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)
+AES_KEY=$(kubectl get secret aes-secret-key -n upm-system -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)
 echo "Key length: ${#AES_KEY}"
 if [ ${#AES_KEY} -eq 32 ]; then echo "✅ Key length is correct"; else echo "❌ Key length is wrong"; fi
 ```

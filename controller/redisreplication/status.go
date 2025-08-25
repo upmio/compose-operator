@@ -33,12 +33,12 @@ import (
 	"github.com/upmio/compose-operator/pkg/utils"
 )
 
-func (r *ReconcileRedisReplication) updateInstanceIfNeed(instance *composev1alpha1.RedisReplication,
+func (r *ReconcileRedisReplication) updateInstanceIfNeed(ctx context.Context, instance *composev1alpha1.RedisReplication,
 	oldStatus *composev1alpha1.RedisReplicationStatus,
 	reqLogger logr.Logger) {
 
 	if compareStatus(&instance.Status, oldStatus, reqLogger) {
-		if err := r.client.Status().Update(context.TODO(), instance); err != nil {
+		if err := r.client.Status().Update(ctx, instance); err != nil {
 			reqLogger.Error(err, "failed to update redis replication status")
 		}
 	}

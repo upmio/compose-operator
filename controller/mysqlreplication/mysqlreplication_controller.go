@@ -21,8 +21,9 @@ package mysqlreplication
 import (
 	"context"
 	"fmt"
-	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"time"
+
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
@@ -160,7 +161,7 @@ func (r *ReconcileMysqlReplication) Reconcile(ctx context.Context, req ctrl.Requ
 		meta.SetStatusCondition(&instance.Status.Conditions, newSucceedSyncResourceCondition())
 	}
 
-	r.updateInstanceIfNeed(instance, oldStatus, reqLogger)
+	r.updateInstanceIfNeed(ctx, instance, oldStatus, reqLogger)
 
 	return reconcile.Result{
 		Requeue:      true,

@@ -33,12 +33,12 @@ import (
 	"github.com/upmio/compose-operator/pkg/utils"
 )
 
-func (r *ReconcileMysqlGroupReplication) updateInstanceIfNeed(instance *composev1alpha1.MysqlGroupReplication,
+func (r *ReconcileMysqlGroupReplication) updateInstanceIfNeed(ctx context.Context, instance *composev1alpha1.MysqlGroupReplication,
 	oldStatus *composev1alpha1.MysqlGroupReplicationStatus,
 	reqLogger logr.Logger) {
 
 	if compareStatus(&instance.Status, oldStatus, reqLogger) {
-		if err := r.client.Status().Update(context.TODO(), instance); err != nil {
+		if err := r.client.Status().Update(ctx, instance); err != nil {
 			reqLogger.Error(err, "failed to update mysql group replication status")
 		}
 	}

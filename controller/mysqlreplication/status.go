@@ -32,12 +32,12 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func (r *ReconcileMysqlReplication) updateInstanceIfNeed(instance *composev1alpha1.MysqlReplication,
+func (r *ReconcileMysqlReplication) updateInstanceIfNeed(ctx context.Context, instance *composev1alpha1.MysqlReplication,
 	oldStatus *composev1alpha1.MysqlReplicationStatus,
 	reqLogger logr.Logger) {
 
 	if compareStatus(&instance.Status, oldStatus, reqLogger) {
-		if err := r.client.Status().Update(context.TODO(), instance); err != nil {
+		if err := r.client.Status().Update(ctx, instance); err != nil {
 			reqLogger.Error(err, "failed to update mysql replication status")
 		}
 	}

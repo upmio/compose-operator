@@ -21,6 +21,8 @@ package k8sutil
 import (
 	"context"
 
+	"time"
+
 	unitv1alpha2 "github.com/upmio/unit-operator/api/v1alpha2"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/rest"
@@ -58,13 +60,17 @@ func NewUnitController(cfg *rest.Config) (IUnitControl, error) {
 
 // UpdateUnit implement the IPodControl.Interface.
 func (p *UnitController) UpdateUnit(unit *unitv1alpha2.Unit) error {
-	return p.client.Update(context.TODO(), unit)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	return p.client.Update(ctx, unit)
 }
 
 // GetUnit implement the IPodControl.Interface.
 func (p *UnitController) GetUnit(namespace, name string) (*unitv1alpha2.Unit, error) {
 	unit := &unitv1alpha2.Unit{}
-	err := p.client.Get(context.TODO(), types.NamespacedName{
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	err := p.client.Get(ctx, types.NamespacedName{
 		Name:      name,
 		Namespace: namespace,
 	}, unit)

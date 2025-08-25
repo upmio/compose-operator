@@ -78,7 +78,7 @@ kubectl create namespace upm-system
 
 # Create AES secret for password encryption
 # Note: AES key must be exactly 32 characters long for AES-256 encryption
-kubectl create secret generic compose-operator-aes-secret \
+kubectl create secret generic aes-secret-key \
   --namespace=upm-system \
   --from-literal=AES_SECRET_KEY="your-32-character-secret-key-here"
 
@@ -105,7 +105,7 @@ go build -o aes-tool ./tool/
 
 # Get the AES key used by the compose-operator
 # Replace 'compose-operator' with your actual Helm release name
-AES_KEY=$(kubectl get secret compose-operator-aes-secret -n upm-system -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)
+AES_KEY=$(kubectl get secret aes-secret-key -n upm-system -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)
 
 # Encrypt passwords and save to binary files
 aes-tool -key "$AES_KEY" -plaintext "mysql_root_password" -username "mysql"
@@ -492,7 +492,7 @@ go build -o aes-tool ./tool/
 
 # Get the AES key used by the compose-operator
 # Replace 'compose-operator' with your actual Helm release name
-AES_KEY=$(kubectl get secret compose-operator-aes-secret -n upm-system -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)
+AES_KEY=$(kubectl get secret aes-secret-key -n upm-system -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)
 
 # Examples for different CRD types:
 
@@ -529,7 +529,7 @@ If you need to decrypt passwords that are stored in existing Kubernetes Secrets:
 
 ```bash
 # Get the AES key used by the compose-operator
-AES_KEY=$(kubectl get secret compose-operator-aes-secret -n upm-system -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)
+AES_KEY=$(kubectl get secret aes-secret-key -n upm-system -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)
 
 # Extract and decrypt a password from a secret
 kubectl get secret mysql-credentials -o jsonpath='{.data.mysql}' | base64 -d > mysql.bin

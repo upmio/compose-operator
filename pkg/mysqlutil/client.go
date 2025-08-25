@@ -22,6 +22,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"time"
 	// this import needs to be done otherwise the mysql driver don't work
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -55,7 +56,9 @@ func NewClient(addr, username, password string, timeout int) (IClient, error) {
 
 	}
 
-	err = c.db.PingContext(context.TODO())
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeout)*time.Second)
+	defer cancel()
+	err = c.db.PingContext(ctx)
 	if err != nil {
 		return c, fmt.Errorf("ping MySQL failed (dsn=%s, timeout=%ds): %w", dsn, timeout, err)
 	}

@@ -21,6 +21,7 @@ package mysqlgroupreplication
 import (
 	"context"
 	"fmt"
+
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/event"
@@ -154,7 +155,7 @@ func (r *ReconcileMysqlGroupReplication) Reconcile(ctx context.Context, req ctrl
 		meta.SetStatusCondition(&instance.Status.Conditions, newSucceedSyncResourceCondition())
 	}
 
-	r.updateInstanceIfNeed(instance, oldStatus, reqLogger)
+	r.updateInstanceIfNeed(ctx, instance, oldStatus, reqLogger)
 
 	return reconcile.Result{
 		Requeue:      true,
