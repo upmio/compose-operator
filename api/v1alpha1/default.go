@@ -52,7 +52,7 @@ type CommonNodes []*CommonNode
 
 // ReplicaNode is a CommonNode with additional replication-specific info
 type ReplicaNode struct {
-	CommonNode `json:",inline"` // 嵌入基础字段
+	CommonNode `json:",inline"` // Embed base fields from CommonNode
 
 	// Isolated indicates whether this node will be isolated.
 	// If not specified, it defaults to false.
