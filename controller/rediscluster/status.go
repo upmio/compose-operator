@@ -176,6 +176,7 @@ func generateTopologyStatusByReplicationInfo(info *redisutil.ClusterInfos, insta
 			addr := net.JoinHostPort(ipaddr[0], strconv.Itoa(node.Port))
 			nodeInfo, ok := info.Infos[addr]
 			if !ok {
+				instance.Status.Ready = false
 				continue
 			}
 			instance.Status.Topology[node.Name].Status = composev1alpha1.NodeStatusOK
