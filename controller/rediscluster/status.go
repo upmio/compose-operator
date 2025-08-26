@@ -171,6 +171,7 @@ func generateTopologyStatusByReplicationInfo(info *redisutil.ClusterInfos, insta
 		for _, node := range shard {
 			ipaddr, err := net.LookupHost(node.Host)
 			if len(ipaddr) == 0 || err != nil {
+				instance.Status.Ready = false
 				continue
 			}
 			addr := net.JoinHostPort(ipaddr[0], strconv.Itoa(node.Port))
