@@ -195,13 +195,13 @@ func (d *SecretDecryptor) createAesSecret(ctx context.Context) (string, error) {
 			Namespace: d.aesSecretNamespace,
 		},
 		Data: map[string][]byte{
-			defaultAESSecretKey: data,
+			defaultAESSecretKey: []byte(data),
 		},
 		Type: corev1.SecretTypeOpaque,
 	}
 
 	err = d.c.Create(ctx, secret)
-	return string(data), err
+	return data, err
 }
 
 func (d *SecretDecryptor) updateAesSecret(ctx context.Context, secret *corev1.Secret) (string, error) {
@@ -210,18 +210,18 @@ func (d *SecretDecryptor) updateAesSecret(ctx context.Context, secret *corev1.Se
 		return "", err
 	}
 
-	secret.Data[defaultAESSecretKey] = data
+	secret.Data[defaultAESSecretKey] = []byte(data)
 
 	err = d.c.Update(ctx, secret)
 	return string(data), err
 }
 
 // generateAES256KeyAndIV generate AES-256 key
-func (d *SecretDecryptor) generateAES256Key() (key []byte, err error) {
-	key = make([]byte, 32)
-	if _, err = io.ReadFull(rand.Reader, key); err != nil {
-		return nil, err
+func (d *SecretDecryptor) generateAES256Key() (string, error) {
+	key := make([]byte, aes.BlockSize)
+	if _, err := io.ReadFull(rand.Reader, key); err != nil {
+		return "", err
 	}
 
-	return key, nil
+	return hex.EncodeToString(key), nil
 }
