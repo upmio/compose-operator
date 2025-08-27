@@ -55,9 +55,10 @@ func newMongoAdmin(instance *composev1alpha1.MongoDBReplicaset, password string,
 }
 
 // decryptSecret returns the current mongodb password.
-func decryptSecret(client client.Client, instance *composev1alpha1.MongoDBReplicaset) (string, error) {
+func decryptSecret(client client.Client, reqLogger logr.Logger, instance *composev1alpha1.MongoDBReplicaset) (string, error) {
 	password, err := k8sutil.DecryptSecretPasswords(
 		client,
+		reqLogger,
 		instance.Spec.Secret.Name,
 		instance.Namespace,
 		[]string{instance.Spec.Secret.Mongod},

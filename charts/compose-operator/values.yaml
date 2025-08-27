@@ -5,10 +5,6 @@ global:
   ##   - myRegistryKeySecretName
   ##
   imagePullSecrets: []
-  ## @param global.aesKey AES encryption key (32 characters). If empty, a random UUID-based key will be generated
-  ## Example: "7e20c20ea7564231a76dd83ac1cf7013"
-  ##
-  aesKey: ""
 
 nameOverride: ""
 

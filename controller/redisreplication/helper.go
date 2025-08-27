@@ -57,9 +57,10 @@ func newRedisAdmin(instance *composev1alpha1.RedisReplication, password string, 
 }
 
 // decryptSecret returns the current redis password.
-func decryptSecret(client client.Client, instance *composev1alpha1.RedisReplication) (string, error) {
+func decryptSecret(client client.Client, reqLogger logr.Logger, instance *composev1alpha1.RedisReplication) (string, error) {
 	passwords, err := k8sutil.DecryptSecretPasswords(
 		client,
+		reqLogger,
 		instance.Spec.Secret.Name,
 		instance.Namespace,
 		[]string{instance.Spec.Secret.Redis},

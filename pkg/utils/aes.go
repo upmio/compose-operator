@@ -19,58 +19,37 @@ SPDX-License-Identifier: Apache-2.0
 package utils
 
 import (
+	"context"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
+	"github.com/go-logr/logr"
+	"io"
+	corev1 "k8s.io/api/core/v1"
+	kubeErrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"os"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"time"
 )
 
 const (
-	// Environment variable name for AES key
-	AESKeyEnvVar = "AES_SECRET_KEY"
+	AESSecretNameENVKey      = "AES_SECRET_NAME"
+	AESSecretNamespaceENVKey = "NAMESPACE"
+
+	defaultAESSecretNamespace = "upm-system"
+	defaultAESSecretName      = "aes-secret-key"
+	defaultAESSecretKey       = "AES_SECRET_KEY"
 )
-
-var (
-	// Global AES key that should be set during application startup
-	aesKey string
-)
-
-// ValidateAndSetAESKey validates the AES key from environment variable and sets it for use
-// This function should be called during application startup (e.g., in main.go)
-// Returns error if key is missing or invalid
-func ValidateAndSetAESKey() error {
-	key := os.Getenv(AESKeyEnvVar)
-	if key == "" {
-		return fmt.Errorf("AES encryption key not found in environment variable %s", AESKeyEnvVar)
-	}
-
-	// Validate key length (should be 32 characters for AES-256)
-	if len(key) != 32 {
-		return fmt.Errorf("invalid AES key length: expected 32 characters, got %d. Key: %s", len(key), key)
-	}
-
-	aesKey = key
-	return nil
-}
-
-func getAESKey() (string, error) {
-	if aesKey == "" {
-		return "", fmt.Errorf("cannot get AES key")
-	}
-	return aesKey, nil
-}
 
 // AES_CTR_Encrypt encrypts plaintext and returns base64 encoded string (for backward compatibility)
-func AES_CTR_Encrypt(plainText []byte) ([]byte, error) {
-	keyStr, err := getAESKey()
-	if err != nil {
-		return nil, err
-	}
+func AES_CTR_Encrypt(plainText []byte, aesKey string) ([]byte, error) {
 
 	// Convert key to OpenSSL compatible format
-	opensslKey := hex.EncodeToString([]byte(keyStr))
+	opensslKey := hex.EncodeToString([]byte(aesKey))
 	key, err := hex.DecodeString(opensslKey)
 	if err != nil {
 		return nil, err
@@ -102,14 +81,10 @@ func AES_CTR_Encrypt(plainText []byte) ([]byte, error) {
 }
 
 // AES_CTR_Decrypt decrypts base64 encoded string and returns plaintext (for backward compatibility)
-func AES_CTR_Decrypt(encryptedData []byte) ([]byte, error) {
-	keyStr, err := getAESKey()
-	if err != nil {
-		return nil, err
-	}
+func AES_CTR_Decrypt(encryptedData []byte, aesKey string) ([]byte, error) {
 
 	// Convert key to OpenSSL compatible format
-	opensslKey := hex.EncodeToString([]byte(keyStr))
+	opensslKey := hex.EncodeToString([]byte(aesKey))
 	key, err := hex.DecodeString(opensslKey)
 	if err != nil {
 		return nil, err
@@ -140,4 +115,112 @@ func AES_CTR_Decrypt(encryptedData []byte) ([]byte, error) {
 	stream.XORKeyStream(plaintext, ciphertext)
 
 	return plaintext, nil
+}
+
+type Decryptor interface {
+	Decrypt(context.Context, []byte) ([]byte, error)
+}
+type SecretDecryptor struct {
+	aesSecretNamespace string
+	aesSecretName      string
+	c                  client.Client
+	reqlogger          logr.Logger
+}
+
+func NewSecretDecyptor(client client.Client, reqlooger logr.Logger) Decryptor {
+	aesSecretName := os.Getenv(AESSecretNameENVKey)
+	if aesSecretName == "" {
+		reqlooger.Info("No AES secret name specified, using default")
+		aesSecretName = defaultAESSecretName
+	}
+
+	aesSecretNamespace := os.Getenv(AESSecretNamespaceENVKey)
+	if aesSecretNamespace == "" {
+		reqlooger.Info("No AES secret namespace specified, using default")
+		aesSecretNamespace = defaultAESSecretNamespace
+	}
+
+	return &SecretDecryptor{
+		reqlogger:          reqlooger,
+		c:                  client,
+		aesSecretName:      aesSecretName,
+		aesSecretNamespace: aesSecretNamespace,
+	}
+}
+
+func (d *SecretDecryptor) Decrypt(ctx context.Context, encryptedData []byte) ([]byte, error) {
+	aesKey, err := d.getAesSecret(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return AES_CTR_Decrypt(encryptedData, aesKey)
+}
+
+func (d *SecretDecryptor) getAesSecret(ctx context.Context) (string, error) {
+	secret := &corev1.Secret{}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	err := d.c.Get(ctx, types.NamespacedName{
+		Name:      d.aesSecretName,
+		Namespace: d.aesSecretNamespace,
+	}, secret)
+	if err != nil {
+		if kubeErrors.IsNotFound(err) {
+			return d.createAesSecret(ctx)
+		}
+		return "", fmt.Errorf("failed to fetch aes secret [%s]: %v", d.aesSecretName, err)
+	}
+
+	aeskey, ok := secret.Data[defaultAESSecretKey]
+	if !ok {
+		return d.updateAesSecret(ctx, secret)
+	}
+
+	if len(aeskey) != 32 {
+		return "", fmt.Errorf("aes secret key length does not match expected block size")
+	}
+
+	return string(aeskey), nil
+}
+
+func (d *SecretDecryptor) createAesSecret(ctx context.Context) (string, error) {
+	data, err := d.generateAES256Key()
+	if err != nil {
+		return "", err
+	}
+	secret := &corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      d.aesSecretName,
+			Namespace: d.aesSecretNamespace,
+		},
+		Data: map[string][]byte{
+			defaultAESSecretKey: data,
+		},
+		Type: corev1.SecretTypeOpaque,
+	}
+
+	err = d.c.Create(ctx, secret)
+	return string(data), err
+}
+
+func (d *SecretDecryptor) updateAesSecret(ctx context.Context, secret *corev1.Secret) (string, error) {
+	data, err := d.generateAES256Key()
+	if err != nil {
+		return "", err
+	}
+
+	secret.Data[defaultAESSecretKey] = data
+
+	err = d.c.Update(ctx, secret)
+	return string(data), err
+}
+
+// generateAES256KeyAndIV generate AES-256 key
+func (d *SecretDecryptor) generateAES256Key() (key []byte, err error) {
+	key = make([]byte, 32)
+	if _, err = io.ReadFull(rand.Reader, key); err != nil {
+		return nil, err
+	}
+
+	return key, nil
 }

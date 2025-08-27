@@ -133,7 +133,7 @@ func (r *ReconcileProxysqlSync) Reconcile(ctx context.Context, req ctrl.Request)
 		mrInstance: mrInstance,
 	}
 
-	mysqlPassword, proxysqlPassword, err := decryptSecret(r.client, instance, reqLogger)
+	mysqlPassword, proxysqlPassword, err := decryptSecret(r.client, reqLogger, instance)
 
 	if err != nil {
 		meta.SetStatusCondition(&instance.Status.Conditions, newFailedSyncServerCondition(err))

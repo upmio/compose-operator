@@ -57,9 +57,10 @@ func newPostgresAdmin(instance *composev1alpha1.PostgresReplication, password st
 }
 
 // decryptSecret returns the current postgres password and replication password.
-func decryptSecret(client client.Client, instance *composev1alpha1.PostgresReplication, reqLogger logr.Logger) (string, string, error) {
+func decryptSecret(client client.Client, reqLogger logr.Logger, instance *composev1alpha1.PostgresReplication) (string, string, error) {
 	passwords, err := k8sutil.DecryptSecretPasswords(
 		client,
+		reqLogger,
 		instance.Spec.Secret.Name,
 		instance.Namespace,
 		[]string{instance.Spec.Secret.Postgresql, instance.Spec.Secret.Replication},

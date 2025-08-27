@@ -69,9 +69,10 @@ func newProxysqlAdmin(instance *composev1alpha1.ProxysqlSync, password string, r
 }
 
 // decryptSecret returns the current proxysql password and mysql password.
-func decryptSecret(client client.Client, instance *composev1alpha1.ProxysqlSync, reqLogger logr.Logger) (string, string, error) {
+func decryptSecret(client client.Client, reqLogger logr.Logger, instance *composev1alpha1.ProxysqlSync) (string, string, error) {
 	passwords, err := k8sutil.DecryptSecretPasswords(
 		client,
+		reqLogger,
 		instance.Spec.Secret.Name,
 		instance.Namespace,
 		[]string{instance.Spec.Secret.Mysql, instance.Spec.Secret.Proxysql},

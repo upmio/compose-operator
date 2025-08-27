@@ -21,6 +21,7 @@ package k8sutil
 import (
 	"context"
 	"fmt"
+	"github.com/go-logr/logr"
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
@@ -31,7 +32,9 @@ import (
 )
 
 // DecryptSecretPasswords decrypts multiple passwords from a Kubernetes Secret, returning a map of key->password
-func DecryptSecretPasswords(client client.Client, secretName, namespace string, keys []string) (map[string]string, error) {
+func DecryptSecretPasswords(client client.Client, reqLogger logr.Logger, secretName, namespace string, keys []string) (map[string]string, error) {
+	decryptor := utils.NewSecretDecyptor(client, reqLogger)
+
 	secret := &corev1.Secret{}
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -46,7 +49,9 @@ func DecryptSecretPasswords(client client.Client, secretName, namespace string, 
 
 	passwords := make(map[string]string)
 	for _, key := range keys {
-		decrypted, err := utils.AES_CTR_Decrypt(secret.Data[key])
+		decrypted, err := decryptor.Decrypt(ctx, secret.Data[key])
+
+		//decrypted, err := utils.AES_CTR_Decrypt(secret.Data[key])
 		if err != nil {
 			return nil, fmt.Errorf("failed to decrypt secret [%s] key '%s': %v", secretName, key, err)
 		}

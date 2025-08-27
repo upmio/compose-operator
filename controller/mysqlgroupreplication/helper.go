@@ -53,9 +53,10 @@ func newMysqlAdmin(instance *composev1alpha1.MysqlGroupReplication, password str
 }
 
 // decryptSecret returns the current mysql password and replication password.
-func decryptSecret(client client.Client, instance *composev1alpha1.MysqlGroupReplication) (string, string, error) {
+func decryptSecret(client client.Client, reqLogger logr.Logger, instance *composev1alpha1.MysqlGroupReplication) (string, string, error) {
 	passwords, err := k8sutil.DecryptSecretPasswords(
 		client,
+		reqLogger,
 		instance.Spec.Secret.Name,
 		instance.Namespace,
 		[]string{instance.Spec.Secret.Mysql, instance.Spec.Secret.Replication},

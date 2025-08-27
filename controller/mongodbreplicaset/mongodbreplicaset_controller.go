@@ -125,7 +125,7 @@ func (r *ReconcileMongoDBReplicaset) Reconcile(ctx context.Context, req ctrl.Req
 	instance.Status = buildDefaultTopologyStatus(instance)
 
 	//Get the password of MongoDB user for connection.
-	password, err := decryptSecret(r.client, instance)
+	password, err := decryptSecret(r.client, reqLogger, instance)
 	if err != nil {
 		meta.SetStatusCondition(&instance.Status.Conditions, newFailedSyncTopologyCondition(err))
 		r.recorder.Event(instance, corev1.EventTypeWarning, ErrSynced, err.Error())

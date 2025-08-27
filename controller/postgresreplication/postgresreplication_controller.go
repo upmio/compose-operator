@@ -142,7 +142,7 @@ func (r *ReconcilePostgresReplication) Reconcile(ctx context.Context, req ctrl.R
 	instance.Status = buildDefaultTopologyStatus(instance)
 
 	// Get the password of PostgreSQL user for connection and replication.
-	password, replicationPassword, err := decryptSecret(r.client, instance, reqLogger)
+	password, replicationPassword, err := decryptSecret(r.client, reqLogger, instance)
 	if err != nil {
 		meta.SetStatusCondition(&instance.Status.Conditions, newFailedSyncTopologyCondition(err))
 		r.recorder.Event(instance, corev1.EventTypeWarning, ErrSynced, err.Error())
