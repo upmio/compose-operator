@@ -19,8 +19,10 @@ SPDX-License-Identifier: Apache-2.0
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
+	"github.com/upmio/compose-operator/pkg/utils"
 	"os"
 
 	"github.com/upmio/compose-operator/pkg/version"
@@ -126,6 +128,13 @@ func main() {
 	err = controller.Setup(mgr)
 	if err != nil {
 		setupLog.Error(err, "unable to setup manager")
+		os.Exit(1)
+	}
+
+	decryptor := utils.NewSecretDecyptor(mgr.GetClient(), setupLog)
+	_, err = decryptor.ValidateAesSecret(context.Background())
+	if err != nil {
+		setupLog.Error(err, "unable to validate aes key secret")
 		os.Exit(1)
 	}
 

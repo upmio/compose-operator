@@ -118,6 +118,8 @@ func AES_CTR_Decrypt(encryptedData []byte, aesKey string) ([]byte, error) {
 
 type Decryptor interface {
 	Decrypt(context.Context, []byte) ([]byte, error)
+
+	ValidateAesSecret(ctx context.Context) (string, error)
 }
 type SecretDecryptor struct {
 	aesSecretNamespace string
@@ -126,21 +128,21 @@ type SecretDecryptor struct {
 	reqlogger          logr.Logger
 }
 
-func NewSecretDecyptor(client client.Client, reqlooger logr.Logger) Decryptor {
+func NewSecretDecyptor(client client.Client, reqLogger logr.Logger) Decryptor {
 	aesSecretName := os.Getenv(AESSecretNameENVKey)
 	if aesSecretName == "" {
-		reqlooger.Info("No AES secret name specified, using default")
+		reqLogger.Info("No AES secret name specified, using default")
 		aesSecretName = defaultAESSecretName
 	}
 
 	aesSecretNamespace := os.Getenv(AESSecretNamespaceENVKey)
 	if aesSecretNamespace == "" {
-		reqlooger.Info("No AES secret namespace specified, using default")
+		reqLogger.Info("No AES secret namespace specified, using default")
 		aesSecretNamespace = defaultAESSecretNamespace
 	}
 
 	return &SecretDecryptor{
-		reqlogger:          reqlooger,
+		reqlogger:          reqLogger,
 		c:                  client,
 		aesSecretName:      aesSecretName,
 		aesSecretNamespace: aesSecretNamespace,
@@ -148,14 +150,19 @@ func NewSecretDecyptor(client client.Client, reqlooger logr.Logger) Decryptor {
 }
 
 func (d *SecretDecryptor) Decrypt(ctx context.Context, encryptedData []byte) ([]byte, error) {
-	aesKey, err := d.getAesSecret(ctx)
+	aesKey, err := d.ValidateAesSecret(ctx)
 	if err != nil {
 		return nil, err
 	}
+
+	if len(aesKey) != 32 {
+		return nil, fmt.Errorf("aes secret key length does not match expected block size")
+	}
+
 	return AES_CTR_Decrypt(encryptedData, aesKey)
 }
 
-func (d *SecretDecryptor) getAesSecret(ctx context.Context) (string, error) {
+func (d *SecretDecryptor) ValidateAesSecret(ctx context.Context) (string, error) {
 	secret := &corev1.Secret{}
 
 	err := d.c.Get(ctx, types.NamespacedName{
@@ -172,10 +179,6 @@ func (d *SecretDecryptor) getAesSecret(ctx context.Context) (string, error) {
 	aeskey, ok := secret.Data[defaultAESSecretKey]
 	if !ok {
 		return d.updateAesSecret(ctx, secret)
-	}
-
-	if len(aeskey) != 32 {
-		return "", fmt.Errorf("aes secret key length does not match expected block size")
 	}
 
 	return string(aeskey), nil
