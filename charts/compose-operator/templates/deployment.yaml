@@ -33,9 +33,6 @@ spec:
       - name: {{ .Chart.Name }}
         image: {{ template "compose-operator.image" . }}
         imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
-        envFrom:
-        - secretRef:
-            name: aes-secret-key
         {{- if .Values.livenessProbe.enabled }}
         livenessProbe: {{- include "common.tplvalues.render" (dict "value" (omit .Values.livenessProbe "enabled") "context" $) | nindent 10 }}
           httpGet:
@@ -59,6 +56,14 @@ spec:
         - containerPort: {{ .Values.webhook.port }}
           name: webhook-server
           protocol: TCP
+        env:
+          - name: AES_SECRET_NAME
+            value: aes-secret-key
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
         volumeMounts:
         - mountPath: /tmp/k8s-webhook-server/serving-certs
           name: cert
