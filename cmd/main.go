@@ -23,7 +23,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/upmio/compose-operator/pkg/utils"
 	"github.com/upmio/compose-operator/pkg/version"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
@@ -82,13 +81,6 @@ func main() {
 	}
 
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
-
-	if err := utils.ValidateAndSetAESKey(); err != nil {
-		setupLog.Error(err, "unable to get environment variables")
-		os.Exit(1)
-	} else {
-		setupLog.Info("AES key validation successful")
-	}
 
 	id, err := os.Hostname()
 	if err != nil {

@@ -57,22 +57,12 @@ var decryptCmd = &cobra.Command{
 			return fmt.Errorf("AES key must be exactly 32 characters, got %d characters", len(key))
 		}
 
-		// Set the AES key
-		err := os.Setenv(utils.AESKeyEnvVar, key)
-		if err != nil {
-			return err
-		}
-
-		if err := utils.ValidateAndSetAESKey(); err != nil {
-			return err
-		}
-
 		encryptedBytes, err := os.ReadFile(file)
 		if err != nil {
 			return fmt.Errorf("failed to read file %s: %v", file, err)
 		}
 
-		decrypted, err := utils.AES_CTR_Decrypt(encryptedBytes)
+		decrypted, err := utils.AES_CTR_Decrypt(encryptedBytes, key)
 		if err != nil {
 			return fmt.Errorf("failed to decrypt file %s: %v", file, err)
 		}
@@ -97,18 +87,7 @@ var encryptCmd = &cobra.Command{
 		if len(key) != 32 {
 			return fmt.Errorf("AES key must be exactly 32 characters, got %d characters", len(key))
 		}
-
-		// Set the AES key
-		err := os.Setenv(utils.AESKeyEnvVar, key)
-		if err != nil {
-			return err
-		}
-
-		if err := utils.ValidateAndSetAESKey(); err != nil {
-			return err
-		}
-
-		encryptedBytes, err := utils.AES_CTR_Encrypt([]byte(plaintext))
+		encryptedBytes, err := utils.AES_CTR_Encrypt([]byte(plaintext), key)
 		if err != nil {
 			return err
 		}

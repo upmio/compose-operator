@@ -20,7 +20,6 @@ package postgresreplication
 
 import (
 	"fmt"
-	"os"
 	"time"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -121,14 +120,8 @@ var _ = Describe("PostgresReplication Controller", func() {
 			BeforeEach(func() {
 
 				By("creating secret")
-				err := os.Setenv(utils.AESKeyEnvVar, "bec62eddcb834ece8488c88263a5f248")
-				if err != nil {
-					fmt.Println(err.Error())
-				}
-				err = utils.ValidateAndSetAESKey()
-				Expect(err).To(BeNil())
 
-				encryptPwd, err := utils.AES_CTR_Encrypt([]byte(password))
+				encryptPwd, err := utils.AES_CTR_Encrypt([]byte(password), "bec62eddcb834ece8488c88263a5f248")
 				Expect(err).ShouldNot(HaveOccurred())
 				secret := &corev1.Secret{
 					ObjectMeta: metav1.ObjectMeta{

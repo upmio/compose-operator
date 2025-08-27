@@ -33,7 +33,6 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"os"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"time"
 )
 
 const (
@@ -158,8 +157,7 @@ func (d *SecretDecryptor) Decrypt(ctx context.Context, encryptedData []byte) ([]
 
 func (d *SecretDecryptor) getAesSecret(ctx context.Context) (string, error) {
 	secret := &corev1.Secret{}
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
+
 	err := d.c.Get(ctx, types.NamespacedName{
 		Name:      d.aesSecretName,
 		Namespace: d.aesSecretNamespace,
