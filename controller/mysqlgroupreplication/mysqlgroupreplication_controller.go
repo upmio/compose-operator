@@ -82,7 +82,7 @@ type syncContext struct {
 // +kubebuilder:rbac:groups=upm.syntropycloud.io,resources=mysqlgroupreplications/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=upm.syntropycloud.io,resources=mysqlgroupreplications/finalizers,verbs=update
 // +kubebuilder:rbac:groups="",resources=events,verbs=create;patch
-// +kubebuilder:rbac:groups="",resources=secrets,verbs=get;list;watch
+// +kubebuilder:rbac:groups="",resources=secrets,verbs=get;list;watch;create
 
 // Reconcile reconcile mysql group replication
 func (r *ReconcileMysqlGroupReplication) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {

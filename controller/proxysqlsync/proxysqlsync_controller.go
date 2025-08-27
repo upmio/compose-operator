@@ -81,7 +81,7 @@ type syncContext struct {
 // +kubebuilder:rbac:groups=upm.syntropycloud.io,resources=proxysqlsyncs,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=upm.syntropycloud.io,resources=proxysqlsyncs/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=upm.syntropycloud.io,resources=proxysqlsyncs/finalizers,verbs=update
-// +kubebuilder:rbac:groups="",resources=secrets,verbs=get;list;watch
+// +kubebuilder:rbac:groups="",resources=secrets,verbs=get;list;watch;create
 
 // Reconcile reconcile proxysql sync
 func (r *ReconcileProxysqlSync) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {

@@ -82,7 +82,7 @@ type syncContext struct {
 // +kubebuilder:rbac:groups=upm.syntropycloud.io,resources=mongodbreplicasets/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=upm.syntropycloud.io,resources=mongodbreplicasets/finalizers,verbs=update
 // +kubebuilder:rbac:groups="",resources=events,verbs=create;patch
-// +kubebuilder:rbac:groups="",resources=secrets,verbs=get;list;watch
+// +kubebuilder:rbac:groups="",resources=secrets,verbs=get;list;watch;create
 
 // Reconcile reconcile mongodb replica set
 func (r *ReconcileMongoDBReplicaset) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
