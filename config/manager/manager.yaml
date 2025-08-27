@@ -53,9 +53,14 @@ spec:
         image: quay.io/upmio/compose-operator:v1.1.0
         imagePullPolicy: IfNotPresent
         # Environment variables loaded from AES key secret
-        envFrom:
-        - secretRef:
-            name: aes-secret-key
+        env:
+          - name: AES_SECRET_NAME
+            value: aes-secret-key
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
 #        securityContext:
 #          allowPrivilegeEscalation: false
 #          capabilities:

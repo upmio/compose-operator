@@ -24,6 +24,7 @@ import (
 	"fmt"
 	"github.com/upmio/compose-operator/pkg/utils"
 	"os"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/upmio/compose-operator/pkg/version"
 
@@ -131,8 +132,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	decryptor := utils.NewSecretDecyptor(mgr.GetClient(), setupLog)
-	_, err = decryptor.ValidateAesSecret(context.Background())
+	kubeClient, err := client.New(mgr.GetConfig(), client.Options{Scheme: scheme})
+	if err != nil {
+		setupLog.Error(err, "unable to create Kubernetes client")
+		os.Exit(1)
+	}
+
+	_, err = utils.NewSecretDecyptor(kubeClient, setupLog).ValidateAesSecret(context.Background())
 	if err != nil {
 		setupLog.Error(err, "unable to validate aes key secret")
 		os.Exit(1)
