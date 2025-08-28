@@ -31,17 +31,7 @@ var (
 	plaintext, key, file, username string
 )
 
-func init() {
-	rootCmd.AddCommand(decryptCmd)
-	rootCmd.AddCommand(encryptCmd)
-
-	encryptCmd.PersistentFlags().StringVarP(&plaintext, "plaintext", "p", "", "Plaintext to encrypt")
-	encryptCmd.PersistentFlags().StringVarP(&key, "key", "k", "", "AES encryption key (32 characters required)")
-	encryptCmd.PersistentFlags().StringVarP(&username, "username", "u", "", "Username for binary file output")
-
-	decryptCmd.PersistentFlags().StringVarP(&file, "file", "f", "", "Binary file to decrypt")
-	decryptCmd.PersistentFlags().StringVarP(&key, "key", "k", "", "AES encryption key (32 characters required)")
-}
+var stdout bool
 
 // RootCmd represents the base command when called without any subcommands
 var decryptCmd = &cobra.Command{
@@ -92,15 +82,33 @@ var encryptCmd = &cobra.Command{
 			return err
 		}
 
-		filename := fmt.Sprintf("%s.bin", username)
-		err = os.WriteFile(filename, encryptedBytes, 0644)
-		if err != nil {
-			return fmt.Errorf("failed to write file %s: %v", filename, err)
+		if stdout {
+			// Output to stdout
+			os.Stdout.Write(encryptedBytes)
+		} else {
+			// Output to file
+			filename := fmt.Sprintf("%s.bin", username)
+			err = os.WriteFile(filename, encryptedBytes, 0644)
+			if err != nil {
+				return fmt.Errorf("failed to write file %s: %v", filename, err)
+			}
+			fmt.Printf("Plaintext: %s\n", plaintext)
+			fmt.Printf("Encrypted and saved to: %s\n", filename)
 		}
-
-		fmt.Printf("Plaintext: %s\n", plaintext)
-		fmt.Printf("Encrypted and saved to: %s\n", filename)
 
 		return nil
 	},
+}
+
+func init() {
+	rootCmd.AddCommand(decryptCmd)
+	rootCmd.AddCommand(encryptCmd)
+
+	encryptCmd.Flags().StringVarP(&plaintext, "plaintext", "p", "", "Plaintext to encrypt")
+	encryptCmd.Flags().StringVarP(&key, "key", "k", "", "AES encryption key (32 characters required)")
+	encryptCmd.Flags().StringVarP(&username, "username", "u", "", "Username for binary file output")
+	encryptCmd.Flags().BoolVar(&stdout, "stdout", false, "Output encrypted data to stdout instead of file")
+
+	decryptCmd.PersistentFlags().StringVarP(&file, "file", "f", "", "Binary file to decrypt")
+	decryptCmd.PersistentFlags().StringVarP(&key, "key", "k", "", "AES encryption key (32 characters required)")
 }

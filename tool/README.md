@@ -1,66 +1,57 @@
 # AES Encryption Tool
 
-This tool provides AES-256-CTR encryption and decryption functionality compatible with the Compose Operator.
+This tool provides AES encryption and decryption functionality for passwords and sensitive data, with support for both binary file operations and Kubernetes Secret management.
 
-## Building
-
-Build the AES encryption tool from the project root directory:
+## Build
 
 ```bash
-# Build for current platform
-go build -o aes-tool ./tool/
-
-# Verify the build
-aes-tool -help
+go build -o aes-tool .
 ```
-
-This creates an `aes-tool` executable in the project root directory.
 
 ## Usage
 
-### Encrypt password and save to binary file (Recommended for Kubernetes Secrets)
+### Encrypt password and save to binary file
 
 ```bash
-# Encrypt password for mysql user and save to mysql.bin
-aes-tool -key "your-32-character-aes-key-here" -plaintext "mysql_password" -username "mysql"
-
-# Encrypt password for replication user and save to replication.bin  
-aes-tool -key "your-32-character-aes-key-here" -plaintext "repl_password" -username "replication"
-```
-
-Output:
-```
-Plaintext: mysql_password
-Encrypted and saved to: mysql.bin
+./aes-tool encrypt --key "your-32-character-aes-key-here123" --plaintext "your-password" --username password
 ```
 
 ### Decrypt from binary file
 
 ```bash
-# Decrypt password from binary file
-aes-tool -key "your-32-character-aes-key-here" -file "mysql.bin"
+./aes-tool decrypt --key "your-32-character-aes-key-here123" --file password.bin
 ```
 
-Output:
-```
-File: mysql.bin
-Decrypted: mysql_password
-```
+### Legacy Base64 Encryption/Decryption (Deprecated)
 
-### Legacy base64 encryption/decryption
+Note: The Base64 workflow is deprecated. Prefer the binary file workflow. If you must exchange data in Base64, use the following compatibility steps:
+
+#### Encrypt then convert to Base64
 
 ```bash
-# Encrypt to base64 (for backward compatibility)
-aes-tool -key "your-32-character-aes-key-here" -plaintext "mypassword"
+# 1) Generate the binary ciphertext (recommended workflow)
+./aes-tool encrypt --key "your-32-character-aes-key-here123" \
+  --plaintext "your-password" \
+  --username password
 
-# Decrypt from base64
-aes-tool -key "your-32-character-aes-key-here" -decrypt "base64-encrypted-string"
+# 2) Convert the binary content to Base64 for transfer/archive
+base64 -i password.bin > password.b64
+```
+
+#### Decrypt from Base64 content
+
+```bash
+# 1) Convert the Base64 content back to a binary file
+base64 -d password.b64 > password.bin
+
+# 2) Decrypt from the binary file (recommended workflow)
+./aes-tool decrypt --key "your-32-character-aes-key-here123" --file password.bin
 ```
 
 ### Show help
 
 ```bash
-aes-tool -help
+aes-tool --help
 ```
 
 ## Examples
@@ -82,8 +73,8 @@ AES_KEY=$(kubectl get secret ${RELEASE_NAME}-aes-secret -n ${NAMESPACE} -o jsonp
 echo "AES key length: ${#AES_KEY}"
 
 # Step 4: Encrypt passwords and save to binary files
-aes-tool -key "$AES_KEY" -plaintext "mysql_root_password" -username "mysql"
-aes-tool -key "$AES_KEY" -plaintext "replication_user_password" -username "replication"
+aes-tool encrypt --key "$AES_KEY" --plaintext "mysql_root_password" --username "mysql"
+aes-tool encrypt --key "$AES_KEY" --plaintext "replication_user_password" --username "replication"
 
 # Step 5: Create Kubernetes secret from binary files
 kubectl create secret generic mysql-credentials \
@@ -92,8 +83,8 @@ kubectl create secret generic mysql-credentials \
   --from-file=replication=replication.bin
 
 # Step 6: Verify (optional)
-aes-tool -key "$AES_KEY" -file "mysql.bin"
-aes-tool -key "$AES_KEY" -file "replication.bin"
+aes-tool decrypt --key "$AES_KEY" --file "mysql.bin"
+aes-tool decrypt --key "$AES_KEY" --file "replication.bin"
 
 # Step 7: Clean up binary files
 rm mysql.bin replication.bin
@@ -109,8 +100,8 @@ go build -o aes-tool ./tool/
 AES_KEY=$(kubectl get secret aes-secret-key -n upm-system -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)
 
 # 3. Encrypt individual passwords to binary files
-aes-tool -key "$AES_KEY" -plaintext "mysql_root_password" -username "mysql"
-aes-tool -key "$AES_KEY" -plaintext "replication_password" -username "replication"
+aes-tool encrypt --key "$AES_KEY" --plaintext "mysql_root_password" --username "mysql"
+aes-tool encrypt --key "$AES_KEY" --plaintext "replication_password" --username "replication"
 
 # 4. Create Kubernetes secret from binary files
 kubectl create secret generic mysql-credentials \
@@ -128,8 +119,8 @@ If you need to manually create a secret with encrypted passwords, follow these s
 ```bash
 # Method 1: Using the AES tool to generate binary files
 AES_KEY=$(kubectl get secret aes-secret-key -n upm-system -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)
-go run tool/main.go -key "$AES_KEY" -plaintext "mysql_password" -username "mysql"
-go run tool/main.go -key "$AES_KEY" -plaintext "repl_password" -username "replication"
+go run tool/main.go encrypt --key "$AES_KEY" --plaintext "mysql_password" --username "mysql"
+go run tool/main.go encrypt --key "$AES_KEY" --plaintext "repl_password" --username "replication"
 
 # Create secret from binary files
 kubectl create secret generic ${SECRET_NAME} \
@@ -149,8 +140,8 @@ kubectl create secret generic ${SECRET_NAME} \
 #### MySQL Replication & Group Replication
 ```bash
 AES_KEY=$(kubectl get secret aes-secret-key -n upm-system -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)
-aes-tool -key "$AES_KEY" -plaintext "mysql_root_password" -username "mysql"
-aes-tool -key "$AES_KEY" -plaintext "replication_password" -username "replication"
+aes-tool encrypt --key "$AES_KEY" --plaintext "mysql_root_password" --username "mysql"
+aes-tool encrypt --key "$AES_KEY" --plaintext "replication_password" --username "replication"
 kubectl create secret generic mysql-credentials \
   --from-file=mysql=mysql.bin \
   --from-file=replication=replication.bin
@@ -159,7 +150,7 @@ kubectl create secret generic mysql-credentials \
 #### Redis Replication & Cluster
 ```bash
 AES_KEY=$(kubectl get secret aes-secret-key -n upm-system -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)
-aes-tool -key "$AES_KEY" -plaintext "redis_auth_password" -username "redis"
+aes-tool encrypt --key "$AES_KEY" --plaintext "redis_auth_password" --username "redis"
 kubectl create secret generic redis-credentials \
   --from-file=redis=redis.bin
 ```
@@ -167,8 +158,8 @@ kubectl create secret generic redis-credentials \
 #### PostgreSQL Replication
 ```bash
 AES_KEY=$(kubectl get secret aes-secret-key -n upm-system -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)
-aes-tool -key "$AES_KEY" -plaintext "postgresql_admin_password" -username "postgresql"
-aes-tool -key "$AES_KEY" -plaintext "replication_password" -username "replication"
+aes-tool encrypt --key "$AES_KEY" --plaintext "postgresql_admin_password" --username "postgresql"
+aes-tool encrypt --key "$AES_KEY" --plaintext "replication_password" --username "replication"
 kubectl create secret generic postgres-credentials \
   --from-file=postgresql=postgresql.bin \
   --from-file=replication=replication.bin
@@ -177,8 +168,8 @@ kubectl create secret generic postgres-credentials \
 #### ProxySQL Sync
 ```bash
 AES_KEY=$(kubectl get secret aes-secret-key -n upm-system -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)
-aes-tool -key "$AES_KEY" -plaintext "proxysql_admin_password" -username "proxysql"
-aes-tool -key "$AES_KEY" -plaintext "mysql_backend_password" -username "mysql"
+aes-tool encrypt --key "$AES_KEY" --plaintext "proxysql_admin_password" --username "proxysql"
+aes-tool encrypt --key "$AES_KEY" --plaintext "mysql_backend_password" --username "mysql"
 kubectl create secret generic proxysql-credentials \
   --from-file=proxysql=proxysql.bin \
   --from-file=mysql=mysql.bin
@@ -194,17 +185,17 @@ AES_KEY=$(kubectl get secret aes-secret-key -n upm-system -o jsonpath='{.data.AE
 
 # Method 1: Extract and decrypt a specific key from a secret
 kubectl get secret mysql-credentials -o jsonpath='{.data.mysql}' | base64 -d > mysql.bin
-aes-tool -key "$AES_KEY" -file "mysql.bin"
+aes-tool decrypt --key "$AES_KEY" --file "mysql.bin"
 rm mysql.bin
 
 # Method 2: One-liner for quick password retrieval
-kubectl get secret mysql-credentials -o jsonpath='{.data.mysql}' | base64 -d > temp.bin && aes-tool -key "$AES_KEY" -file "temp.bin" && rm temp.bin
+kubectl get secret mysql-credentials -o jsonpath='{.data.mysql}' | base64 -d > temp.bin && aes-tool decrypt --key "$AES_KEY" --file "temp.bin" && rm temp.bin
 
 # Method 3: Using JSON output for multiple keys
 kubectl get secret mysql-credentials -o json | jq '.data.mysql' -r | base64 -d > mysql.bin
 kubectl get secret mysql-credentials -o json | jq '.data.replication' -r | base64 -d > replication.bin
-aes-tool -key "$AES_KEY" -file "mysql.bin"
-aes-tool -key "$AES_KEY" -file "replication.bin"
+aes-tool decrypt --key "$AES_KEY" --file "mysql.bin"
+aes-tool decrypt --key "$AES_KEY" --file "replication.bin"
 rm mysql.bin replication.bin
 ```
 
@@ -216,9 +207,9 @@ AES_KEY=$(kubectl get secret aes-secret-key -n upm-system -o jsonpath='{.data.AE
 kubectl get secret mysql-credentials -o jsonpath='{.data.mysql}' | base64 -d > mysql.bin
 kubectl get secret mysql-credentials -o jsonpath='{.data.replication}' | base64 -d > replication.bin
 echo "MySQL password:"
-aes-tool -key "$AES_KEY" -file "mysql.bin"
+aes-tool decrypt --key "$AES_KEY" --file "mysql.bin"
 echo "Replication password:"
-aes-tool -key "$AES_KEY" -file "replication.bin"
+aes-tool decrypt --key "$AES_KEY" --file "replication.bin"
 rm mysql.bin replication.bin
 ```
 
@@ -227,7 +218,7 @@ rm mysql.bin replication.bin
 AES_KEY=$(kubectl get secret aes-secret-key -n upm-system -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)
 kubectl get secret redis-credentials -o jsonpath='{.data.redis}' | base64 -d > redis.bin
 echo "Redis password:"
-aes-tool -key "$AES_KEY" -file "redis.bin"
+aes-tool decrypt --key "$AES_KEY" --file "redis.bin"
 rm redis.bin
 ```
 
@@ -237,9 +228,9 @@ AES_KEY=$(kubectl get secret aes-secret-key -n upm-system -o jsonpath='{.data.AE
 kubectl get secret postgres-credentials -o jsonpath='{.data.postgresql}' | base64 -d > postgresql.bin
 kubectl get secret postgres-credentials -o jsonpath='{.data.replication}' | base64 -d > replication.bin
 echo "PostgreSQL password:"
-aes-tool -key "$AES_KEY" -file "postgresql.bin"
+aes-tool decrypt --key "$AES_KEY" --file "postgresql.bin"
 echo "Replication password:"
-aes-tool -key "$AES_KEY" -file "replication.bin"
+aes-tool decrypt --key "$AES_KEY" --file "replication.bin"
 rm postgresql.bin replication.bin
 ```
 
@@ -249,9 +240,9 @@ AES_KEY=$(kubectl get secret aes-secret-key -n upm-system -o jsonpath='{.data.AE
 kubectl get secret proxysql-credentials -o jsonpath='{.data.proxysql}' | base64 -d > proxysql.bin
 kubectl get secret proxysql-credentials -o jsonpath='{.data.mysql}' | base64 -d > mysql.bin
 echo "ProxySQL admin password:"
-aes-tool -key "$AES_KEY" -file "proxysql.bin"
+aes-tool decrypt --key "$AES_KEY" --file "proxysql.bin"
 echo "MySQL backend password:"
-aes-tool -key "$AES_KEY" -file "mysql.bin"
+aes-tool decrypt --key "$AES_KEY" --file "mysql.bin"
 rm proxysql.bin mysql.bin
 ```
 
@@ -262,9 +253,9 @@ rm proxysql.bin mysql.bin
 AES_KEY=$(kubectl get secret aes-secret-key -n upm-system -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)
 
 # Test complete workflow: encrypt -> create secret -> extract -> decrypt
-aes-tool -key "$AES_KEY" -plaintext "test_password" -username "test"
+aes-tool encrypt --key "$AES_KEY" --plaintext "test_password" --username "test"
 kubectl create secret generic test-secret --from-file=test=test.bin --dry-run=client -o json | jq '.data.test' -r | base64 -d > extracted-test.bin
-aes-tool -key "$AES_KEY" -file "extracted-test.bin"
+aes-tool decrypt --key "$AES_KEY" --file "extracted-test.bin"
 rm test.bin extracted-test.bin
 ```
 
