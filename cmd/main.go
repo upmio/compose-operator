@@ -23,8 +23,10 @@ import (
 	"flag"
 	"fmt"
 	"github.com/upmio/compose-operator/pkg/utils"
+	"k8s.io/utils/ptr"
 	"os"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"time"
 
 	"github.com/upmio/compose-operator/pkg/version"
 
@@ -100,9 +102,13 @@ func main() {
 			Port:    9443,
 			CertDir: "/tmp/k8s-webhook-server/serving-certs",
 		}),
-		HealthProbeBindAddress: probeAddr,
-		LeaderElection:         enableLeaderElection,
-		LeaderElectionID:       id,
+		HealthProbeBindAddress:        probeAddr,
+		LeaderElection:                enableLeaderElection,
+		LeaderElectionID:              id,
+		LeaseDuration:                 ptr.To(10 * time.Second),
+		RenewDeadline:                 ptr.To(5 * time.Second),
+		RetryPeriod:                   ptr.To(2 * time.Second),
+		LeaderElectionReleaseOnCancel: true,
 		// LeaderElectionReleaseOnCancel defines if the leader should step down voluntarily
 		// when the Manager ends. This requires the binary to immediately end when the
 		// Manager is stopped, otherwise, this setting is unsafe. Setting this significantly
