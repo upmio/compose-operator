@@ -5,7 +5,18 @@ This tool provides AES encryption and decryption functionality for passwords and
 ## Build
 
 ```bash
-go build -o aes-tool .
+# Build from repository root using root go.mod
+go build -o aes-tool ./tool
+
+# Multi-arch container build (from repo root)
+docker buildx build --platform linux/amd64,linux/arm64 \
+  -f tool/Dockerfile \
+  -t quay.io/upmio/k8s-aes-tool:latest \
+  --push .
+
+# Local multi-arch testing without pushing
+docker buildx build --platform linux/amd64 -f tool/Dockerfile -t k8s-aes-tool:amd64 --load .
+docker buildx build --platform linux/arm64 -f tool/Dockerfile -t k8s-aes-tool:arm64 --load .
 ```
 
 ## Usage
@@ -61,8 +72,8 @@ aes-tool --help
 Here's a complete example of how to encrypt passwords for the compose-operator using binary files:
 
 ```bash
-# Step 1: Build the AES tool
-go build -o aes-tool ./tool/
+# Step 1: Build the AES tool from repo root
+go build -o aes-tool ./tool
 
 # Step 2: Get the AES key from operator (replace with your values)
 RELEASE_NAME="compose-operator"
@@ -93,8 +104,8 @@ rm mysql.bin replication.bin
 ### Step-by-step password encryption with binary files
 
 ```bash
-# 1. Build the tool
-go build -o aes-tool ./tool/
+# 1. Build the tool from repo root
+go build -o aes-tool ./tool
 
 # 2. Get the AES key from operator secret
 AES_KEY=$(kubectl get secret aes-secret-key -n upm-system -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)

@@ -17,9 +17,19 @@ A containerized tool for encrypting and decrypting Kubernetes Secrets using AES-
 ### 1. Build Multi-Architecture Image
 
 ```bash
+# Build from repository root using the Dockerfile in tool/
 docker buildx build --platform linux/amd64,linux/arm64 \
+  -f tool/Dockerfile \
   -t quay.io/upmio/k8s-aes-tool:latest \
   --push .
+
+# Local testing without push (build & load each architecture separately)
+docker buildx build --platform linux/amd64 -f tool/Dockerfile -t k8s-aes-tool:amd64 --load .
+docker buildx build --platform linux/arm64 -f tool/Dockerfile -t k8s-aes-tool:arm64 --load .
+
+# Optional: cross-compile binaries locally (no container)
+GOOS=linux GOARCH=amd64 go build -o bin/aes-tool-linux-amd64 ./tool
+GOOS=linux GOARCH=arm64 go build -o bin/aes-tool-linux-arm64 ./tool
 ```
 
 ### 2. Create AES Key Secret
