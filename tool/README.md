@@ -78,7 +78,7 @@ go build -o aes-tool ./tool
 # Step 2: Get the AES key from operator (replace with your values)
 RELEASE_NAME="compose-operator"
 NAMESPACE="upm-system"
-AES_KEY=$(kubectl get secret ${RELEASE_NAME}-aes-secret -n ${NAMESPACE} -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)
+AES_KEY=$(kubectl get secret aes-secret-key -n ${NAMESPACE} -o jsonpath='{.data.AES_SECRET_KEY}' | base64 -d)
 
 # Step 3: Verify key length (should be 32)
 echo "AES key length: ${#AES_KEY}"

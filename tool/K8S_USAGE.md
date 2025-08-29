@@ -38,16 +38,20 @@ GOOS=linux GOARCH=arm64 go build -o bin/aes-tool-linux-arm64 ./tool
 # Generate a 32-character AES key
 AES_KEY=$(openssl rand -base64 32 | head -c 32)
 
-# Create the secret (use field name AES_SECRET_KEY)
+# Create the secret in operator namespace (use field name AES_SECRET_KEY)
 kubectl create secret generic aes-secret-key \
   --from-literal=AES_SECRET_KEY="$AES_KEY" \
-  -n default
+  -n upm-system
 ```
 
-### 3. Apply RBAC Configuration
+### 3. Ensure ServiceAccount permissions
 
 ```bash
-kubectl apply -f k8s-manifests/rbac.yaml
+# The Jobs run in namespace upm-system with SA unit-operator
+kubectl auth can-i get services -n kube-system --as=system:serviceaccount:upm-system:unit-operator
+kubectl auth can-i list services -n kube-system --as=system:serviceaccount:upm-system:unit-operator
+kubectl auth can-i get endpoints -n kube-system --as=system:serviceaccount:upm-system:unit-operator
+kubectl auth can-i list endpoints -n kube-system --as=system:serviceaccount:upm-system:unit-operator
 ```
 
 ### 4. Generate Encrypted Secret
@@ -73,11 +77,12 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: generate-innodb-cluster-secret-job
-  namespace: default
+  namespace: upm-system
 spec:
   template:
     spec:
-      serviceAccountName: aes-tool-sa
+      serviceAccountName: unit-operator
+      automountServiceAccountToken: true
       restartPolicy: Never
       containers:
       - name: aes-tool
@@ -85,22 +90,31 @@ spec:
         imagePullPolicy: Always
         args: ["generate"]
         env:
+        - name: DEBUG
+          value: "true"
         - name: SECRET_NAME
-          value: "innodb-cluster-sg-demo-secret"
+          value: "innodb-cluster-secret"
         - name: SECRET_KEYS
-          value: "helix,monitor,radminuser,replication,root"
+          value: "root-password,replication-password,server-id-offset"
         - name: SECRET_VALUES
-          value: "helix_password,monitor_password,radmin_password,replication_password,root_password"
+          value: "mypassword123,replpassword456,100"
         - name: NAMESPACE
-          value: "default"
+          value: "default"   # target namespace to create the Secret
+        - name: SECRET_LABELS
+          value: "app=innodb-cluster,component=database"
         - name: AES_KEY_PATH
           value: "/etc/aes-key/key"
-        - name: SECRET_LABELS
-          value: "upm.api/service-group.name=demo,upm.api/service-group.type=innodb-cluster-sg,upm.io/owner=upm"
         volumeMounts:
         - name: aes-key
           mountPath: /etc/aes-key
           readOnly: true
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "100m"
+          limits:
+            memory: "128Mi"
+            cpu: "200m"
       volumes:
       - name: aes-key
         secret:
@@ -108,7 +122,8 @@ spec:
           items:
           - key: AES_SECRET_KEY
             path: key
-  backoffLimit: 3
+  backoffLimit: 1
+  ttlSecondsAfterFinished: 120
 ```
 
 ### Decrypt Specific Password Fields
@@ -118,11 +133,12 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: decrypt-innodb-cluster-secret-job
-  namespace: default
+  namespace: upm-system
 spec:
   template:
     spec:
-      serviceAccountName: aes-tool-sa
+      serviceAccountName: unit-operator
+      automountServiceAccountToken: true
       restartPolicy: Never
       containers:
       - name: aes-tool
@@ -131,17 +147,24 @@ spec:
         args: ["decrypt"]
         env:
         - name: SECRET_NAME
-          value: "innodb-cluster-sg-demo-secret"
+          value: "innodb-cluster-secret"
         - name: SECRET_KEY
-          value: "root"  # Decrypt root user password
+          value: "root-password"
         - name: NAMESPACE
-          value: "default"
+          value: "default"   # where the Secret resides
         - name: AES_KEY_PATH
           value: "/etc/aes-key/key"
         volumeMounts:
         - name: aes-key
           mountPath: /etc/aes-key
           readOnly: true
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "100m"
+          limits:
+            memory: "128Mi"
+            cpu: "200m"
       volumes:
       - name: aes-key
         secret:
@@ -149,7 +172,8 @@ spec:
           items:
           - key: AES_SECRET_KEY
             path: key
-  backoffLimit: 3
+  backoffLimit: 1
+  ttlSecondsAfterFinished: 120
 ```
 
 ## Environment Variables Reference
@@ -217,15 +241,18 @@ spec:
 #### Job fails with "AES key file not found"
 
 ```bash
-kubectl get secret aes-secret-key -n default
+kubectl get secret aes-secret-key -n upm-system
 kubectl get secret aes-secret-key -o yaml
 ```
 
 #### Job fails with "Cannot connect to Kubernetes cluster"
 
 ```bash
-kubectl auth can-i create secrets --as=system:serviceaccount:default:aes-tool-sa
-kubectl get serviceaccount aes-tool-sa
+kubectl auth can-i get services -n kube-system --as=system:serviceaccount:upm-system:unit-operator
+kubectl auth can-i list services -n kube-system --as=system:serviceaccount:upm-system:unit-operator
+kubectl auth can-i get endpoints -n kube-system --as=system:serviceaccount:upm-system:unit-operator
+kubectl auth can-i list endpoints -n kube-system --as=system:serviceaccount:upm-system:unit-operator
+kubectl get serviceaccount unit-operator -n upm-system -o yaml | grep -i automount
 ```
 
 #### Job fails with "Secret not found"
@@ -305,20 +332,10 @@ resources:
 5. **Access control**: Limit RBAC permissions to the minimum required
 6. **Audit**: Enable audit logging for secret operations
 
-## Configuration Files
+## Manifests
 
-### RBAC Configuration (rbac.yaml)
-
-This tool ships with a complete RBAC configuration including:
-
-- ServiceAccount: `aes-tool-sa`
-- Role: Permissions for get, list, create, update, patch on Secrets
-- RoleBinding: Binds the role to the service account
-
-### Job Manifests
-
-- `generate-secret-job.yaml`: Job template for generating encrypted Secrets
-- `decrypt-secret-job.yaml`: Job template for decrypting existing Secrets
+- `generate-secret-job.yaml`: Job for generating encrypted Secrets (runs in `upm-system`, writes to `NAMESPACE`)
+- `decrypt-secret-job.yaml`: Job for decrypting existing Secrets (runs in `upm-system`)
 
 ## Support
 
