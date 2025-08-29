@@ -5,19 +5,14 @@ FROM golang:1.24-alpine AS builder
 RUN apk add --no-cache git ca-certificates
 
 # Set working directory
-WORKDIR /app
+WORKDIR /workspace
 
-# Copy go mod files
-COPY go.mod go.sum ./
-
-# Download dependencies
-RUN go mod download
-
-# Copy source code
+# Copy repository root (we build from monorepo root module)
 COPY . .
 
-# Build the application
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o aes-tool .
+# Build the tool binary from root module
+WORKDIR /workspace/tool
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /workspace/bin/aes-tool .
 
 # Runtime stage
 FROM alpine:3.18
@@ -48,10 +43,10 @@ RUN addgroup -g 1001 -S aes && \
 WORKDIR /app
 
 # Copy binary from builder stage
-COPY --from=builder /app/aes-tool /usr/local/bin/aes-tool
+COPY --from=builder /workspace/bin/aes-tool /usr/local/bin/aes-tool
 
-# Copy scripts
-COPY k8s-scripts/ /app/
+# Copy scripts (path relative to repository root)
+COPY tool/k8s-scripts/ /app/
 
 # Make scripts executable
 RUN chmod +x /app/*.sh
