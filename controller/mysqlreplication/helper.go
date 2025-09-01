@@ -61,9 +61,10 @@ func newMysqlAdmin(instance *composev1alpha1.MysqlReplication, password string, 
 func decryptSecret(client client.Client, reqLogger logr.Logger, instance *composev1alpha1.MysqlReplication) (string, string, error) {
 	passwords, err := k8sutil.DecryptSecretPasswords(
 		client,
-		reqLogger,
 		instance.Spec.Secret.Name,
 		instance.Namespace,
+		instance.Spec.AESSecret.Name,
+		instance.Spec.AESSecret.Key,
 		[]string{instance.Spec.Secret.Mysql, instance.Spec.Secret.Replication},
 	)
 	if err != nil {

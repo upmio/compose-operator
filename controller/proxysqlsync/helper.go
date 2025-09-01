@@ -72,9 +72,10 @@ func newProxysqlAdmin(instance *composev1alpha1.ProxysqlSync, password string, r
 func decryptSecret(client client.Client, reqLogger logr.Logger, instance *composev1alpha1.ProxysqlSync) (string, string, error) {
 	passwords, err := k8sutil.DecryptSecretPasswords(
 		client,
-		reqLogger,
 		instance.Spec.Secret.Name,
 		instance.Namespace,
+		instance.Spec.AESSecret.Name,
+		instance.Spec.AESSecret.Key,
 		[]string{instance.Spec.Secret.Mysql, instance.Spec.Secret.Proxysql},
 	)
 	if err != nil {

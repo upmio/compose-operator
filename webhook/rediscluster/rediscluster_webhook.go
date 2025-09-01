@@ -61,6 +61,13 @@ func (r *redisClusterAdmission) Default(ctx context.Context, obj runtime.Object)
 		instance.Spec.Secret.Redis = "redis"
 	}
 
+	if instance.Spec.AESSecret == nil {
+		instance.Spec.AESSecret = &v1alpha1.AESSecret{
+			Name: "aes-secret-key",
+			Key:  "AES_SECRET_KEY",
+		}
+	}
+
 	return nil
 }
 

@@ -19,13 +19,10 @@ SPDX-License-Identifier: Apache-2.0
 package main
 
 import (
-	"context"
 	"flag"
 	"fmt"
-	"github.com/upmio/compose-operator/pkg/utils"
 	"k8s.io/utils/ptr"
 	"os"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	"time"
 
 	"github.com/upmio/compose-operator/pkg/version"
@@ -135,18 +132,6 @@ func main() {
 	err = controller.Setup(mgr)
 	if err != nil {
 		setupLog.Error(err, "unable to setup manager")
-		os.Exit(1)
-	}
-
-	kubeClient, err := client.New(mgr.GetConfig(), client.Options{Scheme: scheme})
-	if err != nil {
-		setupLog.Error(err, "unable to create Kubernetes client")
-		os.Exit(1)
-	}
-
-	_, err = utils.NewSecretDecyptor(kubeClient, setupLog).ValidateAesSecret(context.Background())
-	if err != nil {
-		setupLog.Error(err, "unable to validate aes key secret")
 		os.Exit(1)
 	}
 

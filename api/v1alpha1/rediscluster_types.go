@@ -36,6 +36,9 @@ type RedisClusterSpec struct {
 	// Secret is the reference to the secret resource containing authentication information, it must be in the same namespace as the RedisReplication object.
 	Secret RedisClusterSecret `json:"secret"`
 
+	// AESSecret is the reference to the secret resource containing aes key, it must be in the same namespace as the RedisReplication Object.
+	AESSecret *AESSecret `json:"aesSecret,omitempty"`
+
 	// Members is a list of nodes in the Redis Cluster topology.
 	Members map[string]CommonNodes `json:"members"`
 }

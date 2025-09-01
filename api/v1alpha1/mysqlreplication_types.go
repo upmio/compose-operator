@@ -47,6 +47,9 @@ type MysqlReplicationSpec struct {
 	// Secret is the reference to the secret resource containing authentication information, it must be in the same namespace as the MysqlReplication object.
 	Secret MysqlReplicationSecret `json:"secret"`
 
+	// AESSecret is the reference to the secret resource containing aes key, it must be in the same namespace as the MysqlReplication Object.
+	AESSecret *AESSecret `json:"aesSecret,omitempty"`
+
 	// Source references the source MySQL node.
 	Source *CommonNode `json:"source"`
 

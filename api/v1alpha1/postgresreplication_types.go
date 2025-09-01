@@ -47,6 +47,9 @@ type PostgresReplicationSpec struct {
 	// Secret is the reference to the secret resource containing authentication information, it must be in the same namespace as the PostgresReplication object.
 	Secret PostgresReplicationSecret `json:"secret"`
 
+	// AESSecret is the reference to the secret resource containing aes key, it must be in the same namespace as the PostgresReplication Object.
+	AESSecret *AESSecret `json:"aesSecret,omitempty"`
+
 	// Primary references the primary Postgres node.
 	Primary *CommonNode `json:"primary"`
 

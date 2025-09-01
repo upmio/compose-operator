@@ -63,6 +63,12 @@ func (r *mysqlGroupReplicationAdmission) Default(ctx context.Context, obj runtim
 	if instance.Spec.Secret.Replication == "" {
 		instance.Spec.Secret.Replication = "replication"
 	}
+	if instance.Spec.AESSecret == nil {
+		instance.Spec.AESSecret = &v1alpha1.AESSecret{
+			Name: "aes-secret-key",
+			Key:  "AES_SECRET_KEY",
+		}
+	}
 
 	return nil
 }

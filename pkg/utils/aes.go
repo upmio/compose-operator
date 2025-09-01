@@ -19,20 +19,11 @@ SPDX-License-Identifier: Apache-2.0
 package utils
 
 import (
-	"context"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
-	"github.com/go-logr/logr"
-	"io"
-	corev1 "k8s.io/api/core/v1"
-	kubeErrors "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
-	"os"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 const (
@@ -114,114 +105,4 @@ func AES_CTR_Decrypt(encryptedData []byte, aesKey string) ([]byte, error) {
 	stream.XORKeyStream(plaintext, ciphertext)
 
 	return plaintext, nil
-}
-
-type Decryptor interface {
-	Decrypt(context.Context, []byte) ([]byte, error)
-
-	ValidateAesSecret(ctx context.Context) (string, error)
-}
-type SecretDecryptor struct {
-	aesSecretNamespace string
-	aesSecretName      string
-	c                  client.Client
-	reqlogger          logr.Logger
-}
-
-func NewSecretDecyptor(client client.Client, reqLogger logr.Logger) Decryptor {
-	aesSecretName := os.Getenv(AESSecretNameENVKey)
-	if aesSecretName == "" {
-		reqLogger.Info("No AES secret name specified, using default")
-		aesSecretName = defaultAESSecretName
-	}
-
-	aesSecretNamespace := os.Getenv(AESSecretNamespaceENVKey)
-	if aesSecretNamespace == "" {
-		reqLogger.Info("No AES secret namespace specified, using default")
-		aesSecretNamespace = defaultAESSecretNamespace
-	}
-
-	return &SecretDecryptor{
-		reqlogger:          reqLogger,
-		c:                  client,
-		aesSecretName:      aesSecretName,
-		aesSecretNamespace: aesSecretNamespace,
-	}
-}
-
-func (d *SecretDecryptor) Decrypt(ctx context.Context, encryptedData []byte) ([]byte, error) {
-	aesKey, err := d.ValidateAesSecret(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	if len(aesKey) != 32 {
-		return nil, fmt.Errorf("aes secret key length does not match expected block size")
-	}
-
-	return AES_CTR_Decrypt(encryptedData, aesKey)
-}
-
-func (d *SecretDecryptor) ValidateAesSecret(ctx context.Context) (string, error) {
-	secret := &corev1.Secret{}
-
-	err := d.c.Get(ctx, types.NamespacedName{
-		Name:      d.aesSecretName,
-		Namespace: d.aesSecretNamespace,
-	}, secret)
-	if err != nil {
-		if kubeErrors.IsNotFound(err) {
-			return d.createAesSecret(ctx)
-		}
-		return "", fmt.Errorf("failed to fetch aes secret [%s]: %v", d.aesSecretName, err)
-	}
-
-	aeskey, ok := secret.Data[defaultAESSecretKey]
-	if !ok {
-		return d.updateAesSecret(ctx, secret)
-	}
-
-	return string(aeskey), nil
-}
-
-func (d *SecretDecryptor) createAesSecret(ctx context.Context) (string, error) {
-	data, err := d.generateAES256Key()
-	if err != nil {
-		return "", err
-	}
-	secret := &corev1.Secret{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      d.aesSecretName,
-			Namespace: d.aesSecretNamespace,
-		},
-		Data: map[string][]byte{
-			defaultAESSecretKey: []byte(data),
-		},
-		Type: corev1.SecretTypeOpaque,
-	}
-
-	err = d.c.Create(ctx, secret)
-	return data, err
-}
-
-func (d *SecretDecryptor) updateAesSecret(ctx context.Context, secret *corev1.Secret) (string, error) {
-	data, err := d.generateAES256Key()
-	if err != nil {
-		return "", err
-	}
-
-	secret.Data[defaultAESSecretKey] = []byte(data)
-
-	err = d.c.Update(ctx, secret)
-	return string(data), err
-}
-
-// generateAES256KeyAndIV generate AES-256 key
-func (d *SecretDecryptor) generateAES256Key() (string, error) {
-	key := make([]byte, aes.BlockSize)
-	if _, err := io.ReadFull(rand.Reader, key); err != nil {
-		return "", err
-	}
-
-	return hex.EncodeToString(key), nil
 }

@@ -194,6 +194,16 @@ type Rule struct {
 	Pattern string   `json:"pattern"`
 }
 
+// AESSecret defines the secret information of AES Key
+type AESSecret struct {
+	// Name is the name of the secret resource which store aes key.
+	// +kubebuilder:default:=aes-secret-key
+	Name string `json:"name"`
+	// Key is the key of the secret, which contains the value used to decrypt aes key
+	// +kubebuilder:default:=AES_SECRET_KEY
+	Key string `json:"key"`
+}
+
 const (
 	ConditionTypeTopologyReady = "TopologyReady"
 	ConditionTypeResourceReady = "ResourceReady"
@@ -227,16 +237,6 @@ func DefaultPostgresReplicationOwnerReferences(instance *PostgresReplication) []
 			Group:   GroupVersion.Group,
 			Version: GroupVersion.Version,
 			Kind:    "PostgresReplication",
-		}),
-	}
-}
-
-func DefaultMongoDBReplicasetOwnerReferences(instance *MongoDBReplicaset) []metav1.OwnerReference {
-	return []metav1.OwnerReference{
-		*metav1.NewControllerRef(instance, schema.GroupVersionKind{
-			Group:   GroupVersion.Group,
-			Version: GroupVersion.Version,
-			Kind:    "MongoDBReplicaset",
 		}),
 	}
 }

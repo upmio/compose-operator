@@ -68,6 +68,13 @@ func (r *redisReplicationAdmission) Default(ctx context.Context, obj runtime.Obj
 		instance.Spec.Service.Type = v1alpha1.ServiceTypeClusterIP
 	}
 
+	if instance.Spec.AESSecret == nil {
+		instance.Spec.AESSecret = &v1alpha1.AESSecret{
+			Name: "aes-secret-key",
+			Key:  "AES_SECRET_KEY",
+		}
+	}
+
 	return nil
 }
 

@@ -58,9 +58,10 @@ func newMongoAdmin(instance *composev1alpha1.MongoDBReplicaset, password string,
 func decryptSecret(client client.Client, reqLogger logr.Logger, instance *composev1alpha1.MongoDBReplicaset) (string, error) {
 	password, err := k8sutil.DecryptSecretPasswords(
 		client,
-		reqLogger,
 		instance.Spec.Secret.Name,
 		instance.Namespace,
+		instance.Spec.AESSecret.Name,
+		instance.Spec.AESSecret.Key,
 		[]string{instance.Spec.Secret.Mongod},
 	)
 	if err != nil {

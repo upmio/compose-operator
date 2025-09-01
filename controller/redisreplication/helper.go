@@ -60,9 +60,10 @@ func newRedisAdmin(instance *composev1alpha1.RedisReplication, password string, 
 func decryptSecret(client client.Client, reqLogger logr.Logger, instance *composev1alpha1.RedisReplication) (string, error) {
 	passwords, err := k8sutil.DecryptSecretPasswords(
 		client,
-		reqLogger,
 		instance.Spec.Secret.Name,
 		instance.Namespace,
+		instance.Spec.AESSecret.Name,
+		instance.Spec.AESSecret.Key,
 		[]string{instance.Spec.Secret.Redis},
 	)
 	if err != nil {

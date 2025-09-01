@@ -21,7 +21,6 @@ package k8sutil
 import (
 	"context"
 	"fmt"
-	"github.com/go-logr/logr"
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
@@ -32,13 +31,19 @@ import (
 )
 
 // DecryptSecretPasswords decrypts multiple passwords from a Kubernetes Secret, returning a map of key->password
-func DecryptSecretPasswords(client client.Client, reqLogger logr.Logger, secretName, namespace string, keys []string) (map[string]string, error) {
-	decryptor := utils.NewSecretDecyptor(client, reqLogger)
+func DecryptSecretPasswords(client client.Client, secretName, namespace, aesSecretName, aesSecretKey string, keys []string) (map[string]string, error) {
 
-	secret := &corev1.Secret{}
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	err := client.Get(ctx, types.NamespacedName{
+
+	aesKey, err := getAesKey(ctx, client, aesSecretName, aesSecretKey)
+	if err != nil {
+		return nil, err
+	}
+
+	secret := &corev1.Secret{}
+
+	err = client.Get(ctx, types.NamespacedName{
 		Name:      secretName,
 		Namespace: namespace,
 	}, secret)
@@ -49,9 +54,8 @@ func DecryptSecretPasswords(client client.Client, reqLogger logr.Logger, secretN
 
 	passwords := make(map[string]string)
 	for _, key := range keys {
-		decrypted, err := decryptor.Decrypt(ctx, secret.Data[key])
 
-		//decrypted, err := utils.AES_CTR_Decrypt(secret.Data[key])
+		decrypted, err := utils.AES_CTR_Decrypt(secret.Data[key], aesKey)
 		if err != nil {
 			return nil, fmt.Errorf("failed to decrypt secret [%s] key '%s': %v", secretName, key, err)
 		}
@@ -59,4 +63,27 @@ func DecryptSecretPasswords(client client.Client, reqLogger logr.Logger, secretN
 	}
 
 	return passwords, nil
+}
+
+func getAesKey(ctx context.Context, c client.Client, aesSecretName, aesSecretKey string) (string, error) {
+	secret := &corev1.Secret{}
+
+	err := c.Get(ctx, types.NamespacedName{
+		Name:      aesSecretName,
+		Namespace: aesSecretKey,
+	}, secret)
+	if err != nil {
+		return "", fmt.Errorf("failed to fetch aes secret [%s]: %v", aesSecretName, err)
+	}
+
+	aesKey, ok := secret.Data[aesSecretKey]
+	if !ok {
+		return "", fmt.Errorf("failed to found key %s from aes secret [%s]", aesSecretKey, aesSecretName)
+	}
+
+	if len(aesKey) != 32 {
+		return "", fmt.Errorf("aes secret key length does not match expected block size")
+	}
+
+	return string(aesKey), nil
 }

@@ -36,6 +36,9 @@ type RedisReplicationSpec struct {
 	// Secret is the reference to the secret resource containing authentication information, it must be in the same namespace as the RedisReplication object.
 	Secret RedisReplicationSecret `json:"secret"`
 
+	// AESSecret is the reference to the secret resource containing aes key, it must be in the same namespace as the RedisReplication Object.
+	AESSecret *AESSecret `json:"aesSecret,omitempty"`
+
 	// Source references the source Redis node.
 	Source *CommonNode `json:"source"`
 

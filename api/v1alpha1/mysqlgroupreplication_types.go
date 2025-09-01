@@ -40,6 +40,9 @@ type MysqlGroupReplicationSpec struct {
 	// Secret is the reference to the secret resource containing authentication information, it must be in the same namespace as the MysqlGroupReplication object.
 	Secret MysqlGroupReplicationSecret `json:"secret"`
 
+	// AESSecret is the reference to the secret resource containing aes key, it must be in the same namespace as the MysqlGroupReplication Object.
+	AESSecret *AESSecret `json:"aesSecret,omitempty"`
+
 	// Member is a list of nodes in the MySQL Group Replication topology.
 	Member CommonNodes `json:"member"`
 }

@@ -43,6 +43,9 @@ type ProxysqlSyncSpec struct {
 	// Secret is the reference to the secret resource containing authentication information, it must be in the same namespace as the ProxysqlSync object.
 	Secret ProxysqlSyncSecret `json:"secret"`
 
+	// AESSecret is the reference to the secret resource containing aes key, it must be in the same namespace as the ProxysqlSync Object.
+	AESSecret *AESSecret `json:"aesSecret,omitempty"`
+
 	// MysqlReplication references the name of MysqlReplication.
 	MysqlReplication string `json:"mysqlReplication"`
 

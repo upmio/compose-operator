@@ -37,6 +37,9 @@ type MongoDBReplicasetSpec struct {
 	// Secret is the reference to the secret resource containing authentication information, it must be in the same namespace as the MongoDBReplicaset object.
 	Secret MongoDBReplicasetSecret `json:"secret"`
 
+	// AESSecret is the reference to the secret resource containing aes key, it must be in the same namespace as the MongoDBReplicaset Object.
+	AESSecret *AESSecret `json:"aesSecret,omitempty"`
+
 	// Member is a list of nodes in the MongoDB Replica Set topology.
 	Member CommonNodes `json:"member"`
 
