@@ -119,12 +119,12 @@ validate_yaml() {
   local yaml_file="$1"
   
   if ! yq eval '.' "$yaml_file" > /dev/null 2>&1; then
-    log_error "YAML格式验证失败: $yaml_file"
-    log_error "请检查YAML文件的语法和格式"
+    log_error "YAML validation failed: $yaml_file"
+    log_error "Please check the YAML file's syntax and formatting"
     return 1
   fi
   
-  log_debug "YAML格式验证通过: $yaml_file"
+  log_debug "YAML validation passed: $yaml_file"
   return 0
 }
 

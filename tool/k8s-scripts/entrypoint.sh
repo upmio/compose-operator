@@ -37,13 +37,37 @@ load_aes_key() {
   export AES_KEY
 }
 
-# Function to check kubectl connectivity
+# Function to check required permissions against Secrets only
 check_kubectl() {
-  if ! kubectl cluster-info &>/dev/null; then
-    log_error "Cannot connect to Kubernetes cluster. Please check your kubeconfig."
-    exit 1
-  fi
-  log_info "Successfully connected to Kubernetes cluster"
+  local namespace
+  namespace="${NAMESPACE:-default}"
+
+  # Determine required verbs based on COMMAND
+  local required_verbs=()
+  case "${COMMAND:-}" in
+    "generate")
+      # create + patch are sufficient for apply/label flows
+      required_verbs=(create patch)
+      ;;
+    "decrypt")
+      required_verbs=(get)
+      ;;
+    *)
+      required_verbs=(get)
+      ;;
+  esac
+
+  # Check RBAC for each required verb on secrets in the target namespace
+  for verb in "${required_verbs[@]}"; do
+    local can
+    can=$(kubectl auth can-i "$verb" secrets -n "$namespace" 2>/dev/null || true)
+    if [[ "$can" != "yes" ]]; then
+      log_error "Insufficient RBAC: cannot $verb secrets in namespace '$namespace' for current ServiceAccount"
+      exit 1
+    fi
+  done
+
+  log_info "RBAC check passed for secrets in namespace '$namespace'"
 }
 
 # Function to show help
