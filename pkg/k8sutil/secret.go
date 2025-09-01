@@ -36,7 +36,7 @@ func DecryptSecretPasswords(client client.Client, secretName, namespace, aesSecr
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	aesKey, err := getAesKey(ctx, client, aesSecretName, aesSecretKey)
+	aesKey, err := getAesKey(ctx, client, aesSecretName, namespace, aesSecretKey)
 	if err != nil {
 		return nil, err
 	}
@@ -65,12 +65,12 @@ func DecryptSecretPasswords(client client.Client, secretName, namespace, aesSecr
 	return passwords, nil
 }
 
-func getAesKey(ctx context.Context, c client.Client, aesSecretName, aesSecretKey string) (string, error) {
+func getAesKey(ctx context.Context, c client.Client, aesSecretName, namespace, aesSecretKey string) (string, error) {
 	secret := &corev1.Secret{}
 
 	err := c.Get(ctx, types.NamespacedName{
 		Name:      aesSecretName,
-		Namespace: aesSecretKey,
+		Namespace: namespace,
 	}, secret)
 	if err != nil {
 		return "", fmt.Errorf("failed to fetch aes secret [%s]: %v", aesSecretName, err)
