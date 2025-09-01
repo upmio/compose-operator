@@ -215,6 +215,10 @@ var _ = Describe("RedisReplication Controller", func() {
 							Name:  resourceName,
 							Redis: "redis",
 						},
+						AESSecret: &composev1alpha1.AESSecret{
+							Name: "AESSecret",
+							Key:  "AESKey",
+						},
 						Source: &composev1alpha1.CommonNode{
 							Name: fmt.Sprintf("%s-0", resourceName),
 							Host: sourceHost,

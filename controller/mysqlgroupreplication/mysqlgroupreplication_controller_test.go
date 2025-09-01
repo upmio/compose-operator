@@ -279,6 +279,10 @@ var _ = Describe("MysqlReplication Controller", func() {
 							Mysql:       username,
 							Replication: username,
 						},
+						AESSecret: &composev1alpha1.AESSecret{
+							Name: "AESSecret",
+							Key:  "AESKey",
+						},
 						Member: composev1alpha1.CommonNodes{
 							&composev1alpha1.CommonNode{
 								Name: fmt.Sprintf("%s-0", resourceName),

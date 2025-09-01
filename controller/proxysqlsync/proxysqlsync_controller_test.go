@@ -77,6 +77,10 @@ var _ = Describe("ProxysqlSyncController", func() {
 						Mysql:    "mysql",
 						Proxysql: "proxysql",
 					},
+					AESSecret: &composev1alpha1.AESSecret{
+						Name: "AESSecret",
+						Key:  "AESKey",
+					},
 					Proxysql: composev1alpha1.CommonNodes{
 						{
 							Name: "node02",

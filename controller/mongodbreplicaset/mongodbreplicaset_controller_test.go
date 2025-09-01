@@ -51,6 +51,10 @@ func TestReconcileMongoDBReplicaset_ValidateInstance(t *testing.T) {
 				Name:   "mongodb-secret",
 				Mongod: "mongod",
 			},
+			AESSecret: &composev1alpha1.AESSecret{
+				Name: "AESSecret",
+				Key:  "AESKey",
+			},
 			Member: composev1alpha1.CommonNodes{
 				{
 					Name: "mongodb-0",

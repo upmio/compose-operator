@@ -223,6 +223,10 @@ var _ = Describe("PostgresReplication Controller", func() {
 							Postgresql:  username,
 							Replication: username,
 						},
+						AESSecret: &composev1alpha1.AESSecret{
+							Name: "AESSecret",
+							Key:  "AESKey",
+						},
 						Primary: &composev1alpha1.CommonNode{
 							Name: fmt.Sprintf("%s-0", resourceName),
 							Host: sourceHost,

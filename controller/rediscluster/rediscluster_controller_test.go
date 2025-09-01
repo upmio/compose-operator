@@ -270,6 +270,10 @@ var _ = Describe("RedisCluster Controller", func() {
 							Name:  resourceName,
 							Redis: "redis",
 						},
+						AESSecret: &composev1alpha1.AESSecret{
+							Name: "AESSecret",
+							Key:  "AESKey",
+						},
 						Members: map[string]composev1alpha1.CommonNodes{
 							"shard01": {
 								&composev1alpha1.CommonNode{
