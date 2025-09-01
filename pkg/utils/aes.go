@@ -26,15 +26,6 @@ import (
 	"fmt"
 )
 
-const (
-	AESSecretNameENVKey      = "AES_SECRET_NAME"
-	AESSecretNamespaceENVKey = "NAMESPACE"
-
-	defaultAESSecretNamespace = "upm-system"
-	defaultAESSecretName      = "aes-secret-key"
-	defaultAESSecretKey       = "AES_SECRET_KEY"
-)
-
 // AES_CTR_Encrypt encrypts plaintext and returns base64 encoded string (for backward compatibility)
 func AES_CTR_Encrypt(plainText []byte, aesKey string) ([]byte, error) {
 

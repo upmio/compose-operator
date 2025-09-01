@@ -84,7 +84,7 @@ var encryptCmd = &cobra.Command{
 
 		if stdout {
 			// Output to stdout
-			os.Stdout.Write(encryptedBytes)
+			_, _ = os.Stdout.Write(encryptedBytes)
 		} else {
 			// Output to file
 			filename := fmt.Sprintf("%s.bin", username)
