@@ -62,8 +62,8 @@ const (
 	SyncResourceFailed  = "SyncResourceFailed"
 	SyncResourceSucceed = "SyncResourceSucceed"
 
-	readOnlyKey = "compose-operator.postgresreplication.readonly"
-	defaultKey  = "compose-operator.postgresreplication.name"
+	readOnlyKey = "compose-operator/postgres-replication.readonly"
+	defaultKey  = "compose-operator/postgres-replication.name"
 
 	portName      = "postgresql"
 	containerName = "postgresql"

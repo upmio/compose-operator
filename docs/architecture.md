@@ -253,7 +253,7 @@ Manages Redis master-slave replication with the following features:
 3. **Service Management**: Creates read and write services for Redis master and slave nodes respectively by updating Redis Pod labels and creating Services, enabling applications to implement read-write separation.
 
 4. **Sentinel Compatibility**: Compatible with Redis Sentinel Architecture by adding `skip-reconcile=true` key-value pairs in Annotation, avoiding operation of Redis master-slave clusters and delivering master-slave role settings to the Sentinel Manager.
-   - When `spec.sentinel` is provided, the controller writes the label `compose-operator.redisreplication.source=<current-source-pod>` to each listed Sentinel pod (or `unknown` if the source cannot be determined). Sentinel containers can read this label at startup to inject the active master into their configuration after restarts.
+   - When `spec.sentinel` is provided, the controller writes the label `compose-operator/redis-replication.source=<current-source-pod>` to each listed Sentinel pod (or `unknown` if the source cannot be determined). Sentinel containers can read this label at startup to inject the active master into their configuration after restarts.
 
 ### RedisCluster
 
@@ -855,12 +855,11 @@ Pod discovery      Source/Primary     Add labels      Service selectors      Ser
 The operator manages Kubernetes services by:
 1. **Pod Discovery**: Identifies database pods by hostname/name matching
 2. **Label Management**: Applies labels to pods based on their replication role:
-   - `compose-operator.io/role: source` (for source/primary pods)
-   - `compose-operator.io/role: replica` (for replica/standby pods)
-   - `compose-operator.io/resource: <resource-name>`
+   - `compose-operator/readonly: false` (for source/primary pods)
+   - `compose-operator/readonly: true` (for replica/standby pods)
 3. **Service Creation**: Creates services with selectors matching the labels:
-   - Write service: Selects pods with `role: source`
-   - Read service: Selects pods with `role: replica`
+   - Write service: Selects pods with `readonly: false`
+   - Read service: Selects pods with `readonly: true`
 
 ### 5. Manual Failover/Switchover Flow
 

@@ -55,9 +55,9 @@ const (
 	SyncResourceFailed  = "SyncResourceFailed"
 	SyncResourceSucceed = "SyncResourceSucceed"
 
-	readOnlyKey       = "compose-operator.redisreplication.readonly"
-	defaultKey        = "compose-operator.redisreplication.name"
-	sentinelSourceKey = "compose-operator.redisreplication.source"
+	readOnlyKey       = "compose-operator/redis-replication.readonly"
+	defaultKey        = "compose-operator/redis-replication.name"
+	sentinelSourceKey = "compose-operator/redis-replication.source"
 
 	portName = "redis"
 )

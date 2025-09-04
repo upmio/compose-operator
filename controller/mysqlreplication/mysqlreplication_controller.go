@@ -55,8 +55,8 @@ const (
 	SyncResourceFailed  = "SyncResourceFailed"
 	SyncResourceSucceed = "SyncResourceSucceed"
 
-	readOnlyKey = "compose-operator.mysqlreplication.readonly"
-	defaultKey  = "compose-operator.mysqlreplication.name"
+	readOnlyKey = "compose-operator/mysql-replication.readonly"
+	defaultKey  = "compose-operator/mysql-replication.name"
 
 	portName = "mysql"
 )

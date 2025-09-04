@@ -59,6 +59,25 @@ spec:
           spec:
             description: Defines the desired state of the RedisReplication.
             properties:
+              aesSecret:
+                description: AESSecret is the reference to the secret resource containing
+                  aes key, it must be in the same namespace as the RedisReplication
+                  Object.
+                properties:
+                  key:
+                    default: AES_SECRET_KEY
+                    description: Key is the key of the secret, which contains the
+                      value used to decrypt aes key
+                    type: string
+                  name:
+                    default: aes-secret-key
+                    description: Name is the name of the secret resource which store
+                      aes key.
+                    type: string
+                required:
+                - key
+                - name
+                type: object
               replica:
                 description: Replica is a list of replica nodes in the Redis replication
                   topology.
@@ -97,6 +116,12 @@ spec:
                 - name
                 - redis
                 type: object
+              sentinel:
+                description: Sentinel is a list of Redis Sentinel node addresses for
+                  high availability monitoring.
+                items:
+                  type: string
+                type: array
               service:
                 description: Service references the service providing the Redis replication
                   endpoint.

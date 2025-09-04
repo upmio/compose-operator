@@ -56,7 +56,7 @@ const (
 	SyncResourceFailed  = "SyncResourceFailed"
 	SyncResourceSucceed = "SyncResourceSucceed"
 
-	defaultKey = "compose-operator.mongodbreplicaset.name"
+	defaultKey = "compose-operator/mongodb-replicaset.name"
 )
 
 // ReconcileMongoDBReplicaset reconciles a MongoDBReplicaset object

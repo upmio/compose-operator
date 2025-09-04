@@ -56,7 +56,7 @@ const (
 	SyncResourceFailed  = "SyncResourceFailed"
 	SyncResourceSucceed = "SyncResourceSucceed"
 
-	defaultKey = "compose-operator.mysqlgroupreplication.name"
+	defaultKey = "compose-operator/mysql-group-replication.name"
 )
 
 // ReconcileMysqlGroupReplication reconciles a MysqlGroupReplication object
