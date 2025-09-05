@@ -262,7 +262,7 @@ metadata:
     capabilities: Full Lifecycle
     categories: Application Runtime
     containerImage: quay.io/upmio/compose-operator@sha256:5d265b8b5689946b3862f9a5a458ede17cdfb5d3095f00607ecb6f38d55942a9
-    createdAt: "2025-09-05T01:46:49Z"
+    createdAt: "2025-09-05T04:03:01Z"
     features.operators.openshift.io/disconnected: "true"
     features.operators.openshift.io/fips-compliant: "true"
     features.operators.openshift.io/proxy-aware: "false"
@@ -277,6 +277,11 @@ metadata:
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
+  dependencies:
+  - type: olm.package
+    value:
+      packageName: cert-manager
+      version: ">=1.0.0"
   customresourcedefinitions:
     owned:
     - kind: MysqlGroupReplication

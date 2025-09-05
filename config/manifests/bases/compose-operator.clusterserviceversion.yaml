@@ -74,10 +74,7 @@ spec:
                 app.kubernetes.io/version: v1.1.0
             spec:
               containers:
-              - envFrom:
-                - secretRef:
-                    name: aes-secret-key
-                image: quay.io/upmio/compose-operator:v1.1.0
+              - image: quay.io/upmio/compose-operator:v1.1.0
                 imagePullPolicy: IfNotPresent
                 livenessProbe:
                   httpGet:
