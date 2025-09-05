@@ -5,7 +5,7 @@ metadata:
     alm-examples: '[]'
     capabilities: Full Lifecycle
     categories: Application Runtime
-    containerImage: quay.io/upmio/compose-operator@sha256:db98e9b0f28abe6f8fc6ea39fb4f5f3a14850026fee3889109e46d0a1f448bb1
+    containerImage: quay.io/upmio/compose-operator@sha256:5d265b8b5689946b3862f9a5a458ede17cdfb5d3095f00607ecb6f38d55942a9
     features.operators.openshift.io/disconnected: "true"
     features.operators.openshift.io/fips-compliant: "true"
     features.operators.openshift.io/proxy-aware: "false"
@@ -129,6 +129,6 @@ spec:
     name: syntropycloud
     url: syntropycloud.io
   relatedImages:
-  - image: quay.io/upmio/compose-operator@sha256:db98e9b0f28abe6f8fc6ea39fb4f5f3a14850026fee3889109e46d0a1f448bb1
+  - image: quay.io/upmio/compose-operator@sha256:5d265b8b5689946b3862f9a5a458ede17cdfb5d3095f00607ecb6f38d55942a9
     name: compose-operator
   version: 0.0.0
