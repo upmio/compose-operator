@@ -44,7 +44,7 @@ The Compose Operator is a cloud-native solution that manages traditional databas
 
 ### Prerequisites
 
-- Kubernetes 1.20+
+- Kubernetes 1.29+
 - Helm 3.0+
 - Database instances with appropriate user permissions
 

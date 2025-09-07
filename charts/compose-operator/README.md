@@ -1,6 +1,6 @@
 # Compose Operator Helm Chart
 
-This Helm chart installs the [Compose Operator](https://github.com/upmio/compose-operator) into your Kubernetes (v1.27+) or Openshift cluster (v4.6+).
+This Helm chart installs the [Compose Operator](https://github.com/upmio/compose-operator) into your Kubernetes (v1.29+) or Openshift cluster (v4.14+).
 
 ## TL;DR
 
