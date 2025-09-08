@@ -61,6 +61,24 @@ func (r *redisReplicationAdmission) Default(ctx context.Context, obj runtime.Obj
 		instance.Spec.Secret.Redis = "redis"
 	}
 
+	if instance.Spec.Source.AnnounceHost == "" {
+		instance.Spec.Source.AnnounceHost = instance.Spec.Source.Host
+	}
+
+	if instance.Spec.Source.AnnouncePort == 0 {
+		instance.Spec.Source.AnnouncePort = instance.Spec.Source.Port
+	}
+
+	for index, node := range instance.Spec.Replica {
+		if node.AnnounceHost == "" {
+			instance.Spec.Replica[index].AnnounceHost = instance.Spec.Replica[index].Host
+		}
+
+		if node.AnnouncePort == 0 {
+			instance.Spec.Replica[index].AnnouncePort = instance.Spec.Replica[index].Port
+		}
+	}
+
 	// Set default service type
 	if instance.Spec.Service == nil {
 		instance.Spec.Service = &v1alpha1.Service{Type: v1alpha1.ServiceTypeClusterIP}
@@ -199,7 +217,7 @@ func (r *redisReplicationAdmission) validateRedisReplication(instance *v1alpha1.
 }
 
 // validateCommonNode validates common node fields
-func (r *redisReplicationAdmission) validateCommonNode(nodeType string, node *v1alpha1.CommonNode, fieldPath *field.Path) field.ErrorList {
+func (r *redisReplicationAdmission) validateCommonNode(nodeType string, node *v1alpha1.RedisNode, fieldPath *field.Path) field.ErrorList {
 	var allErrs field.ErrorList
 
 	// Validate name
@@ -226,6 +244,8 @@ func (r *redisReplicationAdmission) validateCommonNode(nodeType string, node *v1
 			))
 		}
 	}
+
+	// Validate announce host
 
 	// Validate port
 	if node.Port <= 0 || node.Port > 65535 {

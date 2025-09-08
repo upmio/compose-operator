@@ -93,6 +93,16 @@ func compareNodes(nodeA, nodeB *composev1alpha1.RedisReplicationNode, reqLogger 
 		return true
 	}
 
+	if utils.CompareStringValue("Node.AnnounceHost", nodeA.AnnounceHost, nodeB.AnnounceHost, reqLogger) {
+		reqLogger.Info(fmt.Sprintf("found status.Topology[Node].AnnounceHost changed: the old one is %v, new one is %v", nodeB.AnnounceHost, nodeA.AnnounceHost))
+		return true
+	}
+
+	if utils.CompareInt32("Node.AnnouncePort", int32(nodeA.AnnouncePort), int32(nodeB.AnnouncePort), reqLogger) {
+		reqLogger.Info(fmt.Sprintf("found status.Topology[Node].AnnouncePort changed: the old one is %d, new one is %d", nodeB.AnnouncePort, nodeA.AnnouncePort))
+		return true
+	}
+
 	if utils.CompareStringValue("Node.Role", string(nodeA.Role), string(nodeB.Role), reqLogger) {
 		reqLogger.Info(fmt.Sprintf("found status.Topology[Node].Role changed: the old one is %s, new one is %s", nodeB.Role, nodeA.Role))
 		return true
@@ -126,20 +136,24 @@ func buildDefaultTopologyStatus(instance *composev1alpha1.RedisReplication) comp
 	status.Topology = make(composev1alpha1.RedisReplicationTopology)
 	status.Conditions = instance.Status.Conditions
 	status.Topology[instance.Spec.Source.Name] = &composev1alpha1.RedisReplicationNode{
-		Host:   instance.Spec.Source.Host,
-		Port:   instance.Spec.Source.Port,
-		Role:   composev1alpha1.RedisReplicationNodeRoleNone,
-		Status: composev1alpha1.NodeStatusKO,
-		Ready:  false,
+		Host:         instance.Spec.Source.Host,
+		Port:         instance.Spec.Source.Port,
+		AnnounceHost: instance.Spec.Source.AnnounceHost,
+		AnnouncePort: instance.Spec.Source.AnnouncePort,
+		Role:         composev1alpha1.RedisReplicationNodeRoleNone,
+		Status:       composev1alpha1.NodeStatusKO,
+		Ready:        false,
 	}
 
 	for _, replica := range instance.Spec.Replica {
 		status.Topology[replica.Name] = &composev1alpha1.RedisReplicationNode{
-			Host:   replica.Host,
-			Port:   replica.Port,
-			Role:   composev1alpha1.RedisReplicationNodeRoleNone,
-			Status: composev1alpha1.NodeStatusKO,
-			Ready:  false,
+			Host:         replica.Host,
+			Port:         replica.Port,
+			AnnounceHost: replica.AnnounceHost,
+			AnnouncePort: replica.AnnouncePort,
+			Role:         composev1alpha1.RedisReplicationNodeRoleNone,
+			Status:       composev1alpha1.NodeStatusKO,
+			Ready:        false,
 		}
 	}
 

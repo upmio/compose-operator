@@ -71,8 +71,11 @@ spec:
                 description: Replica is a list of replica nodes in the Redis replication
                   topology.
                 items:
-                  description: CommonNode information for node to connect
                   properties:
+                    announceHost:
+                      type: string
+                    announcePort:
+                      type: integer
                     host:
                       description: Host specifies the ip or hostname of node
                       type: string
@@ -130,6 +133,10 @@ spec:
               source:
                 description: Source references the source Redis node.
                 properties:
+                  announceHost:
+                    type: string
+                  announcePort:
+                    type: integer
                   host:
                     description: Host specifies the ip or hostname of node
                     type: string
@@ -233,6 +240,14 @@ spec:
                   description: RedisReplicationNode represents a node in the Redis
                     replication topology.
                   properties:
+                    announceHost:
+                      description: AnnounceHost indicates the announce host of the
+                        Redis node.
+                      type: string
+                    announcePort:
+                      description: AnnouncePort indicates the announce port of the
+                        Redis node.
+                      type: integer
                     host:
                       description: Host indicates the host of the Redis node.
                       type: string
@@ -260,6 +275,8 @@ spec:
                         (e.g., Healthy, Failed).
                       type: string
                   required:
+                  - announceHost
+                  - announcePort
                   - host
                   - port
                   - ready

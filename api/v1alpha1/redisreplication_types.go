@@ -40,10 +40,10 @@ type RedisReplicationSpec struct {
 	AESSecret *AESSecret `json:"aesSecret,omitempty"`
 
 	// Source references the source Redis node.
-	Source *CommonNode `json:"source"`
+	Source *RedisNode `json:"source"`
 
 	// Replica is a list of replica nodes in the Redis replication topology.
-	Replica CommonNodes `json:"replica,omitempty"`
+	Replica RedisNodes `json:"replica,omitempty"`
 
 	// Service references the service providing the Redis replication endpoint.
 	Service *Service `json:"service"`
@@ -59,6 +59,12 @@ type RedisReplicationNode struct {
 
 	// Port indicates the port of the Redis node.
 	Port int `json:"port"`
+
+	// AnnounceHost indicates the announce host of the Redis node.
+	AnnounceHost string `json:"announceHost"`
+
+	// AnnouncePort indicates the announce port of the Redis node.
+	AnnouncePort int `json:"announcePort"`
 
 	// Role represents the role of the node in the replication topology (e.g., source, replica).
 	Role RedisReplicationRole `json:"role"`

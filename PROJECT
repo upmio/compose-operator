@@ -30,9 +30,26 @@ resources:
   controller: true
   domain: syntropycloud.io
   group: upm
+  kind: MysqlGroupReplication
+  path: github.com/upmio/compose-operator/api/v1alpha1
+  version: v1alpha1
+  webhooks:
+    defaulting: true
+    validation: true
+    webhookVersion: v1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: syntropycloud.io
+  group: upm
   kind: RedisCluster
   path: github.com/upmio/compose-operator/api/v1alpha1
   version: v1alpha1
+  webhooks:
+    defaulting: true
+    validation: true
+    webhookVersion: v1
 - api:
     crdVersion: v1
     namespaced: true
@@ -42,6 +59,10 @@ resources:
   kind: RedisReplication
   path: github.com/upmio/compose-operator/api/v1alpha1
   version: v1alpha1
+  webhooks:
+    defaulting: true
+    validation: true
+    webhookVersion: v1
 - api:
     crdVersion: v1
     namespaced: true
@@ -51,22 +72,34 @@ resources:
   kind: ProxysqlSync
   path: github.com/upmio/compose-operator/api/v1alpha1
   version: v1alpha1
+  webhooks:
+    defaulting: true
+    validation: true
+    webhookVersion: v1
 - api:
     crdVersion: v1
     namespaced: true
   controller: true
-  domain: upm.io
+  domain: syntropycloud.io
   group: upm
   kind: PostgresReplication
   path: github.com/upmio/compose-operator/api/v1alpha1
   version: v1alpha1
+  webhooks:
+    defaulting: true
+    validation: true
+    webhookVersion: v1
 - api:
     crdVersion: v1
     namespaced: true
   controller: true
-  domain: upm.io
+  domain: syntropycloud.io
   group: upm
   kind: MongoDBReplicaset
   path: github.com/upmio/compose-operator/api/v1alpha1
   version: v1alpha1
+  webhooks:
+    defaulting: true
+    validation: true
+    webhookVersion: v1
 version: "3"

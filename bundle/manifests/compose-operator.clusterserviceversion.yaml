@@ -6,6 +6,41 @@ metadata:
       [
         {
           "apiVersion": "upm.syntropycloud.io/v1alpha1",
+          "kind": "MongoDBReplicaset",
+          "metadata": {
+            "labels": {
+              "app.kubernetes.io/managed-by": "kustomize",
+              "app.kubernetes.io/name": "compose-operator"
+            },
+            "name": "mongodbreplicaset-sample"
+          },
+          "spec": {
+            "member": [
+              {
+                "host": "mongodb-0.mongodb.default.svc.cluster.local",
+                "name": "mongodb-0",
+                "port": 27017
+              },
+              {
+                "host": "mongodb-1.mongodb.default.svc.cluster.local",
+                "name": "mongodb-1",
+                "port": 27017
+              },
+              {
+                "host": "mongodb-2.mongodb.default.svc.cluster.local",
+                "name": "mongodb-2",
+                "port": 27017
+              }
+            ],
+            "replicaSetName": "rs0",
+            "secret": {
+              "mongod": "mongod",
+              "name": "mongodb-secret"
+            }
+          }
+        },
+        {
+          "apiVersion": "upm.syntropycloud.io/v1alpha1",
           "kind": "MysqlGroupReplication",
           "metadata": {
             "labels": {
@@ -262,7 +297,7 @@ metadata:
     capabilities: Full Lifecycle
     categories: Application Runtime
     containerImage: quay.io/upmio/compose-operator@sha256:5d265b8b5689946b3862f9a5a458ede17cdfb5d3095f00607ecb6f38d55942a9
-    createdAt: "2025-09-08T02:24:03Z"
+    createdAt: "2025-09-08T05:01:07Z"
     features.operators.openshift.io/disconnected: "true"
     features.operators.openshift.io/fips-compliant: "true"
     features.operators.openshift.io/proxy-aware: "false"
@@ -279,7 +314,15 @@ spec:
   apiservicedefinitions: {}
   customresourcedefinitions:
     owned:
-    - kind: MysqlGroupReplication
+    - description: MongoDBReplicaset is the Schema for the MongoDB Replica Set API
+      displayName: Mongo DBReplicaset
+      kind: MongoDBReplicaset
+      name: mongodbreplicasets.upm.syntropycloud.io
+      version: v1alpha1
+    - description: MysqlGroupReplication is the Schema for the Mysql Group Replication
+        API
+      displayName: Mysql Group Replication
+      kind: MysqlGroupReplication
       name: mysqlgroupreplications.upm.syntropycloud.io
       version: v1alpha1
     - description: MysqlReplication is the Schema for the Mysql Replication API
@@ -546,6 +589,7 @@ spec:
   - Redis-Cluster
   - Redis
   - PostgreSQL
+  - MongoDB-ReplicaSet
   links:
   - name: syntropycloud
     url: https://syntropycloud.io
@@ -563,17 +607,38 @@ spec:
     - v1
     containerPort: 443
     conversionCRDs:
+    - mongodbreplicasets.upm.syntropycloud.io
     - mysqlreplications.upm.syntropycloud.io
     - postgresreplications.upm.syntropycloud.io
     - proxysqlsyncs.upm.syntropycloud.io
     - redisclusters.upm.syntropycloud.io
     - redisreplications.upm.syntropycloud.io
     deploymentName: compose-operator-webhook
-    generateName: cmysqlreplicationspostgresreplicationsproxysqlsyncsredisclustersredisreplications.kb.io
+    generateName: cmongodbreplicasetsmysqlreplicationspostgresreplicationsproxysqlsyncsredisclustersredisreplications.kb.io
     sideEffects: None
     targetPort: 9443
     type: ConversionWebhook
     webhookPath: /convert
+  - admissionReviewVersions:
+    - v1
+    containerPort: 443
+    deploymentName: compose-operator-webhook
+    failurePolicy: Fail
+    generateName: mmongodbreplicaset.kb.io
+    rules:
+    - apiGroups:
+      - upm.syntropycloud.io
+      apiVersions:
+      - v1alpha1
+      operations:
+      - CREATE
+      - UPDATE
+      resources:
+      - mongodbreplicasets
+    sideEffects: None
+    targetPort: 9443
+    type: MutatingAdmissionWebhook
+    webhookPath: /mutate-upm-syntropycloud-io-v1alpha1-mongodbreplicaset
   - admissionReviewVersions:
     - v1
     containerPort: 443
@@ -694,6 +759,26 @@ spec:
     targetPort: 9443
     type: MutatingAdmissionWebhook
     webhookPath: /mutate-upm-syntropycloud-io-v1alpha1-redisreplication
+  - admissionReviewVersions:
+    - v1
+    containerPort: 443
+    deploymentName: compose-operator-webhook
+    failurePolicy: Fail
+    generateName: vmongodbreplicaset.kb.io
+    rules:
+    - apiGroups:
+      - upm.syntropycloud.io
+      apiVersions:
+      - v1alpha1
+      operations:
+      - CREATE
+      - UPDATE
+      resources:
+      - mongodbreplicasets
+    sideEffects: None
+    targetPort: 9443
+    type: ValidatingAdmissionWebhook
+    webhookPath: /validate-upm-syntropycloud-io-v1alpha1-mongodbreplicaset
   - admissionReviewVersions:
     - v1
     containerPort: 443

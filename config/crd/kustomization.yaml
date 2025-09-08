@@ -8,7 +8,7 @@ resources:
 - bases/upm.syntropycloud.io_proxysqlsyncs.yaml
 - bases/upm.syntropycloud.io_postgresreplications.yaml
 - bases/upm.syntropycloud.io_mysqlgroupreplications.yaml
-
+- bases/upm.syntropycloud.io_mongodbreplicasets.yaml
 #+kubebuilder:scaffold:crdkustomizeresource
 
 patches:
@@ -19,15 +19,19 @@ patches:
 - path: patches/webhook_in_redisreplications.yaml
 - path: patches/webhook_in_proxysqlsyncs.yaml
 - path: patches/webhook_in_postgresreplications.yaml
+- path: patches/webhook_in_postgresreplications.yaml
+- path: patches/webhook_in_mongodbreplicasets.yaml
 #+kubebuilder:scaffold:crdkustomizewebhookpatch
 
 # [CERTMANAGER] To enable cert-manager, uncomment all the sections with [CERTMANAGER] prefix.
 # patches here are for enabling the CA injection for each CRD
 #- path: patches/cainjection_in_mysqlreplications.yaml
+#- path: patches/cainjection_in_mysqlgroupreplications.yaml
 #- path: patches/cainjection_in_redisclusters.yaml
 #- path: patches/cainjection_in_redisreplications.yaml
 #- path: patches/cainjection_in_proxysqlsyncs.yaml
 #- path: patches/cainjection_in_postgresreplications.yaml
+#- path: patches/cainjection_in_mongodbreplicasets.yaml
 #+kubebuilder:scaffold:crdkustomizecainjectionpatch
 
 # [WEBHOOK] To enable webhook, uncomment the following section

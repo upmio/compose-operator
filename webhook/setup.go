@@ -21,6 +21,7 @@ package webhook
 import (
 	ctrl "sigs.k8s.io/controller-runtime"
 
+	"github.com/upmio/compose-operator/webhook/mongodbreplicaset"
 	"github.com/upmio/compose-operator/webhook/mysqlgroupreplication"
 	"github.com/upmio/compose-operator/webhook/mysqlreplication"
 	"github.com/upmio/compose-operator/webhook/postgresreplication"
@@ -39,6 +40,7 @@ func Setup(mgr ctrl.Manager) error {
 		proxysqlsync.Setup,
 		rediscluster.Setup,
 		redisreplication.Setup,
+		mongodbreplicaset.Setup,
 	} {
 		if err := setup(mgr); err != nil {
 			return err

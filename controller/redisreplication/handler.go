@@ -21,15 +21,13 @@ package redisreplication
 import (
 	"errors"
 	"fmt"
-	"net"
-	"strconv"
-	"strings"
-
 	corev1 "k8s.io/api/core/v1"
 	kubeErrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"net"
+	"strconv"
 
 	composev1alpha1 "github.com/upmio/compose-operator/api/v1alpha1"
 	"github.com/upmio/compose-operator/pkg/redisutil"
@@ -134,7 +132,7 @@ func (r *ReconcileRedisReplication) ensureSourceNode(syncCtx *syncContext, repli
 
 func (r *ReconcileRedisReplication) ensureReplicaNode(syncCtx *syncContext,
 	replicationInfo *redisutil.ReplicationInfo,
-	replica *composev1alpha1.CommonNode) error {
+	replica *composev1alpha1.RedisNode) error {
 
 	instance := syncCtx.instance
 	admin := syncCtx.admin
@@ -277,28 +275,21 @@ func (r *ReconcileRedisReplication) ensureSentinelPodLabels(syncCtx *syncContext
 	instance := syncCtx.instance
 
 	// Find source nodes from topology
-	var sourceNodes []string
-	for address, node := range instance.Status.Topology {
+	sourceNodes := make([]*composev1alpha1.RedisReplicationNode, 0)
+
+	for _, node := range instance.Status.Topology {
 		if node.Role == composev1alpha1.RedisReplicationNodeRoleSource {
-			sourceNodes = append(sourceNodes, address)
+			sourceNodes = append(sourceNodes, node)
 		}
 	}
 
 	// Determine the label value based on source node count
-	labelValue := "unknown"
+	hostLabelValue := "unknown"
+	portLabelValue := "unknown"
 
 	if len(sourceNodes) == 1 {
-		// Extract pod name from address (format: host:port)
-		// This assumes the address format is "pod-name:port" or "pod-name.namespace:port"
-		podName := sourceNodes[0]
-		if portIndex := strings.Index(podName, ":"); portIndex != -1 {
-			podName = podName[:portIndex]
-		}
-		// Remove namespace if present
-		if nsIndex := strings.Index(podName, "."); nsIndex != -1 {
-			podName = podName[:nsIndex]
-		}
-		labelValue = podName
+		hostLabelValue = sourceNodes[0].AnnounceHost
+		portLabelValue = strconv.Itoa(sourceNodes[0].AnnouncePort)
 	}
 
 	var errs []error
@@ -320,16 +311,19 @@ func (r *ReconcileRedisReplication) ensureSentinelPodLabels(syncCtx *syncContext
 		}
 
 		// Check if the sentinel source label already has the correct value
-		if currentValue, ok := foundPod.Labels[sentinelSourceKey]; !ok || currentValue != labelValue {
-			// Update the sentinel source label
-			foundPod.Labels[sentinelSourceKey] = labelValue
+		if currentHostLabelValue, ok := foundPod.Labels[sentinelSourceHostKey]; !ok || currentHostLabelValue != hostLabelValue {
+			foundPod.Labels[sentinelSourceHostKey] = hostLabelValue
+
+			if currentPortLabelValue, ok := foundPod.Labels[sentinelSourcePortKey]; !ok || currentPortLabelValue != portLabelValue {
+				foundPod.Labels[sentinelSourcePortKey] = portLabelValue
+			}
 
 			// Update pod
 			if err := r.client.Update(ctx, foundPod); err != nil {
 				errs = append(errs, fmt.Errorf("failed to update sentinel pod [%s]: %v", sentinelPodName, err))
 				continue
 			}
-			r.recorder.Eventf(instance, corev1.EventTypeNormal, Synced, "sentinel pod [%s] update source label to [%s] successfully", sentinelPodName, labelValue)
+			r.recorder.Eventf(instance, corev1.EventTypeNormal, Synced, "sentinel pod [%s] update source label successfully", sentinelPodName)
 		}
 	}
 

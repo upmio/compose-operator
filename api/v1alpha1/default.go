@@ -63,6 +63,15 @@ type ReplicaNode struct {
 
 type ReplicaNodes []*ReplicaNode
 
+type RedisNode struct {
+	CommonNode `json:",inline"`
+
+	AnnounceHost string `json:"announceHost,omitempty"`
+	AnnouncePort int    `json:"announcePort,omitempty"`
+}
+
+type RedisNodes []*RedisNode
+
 // ServiceType reflection of kubernetes service type
 // +kubebuilder:validation:Enum=ClusterIP;NodePort;LoadBalancer;ExternalName
 type ServiceType string

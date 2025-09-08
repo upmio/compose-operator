@@ -20,16 +20,27 @@ spec:
   apiservicedefinitions: {}
   customresourcedefinitions:
     owned:
-    - description: PostgresReplication is the Schema for the Postgres Replications
+    - description: MongoDBReplicaset is the Schema for the MongoDB Replica Set API
+      displayName: Mongo DBReplicaset
+      kind: MongoDBReplicaset
+      name: mongodbreplicasets.upm.syntropycloud.io
+      version: v1alpha1
+    - description: MysqlGroupReplication is the Schema for the Mysql Group Replication
         API
-      displayName: Postgres Replication
-      kind: PostgresReplication
-      name: postgresreplications.upm.syntropycloud.io
+      displayName: Mysql Group Replication
+      kind: MysqlGroupReplication
+      name: mysqlgroupreplications.upm.syntropycloud.io
       version: v1alpha1
     - description: MysqlReplication is the Schema for the Mysql Replication API
       displayName: Mysql Replication
       kind: MysqlReplication
       name: mysqlreplications.upm.syntropycloud.io
+      version: v1alpha1
+    - description: PostgresReplication is the Schema for the Postgres Replications
+        API
+      displayName: Postgres Replication
+      kind: PostgresReplication
+      name: postgresreplications.upm.syntropycloud.io
       version: v1alpha1
     - description: ProxysqlSync is the Schema for the proxysqlsyncs API
       displayName: Proxysql Sync
@@ -114,6 +125,7 @@ spec:
   - Redis-Cluster
   - Redis
   - PostgreSQL
+  - MongoDB-ReplicaSet
   links:
   - name: syntropycloud
     url: https://syntropycloud.io
