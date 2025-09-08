@@ -297,7 +297,7 @@ metadata:
     capabilities: Full Lifecycle
     categories: Application Runtime
     containerImage: quay.io/upmio/compose-operator@sha256:5d265b8b5689946b3862f9a5a458ede17cdfb5d3095f00607ecb6f38d55942a9
-    createdAt: "2025-09-08T05:01:07Z"
+    createdAt: "2025-09-08T06:54:38Z"
     features.operators.openshift.io/disconnected: "true"
     features.operators.openshift.io/fips-compliant: "true"
     features.operators.openshift.io/proxy-aware: "false"
@@ -613,7 +613,7 @@ spec:
     - proxysqlsyncs.upm.syntropycloud.io
     - redisclusters.upm.syntropycloud.io
     - redisreplications.upm.syntropycloud.io
-    deploymentName: compose-operator-webhook
+    deploymentName: compose-operator-controller-manager
     generateName: cmongodbreplicasetsmysqlreplicationspostgresreplicationsproxysqlsyncsredisclustersredisreplications.kb.io
     sideEffects: None
     targetPort: 9443
@@ -622,7 +622,7 @@ spec:
   - admissionReviewVersions:
     - v1
     containerPort: 443
-    deploymentName: compose-operator-webhook
+    deploymentName: compose-operator-controller-manager
     failurePolicy: Fail
     generateName: mmongodbreplicaset.kb.io
     rules:
@@ -642,7 +642,7 @@ spec:
   - admissionReviewVersions:
     - v1
     containerPort: 443
-    deploymentName: compose-operator-webhook
+    deploymentName: compose-operator-controller-manager
     failurePolicy: Fail
     generateName: mmysqlgroupreplication.kb.io
     rules:
@@ -662,7 +662,7 @@ spec:
   - admissionReviewVersions:
     - v1
     containerPort: 443
-    deploymentName: compose-operator-webhook
+    deploymentName: compose-operator-controller-manager
     failurePolicy: Fail
     generateName: mmysqlreplication.kb.io
     rules:
@@ -682,7 +682,7 @@ spec:
   - admissionReviewVersions:
     - v1
     containerPort: 443
-    deploymentName: compose-operator-webhook
+    deploymentName: compose-operator-controller-manager
     failurePolicy: Fail
     generateName: mpostgresreplication.kb.io
     rules:
@@ -702,7 +702,7 @@ spec:
   - admissionReviewVersions:
     - v1
     containerPort: 443
-    deploymentName: compose-operator-webhook
+    deploymentName: compose-operator-controller-manager
     failurePolicy: Fail
     generateName: mproxysqlsync.kb.io
     rules:
@@ -722,7 +722,7 @@ spec:
   - admissionReviewVersions:
     - v1
     containerPort: 443
-    deploymentName: compose-operator-webhook
+    deploymentName: compose-operator-controller-manager
     failurePolicy: Fail
     generateName: mrediscluster.kb.io
     rules:
@@ -742,7 +742,7 @@ spec:
   - admissionReviewVersions:
     - v1
     containerPort: 443
-    deploymentName: compose-operator-webhook
+    deploymentName: compose-operator-controller-manager
     failurePolicy: Fail
     generateName: mredisreplication.kb.io
     rules:
@@ -762,7 +762,7 @@ spec:
   - admissionReviewVersions:
     - v1
     containerPort: 443
-    deploymentName: compose-operator-webhook
+    deploymentName: compose-operator-controller-manager
     failurePolicy: Fail
     generateName: vmongodbreplicaset.kb.io
     rules:
@@ -782,7 +782,7 @@ spec:
   - admissionReviewVersions:
     - v1
     containerPort: 443
-    deploymentName: compose-operator-webhook
+    deploymentName: compose-operator-controller-manager
     failurePolicy: Fail
     generateName: vmysqlgroupreplication.kb.io
     rules:
@@ -802,7 +802,7 @@ spec:
   - admissionReviewVersions:
     - v1
     containerPort: 443
-    deploymentName: compose-operator-webhook
+    deploymentName: compose-operator-controller-manager
     failurePolicy: Fail
     generateName: vmysqlreplication.kb.io
     rules:
@@ -822,7 +822,7 @@ spec:
   - admissionReviewVersions:
     - v1
     containerPort: 443
-    deploymentName: compose-operator-webhook
+    deploymentName: compose-operator-controller-manager
     failurePolicy: Fail
     generateName: vpostgresreplication.kb.io
     rules:
@@ -842,7 +842,7 @@ spec:
   - admissionReviewVersions:
     - v1
     containerPort: 443
-    deploymentName: compose-operator-webhook
+    deploymentName: compose-operator-controller-manager
     failurePolicy: Fail
     generateName: vproxysqlsync.kb.io
     rules:
@@ -862,7 +862,7 @@ spec:
   - admissionReviewVersions:
     - v1
     containerPort: 443
-    deploymentName: compose-operator-webhook
+    deploymentName: compose-operator-controller-manager
     failurePolicy: Fail
     generateName: vrediscluster.kb.io
     rules:
@@ -882,7 +882,7 @@ spec:
   - admissionReviewVersions:
     - v1
     containerPort: 443
-    deploymentName: compose-operator-webhook
+    deploymentName: compose-operator-controller-manager
     failurePolicy: Fail
     generateName: vredisreplication.kb.io
     rules:

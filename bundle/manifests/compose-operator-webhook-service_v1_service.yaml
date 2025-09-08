@@ -16,6 +16,8 @@ spec:
     protocol: TCP
     targetPort: 9443
   selector:
-    control-plane: controller-manager
+    app.kubernetes.io/component: controller
+    app.kubernetes.io/instance: compose-operator
+    app.kubernetes.io/name: compose-operator
 status:
   loadBalancer: {}
