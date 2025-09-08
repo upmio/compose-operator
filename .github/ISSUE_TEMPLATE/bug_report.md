@@ -38,7 +38,7 @@ assignees: ''
 
 **Please complete the following information:**
 
-- **Kubernetes Version**: [e.g., v1.28.2]
+- **Kubernetes Version**: [e.g., v1.29.0]
 - **Operator Version**: [e.g., v1.0.0]
 - **Installation Method**: [e.g., Helm, manual manifests]
 - **Database Versions**: 

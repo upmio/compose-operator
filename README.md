@@ -44,7 +44,7 @@ The Compose Operator is a cloud-native solution that manages traditional databas
 
 ### Prerequisites
 
-- Kubernetes 1.20+
+- Kubernetes 1.29+
 - Helm 3.0+
 - Database instances with appropriate user permissions
 
@@ -152,7 +152,7 @@ kubectl apply -f mysql-replication.yaml
 kubectl get mysqlreplication mysql-replication-semi-sync-sample -o yaml
 
 # Monitor replication status
-kubectl describe mysqlreplicationmysql-replication-semi-sync-sample
+kubectl describe mysqlreplication mysql-replication-semi-sync-sample
 
 # Verify services created
 kubectl get services | grep mysql-replication-semi-sync-sample

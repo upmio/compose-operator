@@ -84,7 +84,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `apiVersion` _string_ | `upm.syntropycloud.io/v1alpha1` | | |
 | `kind` _string_ | `MysqlGroupReplication` | | |
-| `metadata` _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#objectmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
+| `metadata` _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#objectmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
 | `spec` _[MysqlGroupReplicationSpec](#mysqlgroupreplicationspec)_ | Defines the desired state of the MysqlGroupReplication. |  |  |
 | `status` _[MysqlGroupReplicationStatus](#mysqlgroupreplicationstatus)_ | Populated by the system, it represents the current information about the MysqlGroupReplication. |  |  |
 
@@ -103,7 +103,7 @@ MysqlGroupReplicationList contains a list of MysqlGroupReplication
 | --- | --- | --- | --- |
 | `apiVersion` _string_ | `upm.syntropycloud.io/v1alpha1` | | |
 | `kind` _string_ | `MysqlGroupReplicationList` | | |
-| `metadata` _[ListMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#listmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
+| `metadata` _[ListMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#listmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
 | `items` _[MysqlGroupReplication](#mysqlgroupreplication) array_ | Contains the list of MysqlGroupReplication. |  |  |
 
 
@@ -194,7 +194,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `topology` _[MysqlGroupReplicationTopology](#mysqlgroupreplicationtopology)_ | Topology indicates the current MySQL Group Replication topology. |  |  |
 | `ready` _boolean_ | Ready indicates whether this MysqlGroupReplication object is ready or not. |  |  |
-| `conditions` _[Condition](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#condition-v1-meta) array_ | Represents a list of detailed status of the MysqlGroupReplication object. Each condition in the list provides real-time information about certain aspect of the MysqlGroupReplication object.<br /><br />This field is crucial for administrators and developers to monitor and respond to changes within the MysqlGroupReplication. It provides a history of state transitions and a snapshot of the current state that can be used for automated logic or direct inspection. |  |  |
+| `conditions` _[Condition](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#condition-v1-meta) array_ | Represents a list of detailed status of the MysqlGroupReplication object. Each condition in the list provides real-time information about certain aspect of the MysqlGroupReplication object.<br /><br />This field is crucial for administrators and developers to monitor and respond to changes within the MysqlGroupReplication. It provides a history of state transitions and a snapshot of the current state that can be used for automated logic or direct inspection. |  |  |
 
 
 
@@ -225,7 +225,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `apiVersion` _string_ | `upm.syntropycloud.io/v1alpha1` | | |
 | `kind` _string_ | `MysqlReplication` | | |
-| `metadata` _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#objectmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
+| `metadata` _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#objectmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
 | `spec` _[MysqlReplicationSpec](#mysqlreplicationspec)_ | Defines the desired state of the MysqlReplication. |  |  |
 
 
@@ -243,7 +243,7 @@ MysqlReplicationList contains a list of MysqlReplication
 | --- | --- | --- | --- |
 | `apiVersion` _string_ | `upm.syntropycloud.io/v1alpha1` | | |
 | `kind` _string_ | `MysqlReplicationList` | | |
-| `metadata` _[ListMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#listmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
+| `metadata` _[ListMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#listmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
 | `items` _[MysqlReplication](#mysqlreplication) array_ | Contains the list of MysqlReplication. |  |  |
 
 
@@ -373,7 +373,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `apiVersion` _string_ | `upm.syntropycloud.io/v1alpha1` | | |
 | `kind` _string_ | `PostgresReplication` | | |
-| `metadata` _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#objectmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
+| `metadata` _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#objectmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
 | `spec` _[PostgresReplicationSpec](#postgresreplicationspec)_ | Defines the desired state of the PostgresReplication. |  |  |
 
 
@@ -391,7 +391,7 @@ PostgresReplicationList contains a list of PostgresReplication
 | --- | --- | --- | --- |
 | `apiVersion` _string_ | `upm.syntropycloud.io/v1alpha1` | | |
 | `kind` _string_ | `PostgresReplicationList` | | |
-| `metadata` _[ListMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#listmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
+| `metadata` _[ListMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#listmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
 | `items` _[PostgresReplication](#postgresreplication) array_ | Contains the list of PostgresReplication. |  |  |
 
 
@@ -511,7 +511,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `apiVersion` _string_ | `upm.syntropycloud.io/v1alpha1` | | |
 | `kind` _string_ | `ProxysqlSync` | | |
-| `metadata` _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#objectmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
+| `metadata` _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#objectmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
 | `spec` _[ProxysqlSyncSpec](#proxysqlsyncspec)_ | Defines the desired state of the ProxysqlSync. |  |  |
 
 

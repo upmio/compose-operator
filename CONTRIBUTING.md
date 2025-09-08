@@ -40,7 +40,7 @@ Steps to reproduce the behavior:
 A clear and concise description of what you expected to happen.
 
 **Environment:**
-- Kubernetes version: [e.g. v1.25.0]
+- Kubernetes version: [e.g. v1.29.0]
 - Operator version: [e.g. v1.0.0]
 - Database versions: [e.g. MySQL 8.0.30]
 
