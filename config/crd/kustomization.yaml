@@ -14,13 +14,13 @@ resources:
 patches:
 # [WEBHOOK] To enable webhook, uncomment all the sections with [WEBHOOK] prefix.
 # patches here are for enabling the conversion webhook for each CRD
-- path: patches/webhook_in_mysqlreplications.yaml
-- path: patches/webhook_in_redisclusters.yaml
-- path: patches/webhook_in_redisreplications.yaml
-- path: patches/webhook_in_proxysqlsyncs.yaml
-- path: patches/webhook_in_postgresreplications.yaml
-- path: patches/webhook_in_postgresreplications.yaml
-- path: patches/webhook_in_mongodbreplicasets.yaml
+#- path: patches/webhook_in_mysqlreplications.yaml
+#- path: patches/webhook_in_redisclusters.yaml
+#- path: patches/webhook_in_redisreplications.yaml
+#- path: patches/webhook_in_proxysqlsyncs.yaml
+#- path: patches/webhook_in_postgresreplications.yaml
+#- path: patches/webhook_in_postgresreplications.yaml
+#- path: patches/webhook_in_mongodbreplicasets.yaml
 #+kubebuilder:scaffold:crdkustomizewebhookpatch
 
 # [CERTMANAGER] To enable cert-manager, uncomment all the sections with [CERTMANAGER] prefix.

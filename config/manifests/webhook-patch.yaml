@@ -5,7 +5,7 @@
       admissionReviewVersions:
         - v1
       containerPort: 9443
-      targetPort: 9443
+      targetPort: 443
       deploymentName: controller-manager
       failurePolicy: Fail
       generateName: mmysqlreplication.kb.io
@@ -25,7 +25,7 @@
       admissionReviewVersions:
         - v1
       containerPort: 9443
-      targetPort: 9443
+      targetPort: 443
       deploymentName: controller-manager
       failurePolicy: Fail
       generateName: vmysqlreplication.kb.io

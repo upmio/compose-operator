@@ -6,16 +6,6 @@ metadata:
   creationTimestamp: null
   name: redisclusters.upm.syntropycloud.io
 spec:
-  conversion:
-    strategy: Webhook
-    webhook:
-      clientConfig:
-        service:
-          name: compose-operator-webhook-service
-          namespace: upm-system
-          path: /convert
-      conversionReviewVersions:
-      - v1
   group: upm.syntropycloud.io
   names:
     kind: RedisCluster

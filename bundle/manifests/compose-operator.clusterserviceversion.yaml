@@ -297,7 +297,7 @@ metadata:
     capabilities: Full Lifecycle
     categories: Application Runtime
     containerImage: quay.io/upmio/compose-operator@sha256:5d265b8b5689946b3862f9a5a458ede17cdfb5d3095f00607ecb6f38d55942a9
-    createdAt: "2025-09-08T06:54:38Z"
+    createdAt: "2025-09-08T07:28:28Z"
     features.operators.openshift.io/disconnected: "true"
     features.operators.openshift.io/fips-compliant: "true"
     features.operators.openshift.io/proxy-aware: "false"
@@ -603,22 +603,6 @@ spec:
     url: syntropycloud.io
   version: 1.1.0
   webhookdefinitions:
-  - admissionReviewVersions:
-    - v1
-    containerPort: 443
-    conversionCRDs:
-    - mongodbreplicasets.upm.syntropycloud.io
-    - mysqlreplications.upm.syntropycloud.io
-    - postgresreplications.upm.syntropycloud.io
-    - proxysqlsyncs.upm.syntropycloud.io
-    - redisclusters.upm.syntropycloud.io
-    - redisreplications.upm.syntropycloud.io
-    deploymentName: compose-operator-controller-manager
-    generateName: cmongodbreplicasetsmysqlreplicationspostgresreplicationsproxysqlsyncsredisclustersredisreplications.kb.io
-    sideEffects: None
-    targetPort: 9443
-    type: ConversionWebhook
-    webhookPath: /convert
   - admissionReviewVersions:
     - v1
     containerPort: 443
