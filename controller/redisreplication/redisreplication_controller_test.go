@@ -219,17 +219,21 @@ var _ = Describe("RedisReplication Controller", func() {
 							Name: "AESSecret",
 							Key:  "AESKey",
 						},
-						Source: &composev1alpha1.CommonNode{
-							Name: fmt.Sprintf("%s-0", resourceName),
-							Host: sourceHost,
-							Port: sourcePort,
+						Source: &composev1alpha1.RedisNode{
+							CommonNode: composev1alpha1.CommonNode{
+								Name: fmt.Sprintf("%s-0", resourceName),
+								Host: sourceHost,
+								Port: sourcePort,
+							},
 						},
 						Service: &composev1alpha1.Service{Type: composev1alpha1.ServiceTypeClusterIP},
-						Replica: composev1alpha1.CommonNodes{
-							{
-								Name: fmt.Sprintf("%s-1", resourceName),
-								Host: replicaHost,
-								Port: replicaPort,
+						Replica: composev1alpha1.RedisNodes{
+							&composev1alpha1.RedisNode{
+								CommonNode: composev1alpha1.CommonNode{
+									Name: fmt.Sprintf("%s-1", resourceName),
+									Host: replicaHost,
+									Port: replicaPort,
+								},
 							},
 						},
 					},
@@ -264,16 +268,21 @@ var _ = Describe("RedisReplication Controller", func() {
 				}
 
 				//test switchover
-				instance.Spec.Source = &composev1alpha1.CommonNode{
-					Name: fmt.Sprintf("%s-1", resourceName),
-					Host: replicaHost,
-					Port: sourcePort,
-				}
-				instance.Spec.Replica = composev1alpha1.CommonNodes{
-					{
-						Name: fmt.Sprintf("%s-0", resourceName),
-						Host: sourceHost,
+				instance.Spec.Source = &composev1alpha1.RedisNode{
+					CommonNode: composev1alpha1.CommonNode{
+						Name: fmt.Sprintf("%s-1", resourceName),
+						Host: replicaHost,
 						Port: sourcePort,
+					},
+				}
+
+				instance.Spec.Replica = composev1alpha1.RedisNodes{
+					&composev1alpha1.RedisNode{
+						CommonNode: composev1alpha1.CommonNode{
+							Name: fmt.Sprintf("%s-0", resourceName),
+							Host: sourceHost,
+							Port: sourcePort,
+						},
 					},
 				}
 

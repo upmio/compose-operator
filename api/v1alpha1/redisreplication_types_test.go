@@ -40,17 +40,21 @@ func TestRedisReplication(t *testing.T) {
 				Name:  "redisreplication-secret",
 				Redis: "root",
 			},
-			Source: &CommonNode{
-				Name: "node01",
-				Host: "10.0.0.1",
-				Port: 6379,
+			Source: &RedisNode{
+				CommonNode: CommonNode{
+					Name: "node01",
+					Host: "10.0.0.1",
+					Port: 6379,
+				},
 			},
 			Service: &Service{Type: ServiceTypeClusterIP},
-			Replica: CommonNodes{
-				&CommonNode{
-					Name: "node02",
-					Host: "10.0.0.2",
-					Port: 6379,
+			Replica: RedisNodes{
+				&RedisNode{
+					CommonNode: CommonNode{
+						Name: "node02",
+						Host: "10.0.0.2",
+						Port: 6379,
+					},
 				},
 			},
 		},
@@ -121,17 +125,21 @@ func TestRedisReplicationList(t *testing.T) {
 						Name:  "redisreplication-secret",
 						Redis: "root",
 					},
-					Source: &CommonNode{
-						Name: "node01",
-						Host: "10.0.0.1",
-						Port: 6379,
+					Source: &RedisNode{
+						CommonNode: CommonNode{
+							Name: "node01",
+							Host: "10.0.0.1",
+							Port: 6379,
+						},
 					},
 					Service: &Service{Type: ServiceTypeClusterIP},
-					Replica: CommonNodes{
-						&CommonNode{
-							Name: "node02",
-							Host: "10.0.0.2",
-							Port: 6379,
+					Replica: RedisNodes{
+						&RedisNode{
+							CommonNode: CommonNode{
+								Name: "node02",
+								Host: "10.0.0.2",
+								Port: 6379,
+							},
 						},
 					},
 				},
@@ -217,17 +225,21 @@ func TestRedisReplicationSpec(t *testing.T) {
 			Name:  "redisreplication-secret",
 			Redis: "root",
 		},
-		Source: &CommonNode{
-			Name: "node01",
-			Host: "10.0.0.1",
-			Port: 6379,
+		Source: &RedisNode{
+			CommonNode: CommonNode{
+				Name: "node01",
+				Host: "10.0.0.1",
+				Port: 6379,
+			},
 		},
 		Service: &Service{Type: ServiceTypeClusterIP},
-		Replica: CommonNodes{
-			&CommonNode{
-				Name: "node02",
-				Host: "10.0.0.2",
-				Port: 6379,
+		Replica: RedisNodes{
+			&RedisNode{
+				CommonNode: CommonNode{
+					Name: "node02",
+					Host: "10.0.0.2",
+					Port: 6379,
+				},
 			},
 		},
 	}

@@ -44,10 +44,12 @@ var _ = Describe("RedisReplication Webhook", func() {
 						Name: "test-secret",
 						// redis key is empty - should get default
 					},
-					Source: &v1alpha1.CommonNode{
-						Name: "source-node",
-						Host: "192.168.1.10",
-						Port: 6379,
+					Source: &v1alpha1.RedisNode{
+						CommonNode: v1alpha1.CommonNode{
+							Name: "source-node",
+							Host: "192.168.1.10",
+							Port: 6379,
+						},
 					},
 					// service is nil - should get default
 				},
@@ -72,10 +74,12 @@ var _ = Describe("RedisReplication Webhook", func() {
 					Secret: v1alpha1.RedisReplicationSecret{
 						Name: "test-secret",
 					},
-					Source: &v1alpha1.CommonNode{
-						Name: "source-node",
-						Host: "192.168.1.10",
-						Port: 6379,
+					Source: &v1alpha1.RedisNode{
+						CommonNode: v1alpha1.CommonNode{
+							Name: "source-node",
+							Host: "192.168.1.10",
+							Port: 6379,
+						},
 					},
 					Service: &v1alpha1.Service{
 						// Type is empty - should get default
@@ -101,10 +105,12 @@ var _ = Describe("RedisReplication Webhook", func() {
 						Name:  "test-secret",
 						Redis: "custom-redis",
 					},
-					Source: &v1alpha1.CommonNode{
-						Name: "source-node",
-						Host: "192.168.1.10",
-						Port: 6379,
+					Source: &v1alpha1.RedisNode{
+						CommonNode: v1alpha1.CommonNode{
+							Name: "source-node",
+							Host: "192.168.1.10",
+							Port: 6379,
+						},
 					},
 					Service: &v1alpha1.Service{Type: v1alpha1.ServiceTypeNodePort},
 				},
@@ -150,10 +156,12 @@ var _ = Describe("RedisReplication Webhook", func() {
 					Secret: v1alpha1.RedisReplicationSecret{
 						Name: "", // Empty secret name
 					},
-					Source: &v1alpha1.CommonNode{
-						Name: "source-node",
-						Host: "192.168.1.10",
-						Port: 6379,
+					Source: &v1alpha1.RedisNode{
+						CommonNode: v1alpha1.CommonNode{
+							Name: "source-node",
+							Host: "192.168.1.10",
+							Port: 6379,
+						},
 					},
 				},
 			}
@@ -174,10 +182,12 @@ var _ = Describe("RedisReplication Webhook", func() {
 						Name:  "test-secret",
 						Redis: "", // Empty redis key
 					},
-					Source: &v1alpha1.CommonNode{
-						Name: "source-node",
-						Host: "192.168.1.10",
-						Port: 6379,
+					Source: &v1alpha1.RedisNode{
+						CommonNode: v1alpha1.CommonNode{
+							Name: "source-node",
+							Host: "192.168.1.10",
+							Port: 6379,
+						},
 					},
 				},
 			}
@@ -198,10 +208,11 @@ var _ = Describe("RedisReplication Webhook", func() {
 						Name:  "test-secret",
 						Redis: "redis",
 					},
-					Source: &v1alpha1.CommonNode{
-						Name: "", // Empty node name
-						Host: "192.168.1.10",
-						Port: 6379,
+					Source: &v1alpha1.RedisNode{
+						CommonNode: v1alpha1.CommonNode{
+							Host: "192.168.1.10",
+							Port: 6379,
+						},
 					},
 				},
 			}
@@ -222,10 +233,11 @@ var _ = Describe("RedisReplication Webhook", func() {
 						Name:  "test-secret",
 						Redis: "redis",
 					},
-					Source: &v1alpha1.CommonNode{
-						Name: "source-node",
-						Host: "", // Empty host
-						Port: 6379,
+					Source: &v1alpha1.RedisNode{
+						CommonNode: v1alpha1.CommonNode{
+							Name: "source-node",
+							Port: 6379,
+						},
 					},
 				},
 			}
@@ -246,10 +258,12 @@ var _ = Describe("RedisReplication Webhook", func() {
 						Name:  "test-secret",
 						Redis: "redis",
 					},
-					Source: &v1alpha1.CommonNode{
-						Name: "source-node",
-						Host: "192.168.1.10",
-						Port: 99999, // Invalid port
+					Source: &v1alpha1.RedisNode{
+						CommonNode: v1alpha1.CommonNode{
+							Name: "source-node",
+							Host: "192.168.1.10",
+							Port: 99999,
+						},
 					},
 				},
 			}
@@ -270,10 +284,12 @@ var _ = Describe("RedisReplication Webhook", func() {
 						Name:  "test-secret",
 						Redis: "redis",
 					},
-					Source: &v1alpha1.CommonNode{
-						Name: "source-node",
-						Host: "invalid..host", // Invalid hostname
-						Port: 6379,
+					Source: &v1alpha1.RedisNode{
+						CommonNode: v1alpha1.CommonNode{
+							Name: "source-node",
+							Host: "invalid..hostname",
+							Port: 6379,
+						},
 					},
 				},
 			}
@@ -294,21 +310,27 @@ var _ = Describe("RedisReplication Webhook", func() {
 						Name:  "test-secret",
 						Redis: "redis",
 					},
-					Source: &v1alpha1.CommonNode{
-						Name: "source-node",
-						Host: "192.168.1.10",
-						Port: 6379,
-					},
-					Replica: v1alpha1.CommonNodes{
-						{
-							Name: "duplicate-replica", // Same name as next replica
-							Host: "192.168.1.11",
+					Source: &v1alpha1.RedisNode{
+						CommonNode: v1alpha1.CommonNode{
+							Name: "source-node",
+							Host: "192.168.1.10",
 							Port: 6379,
 						},
-						{
-							Name: "duplicate-replica", // Duplicate name
-							Host: "192.168.1.12",
-							Port: 6379,
+					},
+					Replica: v1alpha1.RedisNodes{
+						&v1alpha1.RedisNode{
+							CommonNode: v1alpha1.CommonNode{
+								Name: "duplicate-replica", // Same name as next replica
+								Host: "192.168.1.11",
+								Port: 6379,
+							},
+						},
+						&v1alpha1.RedisNode{
+							CommonNode: v1alpha1.CommonNode{
+								Name: "duplicate-replica", // Duplicate name
+								Host: "192.168.1.12",
+								Port: 6379,
+							},
 						},
 					},
 				},
@@ -330,16 +352,20 @@ var _ = Describe("RedisReplication Webhook", func() {
 						Name:  "test-secret",
 						Redis: "redis",
 					},
-					Source: &v1alpha1.CommonNode{
-						Name: "duplicate-node", // Same name as replica
-						Host: "192.168.1.10",
-						Port: 6379,
-					},
-					Replica: v1alpha1.CommonNodes{
-						{
-							Name: "duplicate-node", // Duplicate name with source
-							Host: "192.168.1.11",
+					Source: &v1alpha1.RedisNode{
+						CommonNode: v1alpha1.CommonNode{
+							Name: "duplicate-node", // Same name as replica
+							Host: "192.168.1.10",
 							Port: 6379,
+						},
+					},
+					Replica: v1alpha1.RedisNodes{
+						&v1alpha1.RedisNode{
+							CommonNode: v1alpha1.CommonNode{
+								Name: "duplicate-node", // Duplicate name with source
+								Host: "192.168.1.11",
+								Port: 6379,
+							},
 						},
 					},
 				},
@@ -361,16 +387,20 @@ var _ = Describe("RedisReplication Webhook", func() {
 						Name:  "test-secret",
 						Redis: "redis",
 					},
-					Source: &v1alpha1.CommonNode{
-						Name: "source-node",
-						Host: "192.168.1.10",
-						Port: 6379,
-					},
-					Replica: v1alpha1.CommonNodes{
-						{
-							Name: "replica-node",
-							Host: "invalid..hostname", // Invalid hostname
+					Source: &v1alpha1.RedisNode{
+						CommonNode: v1alpha1.CommonNode{
+							Name: "source-node",
+							Host: "192.168.1.10",
 							Port: 6379,
+						},
+					},
+					Replica: v1alpha1.RedisNodes{
+						&v1alpha1.RedisNode{
+							CommonNode: v1alpha1.CommonNode{
+								Name: "replica-node",
+								Host: "invalid..hostname", // Invalid hostname
+								Port: 6379,
+							},
 						},
 					},
 				},
@@ -392,10 +422,12 @@ var _ = Describe("RedisReplication Webhook", func() {
 						Name:  "test-secret",
 						Redis: "redis",
 					},
-					Source: &v1alpha1.CommonNode{
-						Name: "source-node",
-						Host: "192.168.1.10",
-						Port: 6379,
+					Source: &v1alpha1.RedisNode{
+						CommonNode: v1alpha1.CommonNode{
+							Name: "source-node",
+							Host: "192.168.1.10",
+							Port: 6379,
+						},
 					},
 					Service: &v1alpha1.Service{
 						Type: v1alpha1.ServiceType("InvalidServiceType"), // Invalid service type
@@ -419,10 +451,12 @@ var _ = Describe("RedisReplication Webhook", func() {
 						Name:  "test-secret",
 						Redis: "redis",
 					},
-					Source: &v1alpha1.CommonNode{
-						Name: "source-node",
-						Host: "192.168.1.10",
-						Port: 6379,
+					Source: &v1alpha1.RedisNode{
+						CommonNode: v1alpha1.CommonNode{
+							Name: "source-node",
+							Host: "192.168.1.10",
+							Port: 6379,
+						},
 					},
 					// No replicas - should generate warning
 				},
@@ -444,21 +478,27 @@ var _ = Describe("RedisReplication Webhook", func() {
 						Name:  "test-secret",
 						Redis: "redis",
 					},
-					Source: &v1alpha1.CommonNode{
-						Name: "source-node",
-						Host: "192.168.1.10",
-						Port: 6379,
-					},
-					Replica: v1alpha1.CommonNodes{
-						{
-							Name: "replica-1",
-							Host: "192.168.1.11",
+					Source: &v1alpha1.RedisNode{
+						CommonNode: v1alpha1.CommonNode{
+							Name: "source-node",
+							Host: "192.168.1.10",
 							Port: 6379,
 						},
-						{
-							Name: "replica-2",
-							Host: "replica-2.example.com",
-							Port: 6379,
+					},
+					Replica: v1alpha1.RedisNodes{
+						&v1alpha1.RedisNode{
+							CommonNode: v1alpha1.CommonNode{
+								Name: "replica-1",
+								Host: "192.168.1.11",
+								Port: 6379,
+							},
+						},
+						&v1alpha1.RedisNode{
+							CommonNode: v1alpha1.CommonNode{
+								Name: "replica-2",
+								Host: "replica-2.example.com",
+								Port: 6379,
+							},
 						},
 					},
 					Service: &v1alpha1.Service{Type: v1alpha1.ServiceTypeClusterIP},
@@ -495,10 +535,12 @@ var _ = Describe("RedisReplication Webhook", func() {
 						Name:  "new-secret", // Changed secret name
 						Redis: "redis",
 					},
-					Source: &v1alpha1.CommonNode{
-						Name: "source-node",
-						Host: "192.168.1.10",
-						Port: 6379,
+					Source: &v1alpha1.RedisNode{
+						CommonNode: v1alpha1.CommonNode{
+							Name: "source-node",
+							Host: "192.168.1.10",
+							Port: 6379,
+						},
 					},
 				},
 			}
@@ -516,10 +558,12 @@ var _ = Describe("RedisReplication Webhook", func() {
 				},
 				Spec: v1alpha1.RedisReplicationSpec{
 					Secret: v1alpha1.RedisReplicationSecret{Name: "test-secret"},
-					Source: &v1alpha1.CommonNode{
-						Name: "old-source",
-						Host: "192.168.1.10",
-						Port: 6379,
+					Source: &v1alpha1.RedisNode{
+						CommonNode: v1alpha1.CommonNode{
+							Name: "old-source",
+							Host: "192.168.1.10",
+							Port: 6379,
+						},
 					},
 				},
 			}
@@ -534,10 +578,12 @@ var _ = Describe("RedisReplication Webhook", func() {
 						Name:  "test-secret",
 						Redis: "redis",
 					},
-					Source: &v1alpha1.CommonNode{
-						Name: "new-source", // Changed source name
-						Host: "192.168.1.20",
-						Port: 6379,
+					Source: &v1alpha1.RedisNode{
+						CommonNode: v1alpha1.CommonNode{
+							Name: "new-source", // Changed source name
+							Host: "192.168.1.20",
+							Port: 6379,
+						},
 					},
 				},
 			}
@@ -555,10 +601,12 @@ var _ = Describe("RedisReplication Webhook", func() {
 				},
 				Spec: v1alpha1.RedisReplicationSpec{
 					Secret: v1alpha1.RedisReplicationSecret{Name: "test-secret"},
-					Source: &v1alpha1.CommonNode{
-						Name: "source-node",
-						Host: "192.168.1.10", // Original host
-						Port: 6379,
+					Source: &v1alpha1.RedisNode{
+						CommonNode: v1alpha1.CommonNode{
+							Name: "source-node",
+							Host: "192.168.1.10",
+							Port: 6379,
+						},
 					},
 				},
 			}
@@ -573,10 +621,12 @@ var _ = Describe("RedisReplication Webhook", func() {
 						Name:  "test-secret",
 						Redis: "redis",
 					},
-					Source: &v1alpha1.CommonNode{
-						Name: "source-node",
-						Host: "192.168.1.20", // Changed host
-						Port: 6379,
+					Source: &v1alpha1.RedisNode{
+						CommonNode: v1alpha1.CommonNode{
+							Name: "source-node",
+							Host: "192.168.1.20",
+							Port: 6379,
+						},
 					},
 				},
 			}
@@ -594,10 +644,12 @@ var _ = Describe("RedisReplication Webhook", func() {
 				},
 				Spec: v1alpha1.RedisReplicationSpec{
 					Secret: v1alpha1.RedisReplicationSecret{Name: "test-secret"},
-					Source: &v1alpha1.CommonNode{
-						Name: "source-node",
-						Host: "192.168.1.10",
-						Port: 6379, // Original port
+					Source: &v1alpha1.RedisNode{
+						CommonNode: v1alpha1.CommonNode{
+							Name: "source-node",
+							Host: "192.168.1.10",
+							Port: 6379,
+						},
 					},
 				},
 			}
@@ -612,10 +664,12 @@ var _ = Describe("RedisReplication Webhook", func() {
 						Name:  "test-secret",
 						Redis: "redis",
 					},
-					Source: &v1alpha1.CommonNode{
-						Name: "source-node",
-						Host: "192.168.1.10",
-						Port: 6380, // Changed port
+					Source: &v1alpha1.RedisNode{
+						CommonNode: v1alpha1.CommonNode{
+							Name: "source-node",
+							Host: "192.168.1.10",
+							Port: 6380,
+						},
 					},
 				},
 			}
@@ -633,10 +687,12 @@ var _ = Describe("RedisReplication Webhook", func() {
 				},
 				Spec: v1alpha1.RedisReplicationSpec{
 					Secret: v1alpha1.RedisReplicationSecret{Name: "test-secret", Redis: "redis"},
-					Source: &v1alpha1.CommonNode{
-						Name: "source-node",
-						Host: "192.168.1.10",
-						Port: 6379,
+					Source: &v1alpha1.RedisNode{
+						CommonNode: v1alpha1.CommonNode{
+							Name: "source-node",
+							Host: "192.168.1.10",
+							Port: 6379,
+						},
 					},
 				},
 			}
@@ -649,16 +705,20 @@ var _ = Describe("RedisReplication Webhook", func() {
 				},
 				Spec: v1alpha1.RedisReplicationSpec{
 					Secret: v1alpha1.RedisReplicationSecret{Name: "test-secret", Redis: "redis"}, // Same secret
-					Source: &v1alpha1.CommonNode{
-						Name: "source-node",
-						Host: "192.168.1.10",
-						Port: 6379,
-					},
-					Replica: v1alpha1.CommonNodes{
-						{
-							Name: "new-replica", // Adding replica is allowed
-							Host: "192.168.1.11",
+					Source: &v1alpha1.RedisNode{
+						CommonNode: v1alpha1.CommonNode{
+							Name: "source-node",
+							Host: "192.168.1.10",
 							Port: 6379,
+						},
+					},
+					Replica: v1alpha1.RedisNodes{
+						&v1alpha1.RedisNode{
+							CommonNode: v1alpha1.CommonNode{
+								Name: "duplicate-replica", // Same name as next replica
+								Host: "192.168.1.11",
+								Port: 6379,
+							},
 						},
 					},
 				},

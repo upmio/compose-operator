@@ -116,7 +116,7 @@ var _ = BeforeSuite(func() {
 	})
 	Expect(err).NotTo(HaveOccurred())
 
-	err = (&v1alpha1.MongoDBReplicaset{}).SetupWebhookWithManager(mgr)
+	err = Setup(mgr)
 	Expect(err).NotTo(HaveOccurred())
 
 	// +kubebuilder:scaffold:webhook
