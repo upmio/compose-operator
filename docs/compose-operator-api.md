@@ -1,7 +1,7 @@
 # API Reference
 
 ## Packages
-- [upm.syntropycloud.io/v1alpha1](#upmsyntropolycloudiov1alpha1)
+- [upm.syntropycloud.io/v1alpha1](#upmsyntropycloudiov1alpha1)
 
 
 ## upm.syntropycloud.io/v1alpha1
@@ -9,6 +9,8 @@
 Package v1alpha1 contains API Schema definitions for the compose-operator v1alpha1 API group
 
 ### Resource Types
+- [MongoDBReplicaset](#mongodbreplicaset)
+- [MongoDBReplicasetList](#mongodbreplicasetlist)
 - [MysqlGroupReplication](#mysqlgroupreplication)
 - [MysqlGroupReplicationList](#mysqlgroupreplicationlist)
 - [MysqlReplication](#mysqlreplication)
@@ -24,6 +26,29 @@ Package v1alpha1 contains API Schema definitions for the compose-operator v1alph
 
 
 
+#### AESSecret
+
+
+
+AESSecret defines the secret information of AES Key
+
+
+
+_Appears in:_
+- [MongoDBReplicasetSpec](#mongodbreplicasetspec)
+- [MysqlGroupReplicationSpec](#mysqlgroupreplicationspec)
+- [MysqlReplicationSpec](#mysqlreplicationspec)
+- [PostgresReplicationSpec](#postgresreplicationspec)
+- [ProxysqlSyncSpec](#proxysqlsyncspec)
+- [RedisClusterSpec](#redisclusterspec)
+- [RedisReplicationSpec](#redisreplicationspec)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `name` _string_ | Name is the name of the secret resource which store aes key. | aes-secret-key |  |
+| `key` _string_ | Key is the key of the secret, which contains the value used to decrypt aes key | AES_SECRET_KEY |  |
+
+
 #### CommonNode
 
 
@@ -36,7 +61,8 @@ _Appears in:_
 - [CommonNodes](#commonnodes)
 - [MysqlReplicationSpec](#mysqlreplicationspec)
 - [PostgresReplicationSpec](#postgresreplicationspec)
-- [RedisReplicationSpec](#redisreplicationspec)
+- [RedisNode](#redisnode)
+- [ReplicaNode](#replicanode)
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
@@ -54,12 +80,11 @@ CommonNodes array Node
 
 
 _Appears in:_
+- [MongoDBReplicasetSpec](#mongodbreplicasetspec)
 - [MysqlGroupReplicationSpec](#mysqlgroupreplicationspec)
-- [MysqlReplicationSpec](#mysqlreplicationspec)
 - [PostgresReplicationSpec](#postgresreplicationspec)
 - [ProxysqlSyncSpec](#proxysqlsyncspec)
 - [RedisClusterSpec](#redisclusterspec)
-- [RedisReplicationSpec](#redisreplicationspec)
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
@@ -67,6 +92,130 @@ _Appears in:_
 | `host` _string_ | Host specifies the ip or hostname of node |  |  |
 | `port` _integer_ | Port specifies the port of node |  |  |
 
+
+#### MongoDBReplicaset
+
+
+
+MongoDBReplicaset is the Schema for the MongoDB Replica Set API
+
+
+
+_Appears in:_
+- [MongoDBReplicasetList](#mongodbreplicasetlist)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `apiVersion` _string_ | `upm.syntropycloud.io/v1alpha1` | | |
+| `kind` _string_ | `MongoDBReplicaset` | | |
+| `metadata` _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#objectmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
+| `spec` _[MongoDBReplicasetSpec](#mongodbreplicasetspec)_ | Defines the desired state of the MongoDBReplicaset. |  |  |
+
+
+#### MongoDBReplicasetList
+
+
+
+MongoDBReplicasetList contains a list of MongoDBReplicaset
+
+
+
+
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `apiVersion` _string_ | `upm.syntropycloud.io/v1alpha1` | | |
+| `kind` _string_ | `MongoDBReplicasetList` | | |
+| `metadata` _[ListMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#listmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
+| `items` _[MongoDBReplicaset](#mongodbreplicaset) array_ | Contains the list of MongoDBReplicaset. |  |  |
+
+
+#### MongoDBReplicasetNode
+
+
+
+
+
+
+
+_Appears in:_
+- [MongoDBReplicasetTopology](#mongodbreplicasettopology)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `host` _string_ | Host indicates the host of the MongoDB node. |  |  |
+| `port` _integer_ | Port indicates the port of the MongoDB node. |  |  |
+| `role` _[MongoDBReplicasetRole](#mongodbreplicasetrole)_ | Role represents the role of the node in the replica set topology (e.g., primary, secondary, arbiter). |  |  |
+| `state` _string_ | State indicates the replica set member state of the MongoDB node. |  |  |
+
+
+#### MongoDBReplicasetRole
+
+_Underlying type:_ _string_
+
+MongoDBReplicasetRole defines the mongodb replica set role
+
+
+
+_Appears in:_
+- [MongoDBReplicasetNode](#mongodbreplicasetnode)
+
+| Field | Description |
+| --- | --- |
+| `Primary` | MongoDBReplicasetNodeRolePrimary MongoDB Replica Set Primary node role<br /> |
+| `Secondary` | MongoDBReplicasetNodeRoleSecondary MongoDB Replica Set Secondary node role<br /> |
+| `Arbiter` | MongoDBReplicasetNodeRoleArbiter MongoDB Replica Set Arbiter node role<br /> |
+| `None` | MongoDBReplicasetNodeRoleNone MongoDB Replica Set None node role<br /> |
+
+
+#### MongoDBReplicasetSecret
+
+
+
+MongoDBReplicasetSecret defines the secret information of MongoDBReplicaset
+
+
+
+_Appears in:_
+- [MongoDBReplicasetSpec](#mongodbreplicasetspec)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `name` _string_ | Name is the name of the secret resource which store authentication information for MongoDB. |  |  |
+| `mongod` _string_ | Mongod is the key of the secret, which contains the value used to connect to MongoDB. | mongod |  |
+
+
+#### MongoDBReplicasetSpec
+
+
+
+MongoDBReplicasetSpec defines the desired state of MongoDBReplicaset
+
+
+
+_Appears in:_
+- [MongoDBReplicaset](#mongodbreplicaset)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `secret` _[MongoDBReplicasetSecret](#mongodbreplicasetsecret)_ | Secret is the reference to the secret resource containing authentication information, it must be in the same namespace as the MongoDBReplicaset object. |  |  |
+| `aesSecret` _[AESSecret](#aessecret)_ | AESSecret is the reference to the secret resource containing aes key, it must be in the same namespace as the MongoDBReplicaset Object. |  |  |
+| `member` _[CommonNodes](#commonnodes)_ | Member is a list of nodes in the MongoDB Replica Set topology. |  |  |
+| `replicaSetName` _string_ | ReplicaSetName is the name of the MongoDB replica set. |  |  |
+
+
+
+
+#### MongoDBReplicasetTopology
+
+_Underlying type:_ _[map[string]*MongoDBReplicasetNode](#map[string]*mongodbreplicasetnode)_
+
+
+
+
+
+_Appears in:_
+- [MongoDBReplicasetStatus](#mongodbreplicasetstatus)
 
 
 
@@ -77,6 +226,7 @@ _Appears in:_
 MysqlGroupReplication is the Schema for the Mysql Group Replication API
 
 
+
 _Appears in:_
 - [MysqlGroupReplicationList](#mysqlgroupreplicationlist)
 
@@ -84,11 +234,8 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `apiVersion` _string_ | `upm.syntropycloud.io/v1alpha1` | | |
 | `kind` _string_ | `MysqlGroupReplication` | | |
-| `metadata` _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#objectmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
+| `metadata` _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#objectmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
 | `spec` _[MysqlGroupReplicationSpec](#mysqlgroupreplicationspec)_ | Defines the desired state of the MysqlGroupReplication. |  |  |
-| `status` _[MysqlGroupReplicationStatus](#mysqlgroupreplicationstatus)_ | Populated by the system, it represents the current information about the MysqlGroupReplication. |  |  |
-
-
 
 
 #### MysqlGroupReplicationList
@@ -99,21 +246,23 @@ MysqlGroupReplicationList contains a list of MysqlGroupReplication
 
 
 
+
+
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `apiVersion` _string_ | `upm.syntropycloud.io/v1alpha1` | | |
 | `kind` _string_ | `MysqlGroupReplicationList` | | |
-| `metadata` _[ListMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#listmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
+| `metadata` _[ListMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#listmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
 | `items` _[MysqlGroupReplication](#mysqlgroupreplication) array_ | Contains the list of MysqlGroupReplication. |  |  |
-
-
 
 
 #### MysqlGroupReplicationNode
 
 
 
-MysqlGroupReplicationNode represents a node in the MySQL Group Replication topology.
+
+
+
 
 _Appears in:_
 - [MysqlGroupReplicationTopology](#mysqlgroupreplicationtopology)
@@ -123,13 +272,10 @@ _Appears in:_
 | `host` _string_ | Host indicates the host of the MySQL node. |  |  |
 | `port` _integer_ | Port indicates the port of the MySQL node. |  |  |
 | `role` _[MysqlGroupReplicationRole](#mysqlgroupreplicationrole)_ | Role represents the role of the node in the group replication topology (e.g., primary, secondary). |  |  |
-| `status` _[NodeStatus](#nodestatus)_ | Ready indicates whether the node is ready for reads and writes. |  |  |
 | `gtidExecuted` _string_ | GtidExecuted indicates the gtid_executed of the MySQL node. |  |  |
 | `memberState` _string_ | MemberState indicates the member_state of the MySQL node. |  |  |
 | `readonly` _boolean_ | ReadOnly specifies whether the node is read-only. |  |  |
 | `superReadonly` _boolean_ | SuperReadOnly specifies whether the node is super-read-only (i.e., cannot even write to its own database). |  |  |
-
-
 
 
 #### MysqlGroupReplicationRole
@@ -138,12 +284,16 @@ _Underlying type:_ _string_
 
 MysqlGroupReplicationRole defines the mysql group replication role
 
-_Validation:_
-- Enum: [Primary Secondary None]
+
 
 _Appears in:_
 - [MysqlGroupReplicationNode](#mysqlgroupreplicationnode)
 
+| Field | Description |
+| --- | --- |
+| `Primary` | MysqlGroupReplicationNodeRolePrimary MysqlGroupReplication Primary node role<br /> |
+| `Secondary` | MysqlGroupReplicationNodeRoleSecondary MysqlGroupReplication Secondary node role<br /> |
+| `None` | MysqlGroupReplicationNodeRoleNone MysqlGroupReplication None node role<br /> |
 
 
 #### MysqlGroupReplicationSecret
@@ -152,16 +302,16 @@ _Appears in:_
 
 MysqlGroupReplicationSecret defines the secret information of MysqlGroupReplication
 
+
+
 _Appears in:_
 - [MysqlGroupReplicationSpec](#mysqlgroupreplicationspec)
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `name` _string_ | Name is the name of the secret resource which store authentication information for MySQL. |  |  |
-| `mysql` _string_ | Mysql is the key of the secret, which contains the value used to connect to MySQL. | mysql |  |
+| `mysql` _string_ |  Mysql is the key of the secret, which contains the value used to connect to MySQL. | mysql |  |
 | `replication` _string_ | Replication is the key of the secret, which contains the value used to set up MySQL Group Replication. | replication |  |
-
-
 
 
 #### MysqlGroupReplicationSpec
@@ -170,31 +320,16 @@ _Appears in:_
 
 MysqlGroupReplicationSpec defines the desired state of MysqlGroupReplication
 
+
+
 _Appears in:_
 - [MysqlGroupReplication](#mysqlgroupreplication)
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `secret` _[MysqlGroupReplicationSecret](#mysqlgroupreplicationsecret)_ | Secret is the reference to the secret resource containing authentication information, it must be in the same namespace as the MysqlGroupReplication object. |  |  |
+| `aesSecret` _[AESSecret](#aessecret)_ | AESSecret is the reference to the secret resource containing aes key, it must be in the same namespace as the MysqlGroupReplication Object. |  |  |
 | `member` _[CommonNodes](#commonnodes)_ | Member is a list of nodes in the MySQL Group Replication topology. |  |  |
-
-
-
-
-#### MysqlGroupReplicationStatus
-
-
-
-MysqlGroupReplicationStatus defines the observed state of MysqlGroupReplication
-
-_Appears in:_
-- [MysqlGroupReplication](#mysqlgroupreplication)
-
-| Field | Description | Default | Validation |
-| --- | --- | --- | --- |
-| `topology` _[MysqlGroupReplicationTopology](#mysqlgroupreplicationtopology)_ | Topology indicates the current MySQL Group Replication topology. |  |  |
-| `ready` _boolean_ | Ready indicates whether this MysqlGroupReplication object is ready or not. |  |  |
-| `conditions` _[Condition](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#condition-v1-meta) array_ | Represents a list of detailed status of the MysqlGroupReplication object. Each condition in the list provides real-time information about certain aspect of the MysqlGroupReplication object.<br /><br />This field is crucial for administrators and developers to monitor and respond to changes within the MysqlGroupReplication. It provides a history of state transitions and a snapshot of the current state that can be used for automated logic or direct inspection. |  |  |
 
 
 
@@ -202,6 +337,8 @@ _Appears in:_
 #### MysqlGroupReplicationTopology
 
 _Underlying type:_ _[map[string]*MysqlGroupReplicationNode](#map[string]*mysqlgroupreplicationnode)_
+
+
 
 
 
@@ -225,7 +362,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `apiVersion` _string_ | `upm.syntropycloud.io/v1alpha1` | | |
 | `kind` _string_ | `MysqlReplication` | | |
-| `metadata` _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#objectmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
+| `metadata` _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#objectmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
 | `spec` _[MysqlReplicationSpec](#mysqlreplicationspec)_ | Defines the desired state of the MysqlReplication. |  |  |
 
 
@@ -243,7 +380,7 @@ MysqlReplicationList contains a list of MysqlReplication
 | --- | --- | --- | --- |
 | `apiVersion` _string_ | `upm.syntropycloud.io/v1alpha1` | | |
 | `kind` _string_ | `MysqlReplicationList` | | |
-| `metadata` _[ListMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#listmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
+| `metadata` _[ListMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#listmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
 | `items` _[MysqlReplication](#mysqlreplication) array_ | Contains the list of MysqlReplication. |  |  |
 
 
@@ -260,6 +397,10 @@ _Validation:_
 _Appears in:_
 - [MysqlReplicationSpec](#mysqlreplicationspec)
 
+| Field | Description |
+| --- | --- |
+| `rpl_async` |  |
+| `rpl_semi_sync` |  |
 
 
 #### MysqlReplicationNode
@@ -288,6 +429,7 @@ _Appears in:_
 | `readSourceLogPos` _integer_ | ReadSourceLogPos the position in the source node's binary log file where the replica node should start reading from. |  |  |
 | `sourceLogFile` _string_ | SourceLogFile indicates the name of the binary log file on the source node that the replica node should read from. |  |  |
 | `secondsBehindSource` _integer_ | SecondsBehindSource indicates the metric that shows how far behind the source node the replica node is, measured in seconds. |  |  |
+| `execSourceLogPos` _integer_ | ExecSourceLogPos the position in the source node's binary log file where the replica node should execute from. |  |  |
 
 
 #### MysqlReplicationRole
@@ -301,6 +443,11 @@ MysqlReplicationRole defines the mysql replication role
 _Appears in:_
 - [MysqlReplicationNode](#mysqlreplicationnode)
 
+| Field | Description |
+| --- | --- |
+| `Source` | MysqlReplicationNodeRoleSource MysqlReplication Source node role<br /> |
+| `Replica` | MysqlReplicationNodeRoleReplica MysqlReplication Replica node role<br /> |
+| `None` | MysqlReplicationNodeRoleNone MysqlReplication None node role<br /> |
 
 
 #### MysqlReplicationSecret
@@ -336,9 +483,10 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `mode` _[MysqlReplicationMode](#mysqlreplicationmode)_ | Mode specifies the mysql replication sync mode.<br />Valid values are:<br />- "rpl_semi_sync": semi_sync;<br />- "rpl_async": async; | rpl_async | Enum: [rpl_async rpl_semi_sync] <br /> |
 | `secret` _[MysqlReplicationSecret](#mysqlreplicationsecret)_ | Secret is the reference to the secret resource containing authentication information, it must be in the same namespace as the MysqlReplication object. |  |  |
+| `aesSecret` _[AESSecret](#aessecret)_ | AESSecret is the reference to the secret resource containing aes key, it must be in the same namespace as the MysqlReplication Object. |  |  |
 | `source` _[CommonNode](#commonnode)_ | Source references the source MySQL node. |  |  |
 | `service` _[Service](#service)_ | Service references the service providing the MySQL replication endpoint. |  |  |
-| `replica` _[CommonNodes](#commonnodes)_ | Replica is a list of replica nodes in the MySQL replication topology. |  |  |
+| `replica` _[ReplicaNodes](#replicanodes)_ | Replica is a list of replica nodes in the MySQL replication topology. |  |  |
 
 
 
@@ -373,7 +521,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `apiVersion` _string_ | `upm.syntropycloud.io/v1alpha1` | | |
 | `kind` _string_ | `PostgresReplication` | | |
-| `metadata` _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#objectmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
+| `metadata` _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#objectmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
 | `spec` _[PostgresReplicationSpec](#postgresreplicationspec)_ | Defines the desired state of the PostgresReplication. |  |  |
 
 
@@ -391,7 +539,7 @@ PostgresReplicationList contains a list of PostgresReplication
 | --- | --- | --- | --- |
 | `apiVersion` _string_ | `upm.syntropycloud.io/v1alpha1` | | |
 | `kind` _string_ | `PostgresReplicationList` | | |
-| `metadata` _[ListMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#listmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
+| `metadata` _[ListMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#listmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
 | `items` _[PostgresReplication](#postgresreplication) array_ | Contains the list of PostgresReplication. |  |  |
 
 
@@ -408,6 +556,10 @@ _Validation:_
 _Appears in:_
 - [PostgresReplicationSpec](#postgresreplicationspec)
 
+| Field | Description |
+| --- | --- |
+| `rpl_async` |  |
+| `rpl_sync` |  |
 
 
 #### PostgresReplicationNode
@@ -441,6 +593,11 @@ PostgresReplicationRole defines the postgres replication role
 _Appears in:_
 - [PostgresReplicationNode](#postgresreplicationnode)
 
+| Field | Description |
+| --- | --- |
+| `Primary` | PostgresReplicationRolePrimary PostgresReplicationRole Primary node role<br /> |
+| `Standby` | PostgresReplicationRoleStandby PostgresReplicationRole Standby node role<br /> |
+| `None` | PostgresReplicationRoleNone PostgresReplicationRole None node role<br /> |
 
 
 #### PostgresReplicationSecret
@@ -476,6 +633,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `mode` _[PostgresReplicationMode](#postgresreplicationmode)_ | Mode specifies the postgres replication sync mode.<br />Valid values are:<br />- "rpl_sync": sync;<br />- "rpl_async": async; | rpl_async | Enum: [rpl_async rpl_sync] <br /> |
 | `secret` _[PostgresReplicationSecret](#postgresreplicationsecret)_ | Secret is the reference to the secret resource containing authentication information, it must be in the same namespace as the PostgresReplication object. |  |  |
+| `aesSecret` _[AESSecret](#aessecret)_ | AESSecret is the reference to the secret resource containing aes key, it must be in the same namespace as the PostgresReplication Object. |  |  |
 | `primary` _[CommonNode](#commonnode)_ | Primary references the primary Postgres node. |  |  |
 | `service` _[Service](#service)_ | Service references the service providing the Postgres replication endpoint. |  |  |
 | `standby` _[CommonNodes](#commonnodes)_ | Standby is a list of standby nodes in the Postgres replication topology. |  |  |
@@ -511,7 +669,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `apiVersion` _string_ | `upm.syntropycloud.io/v1alpha1` | | |
 | `kind` _string_ | `ProxysqlSync` | | |
-| `metadata` _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#objectmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
+| `metadata` _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#objectmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
 | `spec` _[ProxysqlSyncSpec](#proxysqlsyncspec)_ | Defines the desired state of the ProxysqlSync. |  |  |
 
 
@@ -546,8 +704,8 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `users` _[Users](#users)_ | Users references the user list synced from MySQL to ProxySQL |  |  |
-| `ready` _boolean_ | Ready references whether ProxySQL server synced from MysqlReplication is correct. |  |  |
+| `users` _string array_ | Users references the user list synced from MySQL to ProxySQL |  |  |
+| `synced` _boolean_ | Ready references whether ProxySQL server synced from MysqlReplication is correct. |  |  |
 
 
 #### ProxysqlSyncSecret
@@ -583,7 +741,8 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `proxysql` _[CommonNodes](#commonnodes)_ | Proxysql references the list of proxysql nodes. |  |  |
 | `secret` _[ProxysqlSyncSecret](#proxysqlsyncsecret)_ | Secret is the reference to the secret resource containing authentication information, it must be in the same namespace as the ProxysqlSync object. |  |  |
-| `mysqlReplication` _string_ | Source references the source MySQL node. |  |  |
+| `aesSecret` _[AESSecret](#aessecret)_ | AESSecret is the reference to the secret resource containing aes key, it must be in the same namespace as the ProxysqlSync Object. |  |  |
+| `mysqlReplication` _string_ | MysqlReplication references the name of MysqlReplication. |  |  |
 | `rule` _[Rule](#rule)_ | Rule references the rule of sync users from MySQL to ProxySQL. |  |  |
 
 
@@ -593,7 +752,7 @@ _Appears in:_
 
 _Underlying type:_ _[map[string]*ProxysqlSyncNode](#map[string]*proxysqlsyncnode)_
 
-ProxysqlSyncTopology defines the MysqlReplication topology
+ProxysqlSyncTopology defines the ProxysqlSync topology
 
 
 
@@ -673,6 +832,11 @@ RedisClusterNodeRole defines the redis cluster role
 _Appears in:_
 - [RedisClusterNode](#redisclusternode)
 
+| Field | Description |
+| --- | --- |
+| `Source` | RedisClusterNodeRoleSource RedisCluster Source node role<br /> |
+| `Replica` | RedisClusterNodeRoleReplica RedisCluster Replica node role<br /> |
+| `None` | RedisClusterNodeRoleNone RedisCluster None node role<br /> |
 
 
 #### RedisClusterSecret
@@ -706,6 +870,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `secret` _[RedisClusterSecret](#redisclustersecret)_ | Secret is the reference to the secret resource containing authentication information, it must be in the same namespace as the RedisReplication object. |  |  |
+| `aesSecret` _[AESSecret](#aessecret)_ | AESSecret is the reference to the secret resource containing aes key, it must be in the same namespace as the RedisReplication Object. |  |  |
 | `members` _object (keys:string, values:[CommonNodes](#commonnodes))_ | Members is a list of nodes in the Redis Cluster topology. |  |  |
 
 
@@ -722,6 +887,47 @@ RedisClusterTopology defines the RedisCluster topology
 _Appears in:_
 - [RedisClusterStatus](#redisclusterstatus)
 
+
+
+#### RedisNode
+
+
+
+
+
+
+
+_Appears in:_
+- [RedisNodes](#redisnodes)
+- [RedisReplicationSpec](#redisreplicationspec)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `name` _string_ | Name specifies the identifier of node |  |  |
+| `host` _string_ | Host specifies the ip or hostname of node |  |  |
+| `port` _integer_ | Port specifies the port of node |  |  |
+| `announceHost` _string_ |  |  |  |
+| `announcePort` _integer_ |  |  |  |
+
+
+#### RedisNodes
+
+_Underlying type:_ _[RedisNode](#redisnode)_
+
+
+
+
+
+_Appears in:_
+- [RedisReplicationSpec](#redisreplicationspec)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `name` _string_ | Name specifies the identifier of node |  |  |
+| `host` _string_ | Host specifies the ip or hostname of node |  |  |
+| `port` _integer_ | Port specifies the port of node |  |  |
+| `announceHost` _string_ |  |  |  |
+| `announcePort` _integer_ |  |  |  |
 
 
 #### RedisReplication
@@ -776,6 +982,8 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `host` _string_ | Host indicates the host of the Redis node. |  |  |
 | `port` _integer_ | Port indicates the port of the Redis node. |  |  |
+| `announceHost` _string_ | AnnounceHost indicates the announce host of the Redis node. |  |  |
+| `announcePort` _integer_ | AnnouncePort indicates the announce port of the Redis node. |  |  |
 | `role` _[RedisReplicationRole](#redisreplicationrole)_ | Role represents the role of the node in the replication topology (e.g., source, replica). |  |  |
 | `ready` _boolean_ | Ready indicates whether the node is ready for reads and writes. |  |  |
 | `sourceHost` _string_ | SourceHost indicates the hostname or IP address of the source node that this replica node is replicating from. |  |  |
@@ -793,6 +1001,11 @@ RedisReplicationRole defines the redis replication role
 _Appears in:_
 - [RedisReplicationNode](#redisreplicationnode)
 
+| Field | Description |
+| --- | --- |
+| `Source` | RedisReplicationNodeRoleSource RedisReplication Source node role<br /> |
+| `Replica` | RedisReplicationNodeRoleReplica RedisReplication Replica node role<br /> |
+| `None` | RedisReplicationNodeRoleNone RedisReplication None node role<br /> |
 
 
 #### RedisReplicationSecret
@@ -826,10 +1039,12 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `secret` _[RedisReplicationSecret](#redisreplicationsecret)_ | Secret is the reference to the secret resource containing authentication information, it must be in the same namespace as the RedisReplication object. |  |  |
-| `source` _[CommonNode](#commonnode)_ | Source references the source Redis node. |  |  |
-| `replica` _[CommonNodes](#commonnodes)_ | Replica is a list of replica nodes in the Redis replication topology. |  |  |
+| `aesSecret` _[AESSecret](#aessecret)_ | AESSecret is the reference to the secret resource containing aes key, it must be in the same namespace as the RedisReplication Object. |  |  |
+| `source` _[RedisNode](#redisnode)_ | Source references the source Redis node. |  |  |
+| `replica` _[RedisNodes](#redisnodes)_ | Replica is a list of replica nodes in the Redis replication topology. |  |  |
 | `service` _[Service](#service)_ | Service references the service providing the Redis replication endpoint. |  |  |
-| `sentinel` _string array_ | List of Sentinel pod names to label with the current Redis source pod name. The operator writes label `compose-operator/redis-replication.source` on each listed Sentinel pod to the detected source pod (or `unknown` when not determinable). This enables the Sentinel container to inject the active master into its configuration after restarts. Optional; when empty, Sentinel labeling is skipped. |  |  |
+| `sentinel` _string array_ | Sentinel is a list of Redis Sentinel node addresses for high availability monitoring. |  |  |
+
 
 
 
@@ -844,6 +1059,44 @@ RedisReplicationTopology defines the RedisReplication topology
 _Appears in:_
 - [RedisReplicationStatus](#redisreplicationstatus)
 
+
+
+#### ReplicaNode
+
+
+
+ReplicaNode is a CommonNode with additional replication-specific info
+
+
+
+_Appears in:_
+- [ReplicaNodes](#replicanodes)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `name` _string_ | Name specifies the identifier of node |  |  |
+| `host` _string_ | Host specifies the ip or hostname of node |  |  |
+| `port` _integer_ | Port specifies the port of node |  |  |
+| `isolated` _boolean_ | Isolated indicates whether this node will be isolated.<br />If not specified, it defaults to false. | false |  |
+
+
+#### ReplicaNodes
+
+_Underlying type:_ _[ReplicaNode](#replicanode)_
+
+
+
+
+
+_Appears in:_
+- [MysqlReplicationSpec](#mysqlreplicationspec)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `name` _string_ | Name specifies the identifier of node |  |  |
+| `host` _string_ | Host specifies the ip or hostname of node |  |  |
+| `port` _integer_ | Port specifies the port of node |  |  |
+| `isolated` _boolean_ | Isolated indicates whether this node will be isolated.<br />If not specified, it defaults to false. | false |  |
 
 
 #### Rule
@@ -893,18 +1146,11 @@ _Validation:_
 _Appears in:_
 - [Service](#service)
 
-
-
-#### Users
-
-_Underlying type:_ _string array_
-
-Users indicates the list of syncd users from mysql to proxysql.
-
-
-
-_Appears in:_
-- [ProxysqlSyncNode](#proxysqlsyncnode)
-
+| Field | Description |
+| --- | --- |
+| `ClusterIP` | ServiceTypeClusterIP means a service will only be accessible inside the<br />cluster, via the cluster IP.<br /> |
+| `NodePort` | ServiceTypeNodePort means a service will be exposed on one port of<br />every node, in addition to 'ClusterIP' type.<br /> |
+| `LoadBalancer` | ServiceTypeLoadBalancer means a service will be exposed via an<br />external load balancer (if the cloud provider supports it), in addition<br />to 'NodePort' type.<br /> |
+| `ExternalName` | ServiceTypeExternalName means a service consists of only a reference to<br />an external name that kubedns or equivalent will return as a CNAME<br />record, with no exposing or proxying of any pods involved.<br /> |
 
 
