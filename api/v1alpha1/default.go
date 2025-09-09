@@ -33,7 +33,7 @@ const (
 	NodeStatusKO NodeStatus = "Failed"
 )
 
-const SkipReconcileKey = "compose-operator.skip.reconcile"
+const SkipReconcileKey = "compose-operator/skip.reconcile"
 
 // CommonNode information for node to connect
 type CommonNode struct {

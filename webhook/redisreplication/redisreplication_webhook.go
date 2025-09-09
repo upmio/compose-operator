@@ -79,6 +79,10 @@ func (r *redisReplicationAdmission) Default(ctx context.Context, obj runtime.Obj
 		}
 	}
 
+	if len(instance.Spec.Sentinel) != 0 {
+		instance.Annotations[v1alpha1.SkipReconcileKey] = "true"
+	}
+
 	// Set default service type
 	if instance.Spec.Service == nil {
 		instance.Spec.Service = &v1alpha1.Service{Type: v1alpha1.ServiceTypeClusterIP}

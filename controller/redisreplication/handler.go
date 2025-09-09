@@ -140,7 +140,7 @@ func (r *ReconcileRedisReplication) ensureReplicaNode(syncCtx *syncContext,
 	address := net.JoinHostPort(replica.Host, strconv.Itoa(replica.Port))
 	nodeInfo, ok := replicationInfo.Nodes[address]
 	if !ok {
-		return fmt.Errorf("cannot retrieve status from replica MySQL instance [%s]", address)
+		return fmt.Errorf("cannot retrieve status from replica Redis instance [%s]", address)
 	}
 
 	sourceNodeHost := instance.Spec.Source.Host
