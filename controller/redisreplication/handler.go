@@ -310,21 +310,27 @@ func (r *ReconcileRedisReplication) ensureSentinelPodLabels(syncCtx *syncContext
 			foundPod.Labels = make(map[string]string)
 		}
 
+		var needUpdate bool
 		// Check if the sentinel source label already has the correct value
 		if currentHostLabelValue, ok := foundPod.Labels[sentinelSourceHostKey]; !ok || currentHostLabelValue != hostLabelValue {
 			foundPod.Labels[sentinelSourceHostKey] = hostLabelValue
+			needUpdate = true
+		}
 
-			if currentPortLabelValue, ok := foundPod.Labels[sentinelSourcePortKey]; !ok || currentPortLabelValue != portLabelValue {
-				foundPod.Labels[sentinelSourcePortKey] = portLabelValue
-			}
+		if currentPortLabelValue, ok := foundPod.Labels[sentinelSourcePortKey]; !ok || currentPortLabelValue != portLabelValue {
+			foundPod.Labels[sentinelSourcePortKey] = portLabelValue
+			needUpdate = true
+		}
 
-			// Update pod
+		// Update pod
+		if needUpdate {
 			if err := r.client.Update(ctx, foundPod); err != nil {
 				errs = append(errs, fmt.Errorf("failed to update sentinel pod [%s]: %v", sentinelPodName, err))
 				continue
 			}
 			r.recorder.Eventf(instance, corev1.EventTypeNormal, Synced, "sentinel pod [%s] update source label successfully", sentinelPodName)
 		}
+
 	}
 
 	return errors.Join(errs...)
