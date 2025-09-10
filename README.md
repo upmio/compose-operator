@@ -5,7 +5,7 @@
 [![Release](https://img.shields.io/github/v/release/upmio/compose-operator)](https://github.com/upmio/compose-operator/releases)
 [![Stars](https://img.shields.io/github/stars/upmio/compose-operator)](https://github.com/upmio/compose-operator)
 
-![Compose Operator](./docs/compose-operator-icon.png)
+<img src="./docs/compose-operator-icon.png" alt="Compose Operator" height="128">
 
 A Kubernetes operator for managing database replication topologies across MySQL, Redis, PostgreSQL, and ProxySQL instances.
 
@@ -24,7 +24,7 @@ The Compose Operator is a cloud-native solution that manages traditional databas
 
 ### Supported Database Types
 
-| Database | Replication Types | Service Creation | 
+| Database | Replication Types | Service Creation |
 |----------|-------------------|------------------|
 | **MySQL** | Source-Replica, Group Replication | ✅ |
 | **Redis** | Source-Replica, Cluster | ✅ |
@@ -208,13 +208,12 @@ spec:
 kubectl get mysqlreplication mysql-replication-semi-sync-sample -w
 ```
 
-
 ## Examples
 
 Comprehensive examples are available in the [examples/](examples/) directory:
 
 - [MySQL Source-Replica Replication](examples/mysql/basic-replication.yaml)
-- [MySQL Group Replication](examples/mysql/group-replication.yaml) 
+- [MySQL Group Replication](examples/mysql/group-replication.yaml)
 - [Redis Source-Replica Replication](examples/redis/basic-replication.yaml)
 - [Redis Cluster](examples/redis/cluster.yaml)
 - [PostgreSQL Streaming Replication](examples/postgres/streaming-replication.yaml)
@@ -226,7 +225,7 @@ Comprehensive examples are available in the [examples/](examples/) directory:
 
 The Compose Operator follows the Kubernetes operator pattern, extending the Kubernetes API with Custom Resource Definitions (CRDs) to manage database replication topologies.
 
-```
+```text
 ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
 │   User/GitOps   │───▶│  Kubernetes API  │───▶│ Compose Operator│
 └─────────────────┘    └──────────────────┘    └─────────────────┘
@@ -252,6 +251,7 @@ The Compose Operator follows the Kubernetes operator pattern, extending the Kube
 ### Components
 
 #### Custom Resource Definitions (CRDs)
+
 - **MysqlReplication**: Manages MySQL source-replica replication
 - **MysqlGroupReplication**: Manages MySQL Group Replication
 - **RedisReplication**: Manages Redis source-replica replication
@@ -283,9 +283,10 @@ The Compose Operator follows the Kubernetes operator pattern, extending the Kube
   > **Note**: Currently only compatible with PostgreSQL instances created using Unit CRDs from [github.com/upmio/unit-operator](https://github.com/upmio/unit-operator), as it requires access to Unit CRD start and stop service capabilities.
 - **ProxysqlSync**: Synchronizes ProxySQL with backend MySQL topology
   
-
 #### Controllers
+
 Each CRD has a dedicated controller that:
+
 - Monitors the custom resource state
 - Connects to database instances using provided credentials
 - Configures replication relationships
@@ -294,7 +295,9 @@ Each CRD has a dedicated controller that:
 - Monitors replication health and provides status feedback for manual intervention
 
 #### Database Utilities
+
 Located in `pkg/`, these provide database-specific functionality:
+
 - **mysqlutil**: MySQL client, replication management, group replication
 - **redisutil**: Redis client, cluster operations, replication setup
 - **postgresutil**: PostgreSQL client, streaming replication
@@ -443,6 +446,7 @@ A: Passwords are AES-256-CTR encrypted and stored in Kubernetes Secrets. The ope
 
 **Q: What replication modes are supported for MySQL?**
 A: The operator supports:
+
 - `rpl_async`: Asynchronous replication
 - `rpl_semi_sync`: Semi-synchronous replication
 - `group_replication`: MySQL Group Replication
@@ -456,11 +460,11 @@ A: The operator monitors replication health and reports status in the custom res
 **Q: Does the operator perform automatic failover?**
 A: No, the operator does not perform automatic failover. It provides real-time monitoring and status reporting. Administrators must manually initiate switchover or failover by modifying the spec based on the observed status information.
 
-
 ### Troubleshooting
 
 **Q: My replication setup failed. How do I debug?**
 A: Check the operator logs and the status of your custom resource:
+
 ```bash
 kubectl logs -n upm-system deployment/compose-operator-controller-manager
 kubectl describe mysqlreplication your-resource-name
@@ -468,6 +472,7 @@ kubectl describe mysqlreplication your-resource-name
 
 **Q: Database connections are failing. What should I check?**
 A: Verify:
+
 - Database credentials in the secret are correct and encrypted properly
 - Network connectivity between operator and database instances
 - Database user has necessary privileges
@@ -542,6 +547,7 @@ kubectl get secret redis-credentials -o jsonpath='{.data.redis}' | base64 -d > t
 ### RBAC
 
 The operator uses minimal RBAC permissions:
+
 - Manages only CRDs it owns
 - Creates/updates services in the same namespace as custom resources
 - Reads secrets containing database credentials
