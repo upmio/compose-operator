@@ -5,7 +5,7 @@
 [![Release](https://img.shields.io/github/v/release/upmio/compose-operator)](https://github.com/upmio/compose-operator/releases)
 [![Stars](https://img.shields.io/github/stars/upmio/compose-operator)](https://github.com/upmio/compose-operator)
 
-![Compose Operator](./docs/compose-operator.png)
+![Compose Operator](./docs/compose-operator-icon.png)
 
 A Kubernetes operator for managing database replication topologies across MySQL, Redis, PostgreSQL, and ProxySQL instances.
 
