@@ -127,16 +127,15 @@ spec:
   - PostgreSQL
   - MongoDB-ReplicaSet
   links:
-  - name: syntropycloud
-    url: https://syntropycloud.io
-  maintainers:
+  - name: upmio
+    url: https://github.com/upmio/
   - email: yuzhenhao0906@gmail.com
     name: Zanye
   maturity: alpha
   minKubeVersion: 1.26.1
   provider:
-    name: syntropycloud
-    url: syntropycloud.io
+    name: upmio
+    url: https://github.com/upmio/
   relatedImages:
   - image: quay.io/upmio/compose-operator@sha256:5d265b8b5689946b3862f9a5a458ede17cdfb5d3095f00607ecb6f38d55942a9
     name: compose-operator

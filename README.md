@@ -1,6 +1,11 @@
 # Compose Operator
 
-[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+[![Go Report Card](https://goreportcard.com/badge/github.com/upmio/compose-operator)](https://goreportcard.com/report/github.com/upmio/compose-operator)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/upmio/compose-operator/blob/main/LICENSE)
+[![Release](https://img.shields.io/github/v/release/upmio/compose-operator)](https://github.com/upmio/compose-operator/releases)
+[![Stars](https://img.shields.io/github/stars/upmio/compose-operator)](https://github.com/upmio/compose-operator)
+
+![Compose Operator](./docs/compose-operator.png)
 
 A Kubernetes operator for managing database replication topologies across MySQL, Redis, PostgreSQL, and ProxySQL instances.
 
@@ -69,12 +74,6 @@ kubectl apply -f https://github.com/upmio/compose-operator/releases/latest/downl
 
 # Create namespace
 kubectl create namespace upm-system
-
-# Create AES secret for password encryption
-# Note: AES key must be exactly 32 characters long for AES-256 encryption
-kubectl create secret generic aes-secret-key \
-  --namespace=upm-system \
-  --from-literal=AES_SECRET_KEY="your-32-character-secret-key-here"
 
 # Install the operator  
 kubectl apply -f https://github.com/upmio/compose-operator/releases/latest/download/operator.yaml -n upm-system
