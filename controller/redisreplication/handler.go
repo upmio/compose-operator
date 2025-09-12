@@ -148,7 +148,7 @@ func (r *ReconcileRedisReplication) ensureReplicaNode(syncCtx *syncContext,
 
 	if nodeInfo.Role == redisutil.RedisSourceRole ||
 		(nodeInfo.Role == redisutil.RedisReplicaRole &&
-			(nodeInfo.SourceHost != sourceNodeHost || nodeInfo.SourcePort != sourceNodePort)) {
+			(nodeInfo.SourceHost != sourceNodeHost || nodeInfo.SourcePort != sourceNodePort)) || !nodeInfo.Ready {
 		if err := admin.ReplicaOfSource(address, sourceNodeHost, sourceNodePort); err != nil {
 			return err
 		}

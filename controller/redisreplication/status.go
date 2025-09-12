@@ -184,7 +184,7 @@ func generateTopologyStatusByReplicationInfo(info *redisutil.ReplicationInfo, in
 		if node, ok := info.Nodes[addr]; ok {
 			instance.Status.Topology[replica.Name].Role = node.GetRole()
 			instance.Status.Topology[replica.Name].Status = composev1alpha1.NodeStatusOK
-			if node.GetRole() == redisutil.RedisReplicaRole {
+			if node.GetRole() == redisutil.RedisReplicaRole && node.Ready {
 				instance.Status.Topology[replica.Name].Ready = true
 			} else {
 				instance.Status.Topology[replica.Name].Ready = false

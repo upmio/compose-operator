@@ -45,7 +45,7 @@ type ReplicationNodes []*ReplicationNode
 func NewDefaultReplicationNode() *ReplicationNode {
 	return &ReplicationNode{
 		Port:  DefaultRedisPort,
-		Ready: true,
+		Ready: false,
 	}
 }
 
@@ -81,6 +81,13 @@ func DecodeNode(input *string, addr string, log logr.Logger) *ReplicationNode {
 		node.Role = RedisReplicaRole
 		node.SourceHost = scanMap["master_host"]
 		node.SourcePort = scanMap["master_port"]
+
+		if scanMap["master_link_status"] == "up" {
+			node.Ready = true
+		} else {
+			node.Ready = false
+		}
+
 	}
 
 	return node
