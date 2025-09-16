@@ -87,6 +87,9 @@ spec:
   links:
   - name: Documentation
     url: https://github.com/upmio/compose-operator
+  maintainers:
+  - email: yuzhenhao0906@gmail.com
+    name: HAOlowkey
   maturity: alpha
   minKubeVersion: 1.26.1
   provider:
