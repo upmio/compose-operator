@@ -274,22 +274,14 @@ func (r *ReconcileRedisReplication) ensureSentinelPodLabels(syncCtx *syncContext
 	ctx := syncCtx.ctx
 	instance := syncCtx.instance
 
-	// Find source nodes from topology
-	sourceNodes := make([]*composev1alpha1.RedisReplicationNode, 0)
-
-	for _, node := range instance.Status.Topology {
-		if node.Role == composev1alpha1.RedisReplicationNodeRoleSource {
-			sourceNodes = append(sourceNodes, node)
-		}
-	}
-
 	// Determine the label value based on source node count
 	hostLabelValue := "unknown"
 	portLabelValue := "unknown"
+	sourceNode := instance.Spec.Source
 
-	if len(sourceNodes) == 1 {
-		hostLabelValue = sourceNodes[0].AnnounceHost
-		portLabelValue = strconv.Itoa(sourceNodes[0].AnnouncePort)
+	if sourceNodeStatus := instance.Status.Topology[sourceNode.Name]; sourceNodeStatus.Role == composev1alpha1.RedisReplicationNodeRoleSource && sourceNodeStatus.Status == composev1alpha1.NodeStatusOK {
+		hostLabelValue = sourceNodeStatus.AnnounceHost
+		portLabelValue = strconv.Itoa(sourceNodeStatus.AnnouncePort)
 	}
 
 	var errs []error
