@@ -241,6 +241,16 @@ func (r *ReconcileRedisReplication) ensurePodLabels(syncCtx *syncContext, podNam
 	ctx := syncCtx.ctx
 	instance := syncCtx.instance
 
+	// Determine the label value based on source node count
+	hostLabelValue := ""
+	portLabelValue := ""
+	sourceNode := instance.Spec.Source
+
+	if sourceNodeStatus := instance.Status.Topology[sourceNode.Name]; sourceNodeStatus.Role == composev1alpha1.RedisReplicationNodeRoleSource && sourceNodeStatus.Status == composev1alpha1.NodeStatusOK {
+		hostLabelValue = sourceNodeStatus.AnnounceHost
+		portLabelValue = strconv.Itoa(sourceNodeStatus.AnnouncePort)
+	}
+
 	foundPod := &corev1.Pod{}
 	if err := r.client.Get(ctx, types.NamespacedName{
 		Name:      podName,
@@ -253,14 +263,30 @@ func (r *ReconcileRedisReplication) ensurePodLabels(syncCtx *syncContext, podNam
 		foundPod.Labels = make(map[string]string)
 	}
 
-	// update the value of pod readonly label
+	var needUpdate bool
+	// Check if the redis source label already has the correct value
 	if readOnlyValue, ok := foundPod.Labels[readOnlyKey]; !ok || readOnlyValue != isReadOnly {
 		foundPod.Labels[readOnlyKey] = isReadOnly
-		// update the value of pod default label
-		if instanceValue, ok := foundPod.Labels[defaultKey]; !ok || instanceValue != instance.Name {
-			foundPod.Labels[defaultKey] = instance.Name
-		}
-		// update pod
+		needUpdate = true
+	}
+
+	if instanceValue, ok := foundPod.Labels[defaultKey]; !ok || instanceValue != instance.Name {
+		foundPod.Labels[defaultKey] = instance.Name
+		needUpdate = true
+	}
+
+	if currentHostLabelValue, ok := foundPod.Labels[sourceHostKey]; !ok || currentHostLabelValue != hostLabelValue {
+		foundPod.Labels[sourceHostKey] = hostLabelValue
+		needUpdate = true
+	}
+
+	if currentPortLabelValue, ok := foundPod.Labels[sourcePortKey]; !ok || currentPortLabelValue != portLabelValue {
+		foundPod.Labels[sourcePortKey] = portLabelValue
+		needUpdate = true
+	}
+
+	// Update pod
+	if needUpdate {
 		if err := r.client.Update(ctx, foundPod); err != nil {
 			return fmt.Errorf("failed to update pod [%s]: %v", podName, err)
 		}
@@ -275,8 +301,8 @@ func (r *ReconcileRedisReplication) ensureSentinelPodLabels(syncCtx *syncContext
 	instance := syncCtx.instance
 
 	// Determine the label value based on source node count
-	hostLabelValue := "unknown"
-	portLabelValue := "unknown"
+	hostLabelValue := ""
+	portLabelValue := ""
 	sourceNode := instance.Spec.Source
 
 	if sourceNodeStatus := instance.Status.Topology[sourceNode.Name]; sourceNodeStatus.Role == composev1alpha1.RedisReplicationNodeRoleSource && sourceNodeStatus.Status == composev1alpha1.NodeStatusOK {
@@ -304,13 +330,13 @@ func (r *ReconcileRedisReplication) ensureSentinelPodLabels(syncCtx *syncContext
 
 		var needUpdate bool
 		// Check if the sentinel source label already has the correct value
-		if currentHostLabelValue, ok := foundPod.Labels[sentinelSourceHostKey]; !ok || currentHostLabelValue != hostLabelValue {
-			foundPod.Labels[sentinelSourceHostKey] = hostLabelValue
+		if currentHostLabelValue, ok := foundPod.Labels[sourceHostKey]; !ok || currentHostLabelValue != hostLabelValue {
+			foundPod.Labels[sourceHostKey] = hostLabelValue
 			needUpdate = true
 		}
 
-		if currentPortLabelValue, ok := foundPod.Labels[sentinelSourcePortKey]; !ok || currentPortLabelValue != portLabelValue {
-			foundPod.Labels[sentinelSourcePortKey] = portLabelValue
+		if currentPortLabelValue, ok := foundPod.Labels[sourcePortKey]; !ok || currentPortLabelValue != portLabelValue {
+			foundPod.Labels[sourcePortKey] = portLabelValue
 			needUpdate = true
 		}
 
