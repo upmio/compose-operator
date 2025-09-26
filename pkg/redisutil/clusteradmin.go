@@ -297,6 +297,35 @@ func (a *ClusterAdmin) AttachNodeToCluster(addr string) error {
 		return err
 	}
 
+	// Get cluster-announce-port
+	c, err := a.Connections().Get(addr)
+	if err != nil {
+		return err
+	}
+
+	resp := c.Cmd("CONFIG", "GET", "cluster-announce-bus-port")
+	if resp.Err != nil {
+		return fmt.Errorf("failed to execute config get cluster-announce-bus-port, %v", resp.Err)
+	}
+
+	// ["cluster-announce-bus-port","30163"]
+	list, err := resp.List()
+	if err != nil {
+		return fmt.Errorf("failed to get cluster-announce-bus-port list, %v", resp.Err)
+	}
+
+	if len(list) < 2 {
+		return fmt.Errorf("cluster-announce-bus-port list length lower than 2")
+	}
+
+	val := list[1] // "30163"
+	busPort, err := strconv.Atoi(val)
+	if err != nil {
+		return fmt.Errorf("failed to convert string to port, %v", err)
+	}
+
+	fmt.Println("cluster-announce-bus-port =", busPort)
+
 	all := a.Connections().GetAll()
 	if len(all) == 0 {
 		return fmt.Errorf("no connection for other redis-node found")
@@ -306,7 +335,7 @@ func (a *ClusterAdmin) AttachNodeToCluster(addr string) error {
 			continue
 		}
 		a.log.V(3).Info("CLUSTER MEET", "from addr", cAddr, "to", addr)
-		resp := c.Cmd("CLUSTER", "MEET", ip, port)
+		resp := c.Cmd("CLUSTER", "MEET", ip, port, busPort)
 		if err = a.Connections().ValidateResp(resp, addr, "cannot attach node to cluster"); err != nil {
 			return err
 		}
