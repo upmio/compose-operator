@@ -184,6 +184,10 @@ spec:
                   - type
                   type: object
                 type: array
+              observedGeneration:
+                description: ObservedGeneration The generation observed by controller.
+                format: int64
+                type: integer
               ready:
                 description: Ready indicates whether this MongoDBReplicaset object
                   is ready or not.
@@ -219,6 +223,7 @@ spec:
                 description: Topology indicates the current MongoDB Replica Set topology.
                 type: object
             required:
+            - observedGeneration
             - ready
             - topology
             type: object

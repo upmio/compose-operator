@@ -108,6 +108,9 @@ type RedisReplicationStatus struct {
 	//
 	// +optional
 	Conditions []metav1.Condition `json:"conditions,omitempty"`
+
+	// ObservedGeneration The generation observed by controller.
+	ObservedGeneration int64 `json:"observedGeneration"`
 }
 
 // RedisReplication is the Schema for the Redis Replication API

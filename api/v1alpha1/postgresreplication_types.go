@@ -107,6 +107,9 @@ type PostgresReplicationStatus struct {
 	//
 	// +optional
 	Conditions []metav1.Condition `json:"conditions,omitempty"`
+
+	// ObservedGeneration The generation observed by controller.
+	ObservedGeneration int64 `json:"observedGeneration"`
 }
 
 // PostgresReplication is the Schema for the Postgres Replications API

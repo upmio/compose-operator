@@ -70,6 +70,11 @@ func compareStatus(new, old *composev1alpha1.MongoDBReplicasetStatus, reqLogger 
 		return true
 	}
 
+	if old.ObservedGeneration != new.ObservedGeneration {
+		reqLogger.Info(fmt.Sprintf("found status.ObservedGeneration changed: the old one is %d, new one is %d", old.ObservedGeneration, new.ObservedGeneration))
+		return true
+	}
+
 	return false
 }
 
@@ -117,6 +122,8 @@ func buildDefaultTopologyStatus(instance *composev1alpha1.MongoDBReplicaset) com
 			State:  mongoutil.MongoUnknownState,
 		}
 	}
+
+	status.ObservedGeneration = instance.Generation
 
 	return status
 }

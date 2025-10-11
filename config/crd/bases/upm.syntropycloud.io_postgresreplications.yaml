@@ -229,6 +229,10 @@ spec:
                   - type
                   type: object
                 type: array
+              observedGeneration:
+                description: ObservedGeneration The generation observed by controller.
+                format: int64
+                type: integer
               readonlyService:
                 description: ReadOnlyService specify the service name provides read-only
                   access to database.
@@ -278,6 +282,7 @@ spec:
                 description: Topology indicates the current Postgres replication topology.
                 type: object
             required:
+            - observedGeneration
             - readwriteService
             - ready
             - topology

@@ -81,6 +81,9 @@ type ProxysqlSyncStatus struct {
 	//
 	// +optional
 	Conditions []metav1.Condition `json:"conditions,omitempty"`
+
+	// ObservedGeneration The generation observed by controller.
+	ObservedGeneration int64 `json:"observedGeneration"`
 }
 
 // ProxysqlSync is the Schema for the proxysqlsyncs API

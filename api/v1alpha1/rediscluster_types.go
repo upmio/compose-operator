@@ -102,6 +102,9 @@ type RedisClusterStatus struct {
 	//
 	// +optional
 	Conditions []metav1.Condition `json:"conditions,omitempty"`
+
+	// ObservedGeneration The generation observed by controller.
+	ObservedGeneration int64 `json:"observedGeneration"`
 }
 
 // RedisCluster is the Schema for the Redis Cluster API

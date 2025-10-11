@@ -80,6 +80,11 @@ func compareStatus(new, old *composev1alpha1.PostgresReplicationStatus, reqLogge
 		return true
 	}
 
+	if old.ObservedGeneration != new.ObservedGeneration {
+		reqLogger.Info(fmt.Sprintf("found status.ObservedGeneration changed: the old one is %d, new one is %d", old.ObservedGeneration, new.ObservedGeneration))
+		return true
+	}
+
 	return false
 }
 
@@ -138,6 +143,8 @@ func buildDefaultTopologyStatus(instance *composev1alpha1.PostgresReplication) c
 			Ready:  false,
 		}
 	}
+
+	status.ObservedGeneration = instance.Generation
 
 	return status
 }

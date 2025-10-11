@@ -92,6 +92,9 @@ type MysqlGroupReplicationStatus struct {
 	//
 	// +optional
 	Conditions []metav1.Condition `json:"conditions,omitempty"`
+
+	// ObservedGeneration The generation observed by controller.
+	ObservedGeneration int64 `json:"observedGeneration"`
 }
 
 // MysqlGroupReplication is the Schema for the Mysql Group Replication API

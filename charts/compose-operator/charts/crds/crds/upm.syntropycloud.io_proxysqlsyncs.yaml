@@ -198,6 +198,10 @@ spec:
                   - type
                   type: object
                 type: array
+              observedGeneration:
+                description: ObservedGeneration The generation observed by controller.
+                format: int64
+                type: integer
               ready:
                 type: boolean
               topology:
@@ -221,6 +225,7 @@ spec:
                   Important: Run "make" to regenerate code after modifying this file
                 type: object
             required:
+            - observedGeneration
             - ready
             - topology
             type: object

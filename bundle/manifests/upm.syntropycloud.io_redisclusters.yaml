@@ -192,6 +192,10 @@ spec:
               numberOfShard:
                 description: NumberOfShard indicates the number of Redis Cluster shard.
                 type: integer
+              observedGeneration:
+                description: ObservedGeneration The generation observed by controller.
+                format: int64
+                type: integer
               ready:
                 description: Ready indicates whether this RedisCluster object is read
                   or not.
@@ -249,6 +253,7 @@ spec:
             - clusterJoined
             - clusterSynced
             - numberOfShard
+            - observedGeneration
             - ready
             - topology
             type: object
