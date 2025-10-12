@@ -6,7 +6,7 @@ metadata:
       [
         {
           "apiVersion": "upm.syntropycloud.io/v1alpha1",
-          "kind": "MongoDBReplicaset",
+          "kind": "MongoDBReplicaSet",
           "metadata": {
             "labels": {
               "app.kubernetes.io/managed-by": "kustomize",
@@ -297,7 +297,7 @@ metadata:
     capabilities: Full Lifecycle
     categories: Application Runtime
     containerImage: quay.io/upmio/compose-operator@sha256:8c1e24930015ee2dd9187d810fc6fce46a36d25111e6ab26cf998f04a8375d6f
-    createdAt: "2025-10-11T01:32:26Z"
+    createdAt: "2025-10-12T14:29:17Z"
     features.operators.openshift.io/disconnected: "true"
     features.operators.openshift.io/fips-compliant: "true"
     features.operators.openshift.io/proxy-aware: "false"
@@ -314,9 +314,9 @@ spec:
   apiservicedefinitions: {}
   customresourcedefinitions:
     owned:
-    - description: MongoDBReplicaset is the Schema for the MongoDB Replica Set API
-      displayName: Mongo DBReplicaset
-      kind: MongoDBReplicaset
+    - description: MongoDBReplicaSet is the Schema for the MongoDB ReplicaSet API
+      displayName: Mongo DBReplica Set
+      kind: MongoDBReplicaSet
       name: mongodbreplicasets.upm.syntropycloud.io
       version: v1alpha1
     - description: MysqlGroupReplication is the Schema for the Mysql Group Replication

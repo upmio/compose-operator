@@ -1,5 +1,5 @@
 apiVersion: upm.syntropycloud.io/v1alpha1
-kind: MongoDBReplicaset
+kind: MongoDBReplicaSet
 metadata:
   labels:
     app.kubernetes.io/name: compose-operator

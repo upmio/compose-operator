@@ -163,18 +163,18 @@ const (
 	RedisClusterNodeRoleNone RedisClusterNodeRole = "None"
 )
 
-// MongoDBReplicasetRole defines the mongodb replica set role
-type MongoDBReplicasetRole string
+// MongoDBReplicaSetRole defines the mongodb replica set role
+type MongoDBReplicaSetRole string
 
 const (
-	// MongoDBReplicasetNodeRolePrimary MongoDB Replica Set Primary node role
-	MongoDBReplicasetNodeRolePrimary MongoDBReplicasetRole = "Primary"
-	// MongoDBReplicasetNodeRoleSecondary MongoDB Replica Set Secondary node role
-	MongoDBReplicasetNodeRoleSecondary MongoDBReplicasetRole = "Secondary"
-	// MongoDBReplicasetNodeRoleArbiter MongoDB Replica Set Arbiter node role
-	MongoDBReplicasetNodeRoleArbiter MongoDBReplicasetRole = "Arbiter"
-	// MongoDBReplicasetNodeRoleNone MongoDB Replica Set None node role
-	MongoDBReplicasetNodeRoleNone MongoDBReplicasetRole = "None"
+	// MongoDBReplicaSetNodeRolePrimary MongoDB ReplicaSet Primary node role
+	MongoDBReplicaSetNodeRolePrimary MongoDBReplicaSetRole = "Primary"
+	// MongoDBReplicaSetNodeRoleSecondary MongoDB ReplicaSet Secondary node role
+	MongoDBReplicaSetNodeRoleSecondary MongoDBReplicaSetRole = "Secondary"
+	// MongoDBReplicaSetNodeRoleArbiter MongoDB ReplicaSet Arbiter node role
+	MongoDBReplicaSetNodeRoleArbiter MongoDBReplicaSetRole = "Arbiter"
+	// MongoDBReplicaSetNodeRoleNone MongoDB ReplicaSet None node role
+	MongoDBReplicaSetNodeRoleNone MongoDBReplicaSetRole = "None"
 )
 
 // MysqlReplicationMode describes how the mysql replication will be handled.

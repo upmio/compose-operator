@@ -20,9 +20,9 @@ spec:
   apiservicedefinitions: {}
   customresourcedefinitions:
     owned:
-    - description: MongoDBReplicaset is the Schema for the MongoDB Replica Set API
-      displayName: Mongo DBReplicaset
-      kind: MongoDBReplicaset
+    - description: MongoDBReplicaSet is the Schema for the MongoDB ReplicaSet API
+      displayName: Mongo DBReplica Set
+      kind: MongoDBReplicaSet
       name: mongodbreplicasets.upm.syntropycloud.io
       version: v1alpha1
     - description: MysqlGroupReplication is the Schema for the Mysql Group Replication

@@ -22,8 +22,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// MongoDBReplicasetSecret defines the secret information of MongoDBReplicaset
-type MongoDBReplicasetSecret struct {
+// MongoDBReplicaSetSecret defines the secret information of MongoDBReplicaSet
+type MongoDBReplicaSetSecret struct {
 	// Name is the name of the secret resource which store authentication information for MongoDB.
 	Name string `json:"name"`
 	// Mongod is the key of the secret, which contains the value used to connect to MongoDB.
@@ -31,13 +31,13 @@ type MongoDBReplicasetSecret struct {
 	Mongod string `json:"mongod"`
 }
 
-// MongoDBReplicasetSpec defines the desired state of MongoDBReplicaset
-type MongoDBReplicasetSpec struct {
+// MongoDBReplicaSetSpec defines the desired state of MongoDBReplicaSet
+type MongoDBReplicaSetSpec struct {
 
-	// Secret is the reference to the secret resource containing authentication information, it must be in the same namespace as the MongoDBReplicaset object.
-	Secret MongoDBReplicasetSecret `json:"secret"`
+	// Secret is the reference to the secret resource containing authentication information, it must be in the same namespace as the MongoDBReplicaSet object.
+	Secret MongoDBReplicaSetSecret `json:"secret"`
 
-	// AESSecret is the reference to the secret resource containing aes key, it must be in the same namespace as the MongoDBReplicaset Object.
+	// AESSecret is the reference to the secret resource containing aes key, it must be in the same namespace as the MongoDBReplicaSet Object.
 	AESSecret *AESSecret `json:"aesSecret,omitempty"`
 
 	// Member is a list of nodes in the MongoDB Replica Set topology.
@@ -47,7 +47,7 @@ type MongoDBReplicasetSpec struct {
 	ReplicaSetName string `json:"replicaSetName"`
 }
 
-type MongoDBReplicasetNode struct {
+type MongoDBReplicaSetNode struct {
 	// Host indicates the host of the MongoDB node.
 	Host string `json:"host"`
 
@@ -55,7 +55,7 @@ type MongoDBReplicasetNode struct {
 	Port int `json:"port"`
 
 	// Role represents the role of the node in the replica set topology (e.g., primary, secondary, arbiter).
-	Role MongoDBReplicasetRole `json:"role"`
+	Role MongoDBReplicaSetRole `json:"role"`
 
 	// Status indicates whether the node is ready for reads and writes.
 	Status NodeStatus `json:"status"`
@@ -64,20 +64,20 @@ type MongoDBReplicasetNode struct {
 	State string `json:"state"`
 }
 
-type MongoDBReplicasetTopology map[string]*MongoDBReplicasetNode
+type MongoDBReplicaSetTopology map[string]*MongoDBReplicaSetNode
 
-// MongoDBReplicasetStatus defines the observed state of MongoDBReplicaset
-type MongoDBReplicasetStatus struct {
+// MongoDBReplicaSetStatus defines the observed state of MongoDBReplicaSet
+type MongoDBReplicaSetStatus struct {
 	// Topology indicates the current MongoDB Replica Set topology.
-	Topology MongoDBReplicasetTopology `json:"topology"`
+	Topology MongoDBReplicaSetTopology `json:"topology"`
 
-	// Ready indicates whether this MongoDBReplicaset object is ready or not.
+	// Ready indicates whether this MongoDBReplicaSet object is ready or not.
 	Ready bool `json:"ready"`
 
-	// Represents a list of detailed status of the MongoDBReplicaset object.
-	// Each condition in the list provides real-time information about certain aspect of the MongoDBReplicaset object.
+	// Represents a list of detailed status of the MongoDBReplicaSet object.
+	// Each condition in the list provides real-time information about certain aspect of the MongoDBReplicaSet object.
 	//
-	// This field is crucial for administrators and developers to monitor and respond to changes within the MongoDBReplicaset.
+	// This field is crucial for administrators and developers to monitor and respond to changes within the MongoDBReplicaSet.
 	// It provides a history of state transitions and a snapshot of the current state that can be used for
 	// automated logic or direct inspection.
 	//
@@ -88,40 +88,40 @@ type MongoDBReplicasetStatus struct {
 	ObservedGeneration int64 `json:"observedGeneration"`
 }
 
-// MongoDBReplicaset is the Schema for the MongoDB Replica Set API
+// MongoDBReplicaSet is the Schema for the MongoDB ReplicaSet API
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:shortName=mrs
 // +kubebuilder:printcolumn:name="READY",type=boolean,JSONPath=`.status.ready`
 // +kubebuilder:printcolumn:name="REPLICA_SET",type=string,JSONPath=`.spec.replicaSetName`
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
-type MongoDBReplicaset struct {
-	// The metadata for the API version and kind of the MongoDBReplicaset.
+type MongoDBReplicaSet struct {
+	// The metadata for the API version and kind of the MongoDBReplicaSet.
 	metav1.TypeMeta `json:",inline"`
 
-	// The metadata for the MongoDBReplicaset object, including name, namespace, labels, and annotations.
+	// The metadata for the MongoDBReplicaSet object, including name, namespace, labels, and annotations.
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	// Defines the desired state of the MongoDBReplicaset.
-	Spec MongoDBReplicasetSpec `json:"spec,omitempty"`
+	// Defines the desired state of the MongoDBReplicaSet.
+	Spec MongoDBReplicaSetSpec `json:"spec,omitempty"`
 
-	// Populated by the system, it represents the current information about the MongoDBReplicaset.
-	Status MongoDBReplicasetStatus `json:"status,omitempty"`
+	// Populated by the system, it represents the current information about the MongoDBReplicaSet.
+	Status MongoDBReplicaSetStatus `json:"status,omitempty"`
 }
 
-// MongoDBReplicasetList contains a list of MongoDBReplicaset
+// MongoDBReplicaSetList contains a list of MongoDBReplicaSet
 // +kubebuilder:object:root=true
-type MongoDBReplicasetList struct {
+type MongoDBReplicaSetList struct {
 	// Contains the metadata for the API objects, including the Kind and Version of the object.
 	metav1.TypeMeta `json:",inline"`
 
 	// Contains the metadata for the list objects, including the continue and remainingItemCount for the list.
 	metav1.ListMeta `json:"metadata,omitempty"`
 
-	// Contains the list of MongoDBReplicaset.
-	Items []MongoDBReplicaset `json:"items"`
+	// Contains the list of MongoDBReplicaSet.
+	Items []MongoDBReplicaSet `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&MongoDBReplicaset{}, &MongoDBReplicasetList{})
+	SchemeBuilder.Register(&MongoDBReplicaSet{}, &MongoDBReplicaSetList{})
 }

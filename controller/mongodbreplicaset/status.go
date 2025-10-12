@@ -33,8 +33,8 @@ import (
 	"github.com/upmio/compose-operator/pkg/utils"
 )
 
-func (r *ReconcileMongoDBReplicaset) updateInstanceIfNeed(ctx context.Context, instance *composev1alpha1.MongoDBReplicaset,
-	oldStatus *composev1alpha1.MongoDBReplicasetStatus,
+func (r *ReconcileMongoDBReplicaSet) updateInstanceIfNeed(ctx context.Context, instance *composev1alpha1.MongoDBReplicaSet,
+	oldStatus *composev1alpha1.MongoDBReplicaSetStatus,
 	reqLogger logr.Logger) {
 
 	if compareStatus(&instance.Status, oldStatus, reqLogger) {
@@ -44,7 +44,7 @@ func (r *ReconcileMongoDBReplicaset) updateInstanceIfNeed(ctx context.Context, i
 	}
 }
 
-func compareStatus(new, old *composev1alpha1.MongoDBReplicasetStatus, reqLogger logr.Logger) bool {
+func compareStatus(new, old *composev1alpha1.MongoDBReplicaSetStatus, reqLogger logr.Logger) bool {
 
 	if old.Ready != new.Ready {
 		reqLogger.Info(fmt.Sprintf("found status.Ready changed: the old one is %v, new one is %v", old.Ready, new.Ready))
@@ -78,7 +78,7 @@ func compareStatus(new, old *composev1alpha1.MongoDBReplicasetStatus, reqLogger 
 	return false
 }
 
-func compareNodes(nodeA, nodeB *composev1alpha1.MongoDBReplicasetNode, reqLogger logr.Logger) bool {
+func compareNodes(nodeA, nodeB *composev1alpha1.MongoDBReplicaSetNode, reqLogger logr.Logger) bool {
 	if utils.CompareStringValue("Node.Host", nodeA.Host, nodeB.Host, reqLogger) {
 		reqLogger.Info(fmt.Sprintf("found status.Topology[Node].Host changed: the old one is %v, new one is %v", nodeB.Host, nodeA.Host))
 		return true
@@ -107,17 +107,17 @@ func compareNodes(nodeA, nodeB *composev1alpha1.MongoDBReplicasetNode, reqLogger
 	return false
 }
 
-func buildDefaultTopologyStatus(instance *composev1alpha1.MongoDBReplicaset) composev1alpha1.MongoDBReplicasetStatus {
-	status := composev1alpha1.MongoDBReplicasetStatus{}
-	status.Topology = make(composev1alpha1.MongoDBReplicasetTopology)
+func buildDefaultTopologyStatus(instance *composev1alpha1.MongoDBReplicaSet) composev1alpha1.MongoDBReplicaSetStatus {
+	status := composev1alpha1.MongoDBReplicaSetStatus{}
+	status.Topology = make(composev1alpha1.MongoDBReplicaSetTopology)
 
 	status.Conditions = instance.Status.Conditions
 
 	for _, node := range instance.Spec.Member {
-		status.Topology[node.Name] = &composev1alpha1.MongoDBReplicasetNode{
+		status.Topology[node.Name] = &composev1alpha1.MongoDBReplicaSetNode{
 			Host:   node.Host,
 			Port:   node.Port,
-			Role:   composev1alpha1.MongoDBReplicasetNodeRoleNone,
+			Role:   composev1alpha1.MongoDBReplicaSetNodeRoleNone,
 			Status: composev1alpha1.NodeStatusKO,
 			State:  mongoutil.MongoUnknownState,
 		}
@@ -128,7 +128,7 @@ func buildDefaultTopologyStatus(instance *composev1alpha1.MongoDBReplicaset) com
 	return status
 }
 
-func generateTopologyStatusByReplicationInfo(info *mongoutil.ReplicaSetInfos, instance *composev1alpha1.MongoDBReplicaset) {
+func generateTopologyStatusByReplicationInfo(info *mongoutil.ReplicaSetInfos, instance *composev1alpha1.MongoDBReplicaSet) {
 	allNodeReady := true
 	for _, node := range instance.Spec.Member {
 		addr := net.JoinHostPort(node.Host, strconv.Itoa(node.Port))

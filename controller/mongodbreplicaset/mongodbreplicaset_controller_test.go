@@ -41,13 +41,13 @@ func TestReconcileMongoDBReplicaset_ValidateInstance(t *testing.T) {
 	err := composev1alpha1.AddToScheme(scheme)
 	assert.NoError(t, err)
 
-	instance := &composev1alpha1.MongoDBReplicaset{
+	instance := &composev1alpha1.MongoDBReplicaSet{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test-mongodb-replicaset",
 			Namespace: "default",
 		},
-		Spec: composev1alpha1.MongoDBReplicasetSpec{
-			Secret: composev1alpha1.MongoDBReplicasetSecret{
+		Spec: composev1alpha1.MongoDBReplicaSetSpec{
+			Secret: composev1alpha1.MongoDBReplicaSetSecret{
 				Name:   "mongodb-secret",
 				Mongod: "mongod",
 			},
@@ -78,7 +78,7 @@ func TestReconcileMongoDBReplicaset_ValidateInstance(t *testing.T) {
 
 	client := fake.NewClientBuilder().WithScheme(scheme).WithObjects(instance).Build()
 
-	r := &ReconcileMongoDBReplicaset{
+	r := &ReconcileMongoDBReplicaSet{
 		client:   client,
 		scheme:   scheme,
 		recorder: &record.FakeRecorder{},
@@ -102,15 +102,15 @@ func TestReconcileMongoDBReplicaset_ValidateInstance(t *testing.T) {
 	assert.Equal(t, requeueAfter, result.RequeueAfter)
 
 	// Verify the instance status was updated with failed condition due to missing secret
-	updatedInstance := &composev1alpha1.MongoDBReplicaset{}
+	updatedInstance := &composev1alpha1.MongoDBReplicaSet{}
 	err = client.Get(ctx, req.NamespacedName, updatedInstance)
 	assert.NoError(t, err)
 	assert.False(t, updatedInstance.Status.Ready)
 }
 
 func TestBuildDefaultTopologyStatus(t *testing.T) {
-	instance := &composev1alpha1.MongoDBReplicaset{
-		Spec: composev1alpha1.MongoDBReplicasetSpec{
+	instance := &composev1alpha1.MongoDBReplicaSet{
+		Spec: composev1alpha1.MongoDBReplicaSetSpec{
 			Member: composev1alpha1.CommonNodes{
 				{
 					Name: "mongodb-0",
@@ -134,23 +134,23 @@ func TestBuildDefaultTopologyStatus(t *testing.T) {
 	node0 := status.Topology["mongodb-0"]
 	assert.Equal(t, "mongodb-0.mongodb.default.svc.cluster.local", node0.Host)
 	assert.Equal(t, 27017, node0.Port)
-	assert.Equal(t, composev1alpha1.MongoDBReplicasetNodeRoleNone, node0.Role)
+	assert.Equal(t, composev1alpha1.MongoDBReplicaSetNodeRoleNone, node0.Role)
 	assert.Equal(t, composev1alpha1.NodeStatusKO, node0.Status)
 }
 
 func TestCompareNodes(t *testing.T) {
-	nodeA := &composev1alpha1.MongoDBReplicasetNode{
+	nodeA := &composev1alpha1.MongoDBReplicaSetNode{
 		Host:   "mongodb-0.mongodb.default.svc.cluster.local",
 		Port:   27017,
-		Role:   composev1alpha1.MongoDBReplicasetNodeRolePrimary,
+		Role:   composev1alpha1.MongoDBReplicaSetNodeRolePrimary,
 		Status: composev1alpha1.NodeStatusOK,
 		State:  "PRIMARY",
 	}
 
-	nodeB := &composev1alpha1.MongoDBReplicasetNode{
+	nodeB := &composev1alpha1.MongoDBReplicaSetNode{
 		Host:   "mongodb-0.mongodb.default.svc.cluster.local",
 		Port:   27017,
-		Role:   composev1alpha1.MongoDBReplicasetNodeRolePrimary,
+		Role:   composev1alpha1.MongoDBReplicaSetNodeRolePrimary,
 		Status: composev1alpha1.NodeStatusOK,
 		State:  "PRIMARY",
 	}
@@ -161,7 +161,7 @@ func TestCompareNodes(t *testing.T) {
 	assert.False(t, changed)
 
 	// Different role should show changes
-	nodeB.Role = composev1alpha1.MongoDBReplicasetNodeRoleSecondary
+	nodeB.Role = composev1alpha1.MongoDBReplicaSetNodeRoleSecondary
 	changed = compareNodes(nodeA, nodeB, logger)
 	assert.True(t, changed)
 }

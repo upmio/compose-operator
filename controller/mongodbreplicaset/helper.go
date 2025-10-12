@@ -36,7 +36,7 @@ import (
 )
 
 // newMongoAdmin builds and returns new mongoutil.IReplicaSetAdmin from the list of mongodb address
-func newMongoAdmin(instance *composev1alpha1.MongoDBReplicaset, password string, reqLogger logr.Logger) mongoutil.IReplicaSetAdmin {
+func newMongoAdmin(instance *composev1alpha1.MongoDBReplicaSet, password string, reqLogger logr.Logger) mongoutil.IReplicaSetAdmin {
 	nodesAddrs := make([]string, 0)
 
 	for _, node := range instance.Spec.Member {
@@ -55,7 +55,7 @@ func newMongoAdmin(instance *composev1alpha1.MongoDBReplicaset, password string,
 }
 
 // decryptSecret returns the current mongodb password.
-func decryptSecret(client client.Client, reqLogger logr.Logger, instance *composev1alpha1.MongoDBReplicaset) (string, error) {
+func decryptSecret(client client.Client, reqLogger logr.Logger, instance *composev1alpha1.MongoDBReplicaSet) (string, error) {
 	password, err := k8sutil.DecryptSecretPasswords(
 		client,
 		instance.Spec.Secret.Name,

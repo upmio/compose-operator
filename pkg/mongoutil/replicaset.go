@@ -76,16 +76,16 @@ type ReplicaSetNode struct {
 }
 
 // GetRole returns the MongoDBReplicasetRole based on the node's state
-func (n *ReplicaSetNode) GetRole() composev1alpha1.MongoDBReplicasetRole {
+func (n *ReplicaSetNode) GetRole() composev1alpha1.MongoDBReplicaSetRole {
 	switch n.State {
 	case MongoPrimaryState:
-		return composev1alpha1.MongoDBReplicasetNodeRolePrimary
+		return composev1alpha1.MongoDBReplicaSetNodeRolePrimary
 	case MongoSecondaryState:
-		return composev1alpha1.MongoDBReplicasetNodeRoleSecondary
+		return composev1alpha1.MongoDBReplicaSetNodeRoleSecondary
 	case MongoArbiterState:
-		return composev1alpha1.MongoDBReplicasetNodeRoleArbiter
+		return composev1alpha1.MongoDBReplicaSetNodeRoleArbiter
 	default:
-		return composev1alpha1.MongoDBReplicasetNodeRoleNone
+		return composev1alpha1.MongoDBReplicaSetNodeRoleNone
 	}
 }
 

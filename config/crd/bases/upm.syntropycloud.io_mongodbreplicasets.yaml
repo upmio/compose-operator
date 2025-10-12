@@ -8,8 +8,8 @@ metadata:
 spec:
   group: upm.syntropycloud.io
   names:
-    kind: MongoDBReplicaset
-    listKind: MongoDBReplicasetList
+    kind: MongoDBReplicaSet
+    listKind: MongoDBReplicaSetList
     plural: mongodbreplicasets
     shortNames:
     - mrs
@@ -29,7 +29,7 @@ spec:
     name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: MongoDBReplicaset is the Schema for the MongoDB Replica Set API
+        description: MongoDBReplicaSet is the Schema for the MongoDB ReplicaSet API
         properties:
           apiVersion:
             description: |-
@@ -49,11 +49,11 @@ spec:
           metadata:
             type: object
           spec:
-            description: Defines the desired state of the MongoDBReplicaset.
+            description: Defines the desired state of the MongoDBReplicaSet.
             properties:
               aesSecret:
                 description: AESSecret is the reference to the secret resource containing
-                  aes key, it must be in the same namespace as the MongoDBReplicaset
+                  aes key, it must be in the same namespace as the MongoDBReplicaSet
                   Object.
                 properties:
                   key:
@@ -97,7 +97,7 @@ spec:
               secret:
                 description: Secret is the reference to the secret resource containing
                   authentication information, it must be in the same namespace as
-                  the MongoDBReplicaset object.
+                  the MongoDBReplicaSet object.
                 properties:
                   mongod:
                     default: mongod
@@ -119,14 +119,14 @@ spec:
             type: object
           status:
             description: Populated by the system, it represents the current information
-              about the MongoDBReplicaset.
+              about the MongoDBReplicaSet.
             properties:
               conditions:
                 description: |-
-                  Represents a list of detailed status of the MongoDBReplicaset object.
-                  Each condition in the list provides real-time information about certain aspect of the MongoDBReplicaset object.
+                  Represents a list of detailed status of the MongoDBReplicaSet object.
+                  Each condition in the list provides real-time information about certain aspect of the MongoDBReplicaSet object.
 
-                  This field is crucial for administrators and developers to monitor and respond to changes within the MongoDBReplicaset.
+                  This field is crucial for administrators and developers to monitor and respond to changes within the MongoDBReplicaSet.
                   It provides a history of state transitions and a snapshot of the current state that can be used for
                   automated logic or direct inspection.
                 items:
@@ -189,7 +189,7 @@ spec:
                 format: int64
                 type: integer
               ready:
-                description: Ready indicates whether this MongoDBReplicaset object
+                description: Ready indicates whether this MongoDBReplicaSet object
                   is ready or not.
                 type: boolean
               topology:

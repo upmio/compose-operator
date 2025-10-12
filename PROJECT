@@ -95,7 +95,7 @@ resources:
   controller: true
   domain: syntropycloud.io
   group: upm
-  kind: MongoDBReplicaset
+  kind: MongoDBReplicaSet
   path: github.com/upmio/compose-operator/api/v1alpha1
   version: v1alpha1
   webhooks:

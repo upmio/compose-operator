@@ -25,13 +25,13 @@ import (
 )
 
 func TestMongoDBReplicaset(t *testing.T) {
-	instance := &MongoDBReplicaset{
+	instance := &MongoDBReplicaSet{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test-mongodb-replicaset",
 			Namespace: "default",
 		},
-		Spec: MongoDBReplicasetSpec{
-			Secret: MongoDBReplicasetSecret{
+		Spec: MongoDBReplicaSetSpec{
+			Secret: MongoDBReplicaSetSecret{
 				Name:   "mongodb-secret",
 				Mongod: "mongod",
 			},
@@ -70,20 +70,20 @@ func TestMongoDBReplicaset(t *testing.T) {
 }
 
 func TestMongoDBReplicasetStatus(t *testing.T) {
-	status := MongoDBReplicasetStatus{
+	status := MongoDBReplicaSetStatus{
 		Ready: true,
-		Topology: MongoDBReplicasetTopology{
-			"mongodb-0": &MongoDBReplicasetNode{
+		Topology: MongoDBReplicaSetTopology{
+			"mongodb-0": &MongoDBReplicaSetNode{
 				Host:   "mongodb-0.mongodb.default.svc.cluster.local",
 				Port:   27017,
-				Role:   MongoDBReplicasetNodeRolePrimary,
+				Role:   MongoDBReplicaSetNodeRolePrimary,
 				Status: NodeStatusOK,
 				State:  "PRIMARY",
 			},
-			"mongodb-1": &MongoDBReplicasetNode{
+			"mongodb-1": &MongoDBReplicaSetNode{
 				Host:   "mongodb-1.mongodb.default.svc.cluster.local",
 				Port:   27017,
-				Role:   MongoDBReplicasetNodeRoleSecondary,
+				Role:   MongoDBReplicaSetNodeRoleSecondary,
 				Status: NodeStatusOK,
 				State:  "SECONDARY",
 			},
@@ -99,7 +99,7 @@ func TestMongoDBReplicasetStatus(t *testing.T) {
 	}
 
 	primaryNode := status.Topology["mongodb-0"]
-	if primaryNode.Role != MongoDBReplicasetNodeRolePrimary {
+	if primaryNode.Role != MongoDBReplicaSetNodeRolePrimary {
 		t.Errorf("Expected node role to be 'Primary', got '%s'", primaryNode.Role)
 	}
 

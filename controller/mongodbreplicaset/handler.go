@@ -30,7 +30,7 @@ import (
 	"github.com/upmio/compose-operator/pkg/mongoutil"
 )
 
-func (r *ReconcileMongoDBReplicaset) handleMongoDBReplicasetInstance(syncCtx *syncContext) error {
+func (r *ReconcileMongoDBReplicaSet) handleMongoDBReplicasetInstance(syncCtx *syncContext) error {
 	instance := syncCtx.instance
 	ctx := syncCtx.ctx
 	admin := syncCtx.admin
@@ -50,7 +50,7 @@ func (r *ReconcileMongoDBReplicaset) handleMongoDBReplicasetInstance(syncCtx *sy
 }
 
 // handleUninitializedCluster handles cluster initialization with intelligent node selection
-func (r *ReconcileMongoDBReplicaset) handleUninitializedCluster(syncCtx *syncContext) error {
+func (r *ReconcileMongoDBReplicaSet) handleUninitializedCluster(syncCtx *syncContext) error {
 	instance := syncCtx.instance
 	ctx := syncCtx.ctx
 	admin := syncCtx.admin
@@ -80,7 +80,7 @@ func (r *ReconcileMongoDBReplicaset) handleUninitializedCluster(syncCtx *syncCon
 }
 
 // handlePartialCluster handles adding missing members to the replica set
-func (r *ReconcileMongoDBReplicaset) handlePartialCluster(syncCtx *syncContext, replicaSetInfo *mongoutil.ReplicaSetInfos) error {
+func (r *ReconcileMongoDBReplicaSet) handlePartialCluster(syncCtx *syncContext, replicaSetInfo *mongoutil.ReplicaSetInfos) error {
 
 	var errs []error
 
@@ -89,7 +89,7 @@ func (r *ReconcileMongoDBReplicaset) handlePartialCluster(syncCtx *syncContext, 
 	return errors.Join(errs...)
 }
 
-func (r *ReconcileMongoDBReplicaset) handleResources(syncCtx *syncContext) error {
+func (r *ReconcileMongoDBReplicaSet) handleResources(syncCtx *syncContext) error {
 	instance := syncCtx.instance
 
 	var errs []error
@@ -103,7 +103,7 @@ func (r *ReconcileMongoDBReplicaset) handleResources(syncCtx *syncContext) error
 	return errors.Join(errs...)
 }
 
-func (r *ReconcileMongoDBReplicaset) ensurePodLabels(syncCtx *syncContext, podName string) error {
+func (r *ReconcileMongoDBReplicaSet) ensurePodLabels(syncCtx *syncContext, podName string) error {
 	ctx := syncCtx.ctx
 	instance := syncCtx.instance
 	namespace := instance.Namespace

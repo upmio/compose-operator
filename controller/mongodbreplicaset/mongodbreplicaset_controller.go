@@ -59,20 +59,20 @@ const (
 	defaultKey = "compose-operator/mongodb-replicaset.name"
 )
 
-// ReconcileMongoDBReplicaset reconciles a MongoDBReplicaset object
-type ReconcileMongoDBReplicaset struct {
+// ReconcileMongoDBReplicaSet reconciles a MongoDBReplicaset object
+type ReconcileMongoDBReplicaSet struct {
 	client   client.Client
 	scheme   *runtime.Scheme
 	recorder record.EventRecorder
 	logger   logr.Logger
 }
 
-// blank assignment to verify that ReconcileMongoDBReplicaset implements reconcile.Reconciler
-var _ reconcile.Reconciler = &ReconcileMongoDBReplicaset{}
+// blank assignment to verify that ReconcileMongoDBReplicaSet implements reconcile.Reconciler
+var _ reconcile.Reconciler = &ReconcileMongoDBReplicaSet{}
 
 // syncCtx
 type syncContext struct {
-	instance  *composev1alpha1.MongoDBReplicaset
+	instance  *composev1alpha1.MongoDBReplicaSet
 	admin     mongoutil.IReplicaSetAdmin
 	ctx       context.Context
 	reqLogger logr.Logger
@@ -85,7 +85,7 @@ type syncContext struct {
 // +kubebuilder:rbac:groups="",resources=secrets,verbs=get;list;watch;create
 
 // Reconcile reconcile mongodb replica set
-func (r *ReconcileMongoDBReplicaset) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (r *ReconcileMongoDBReplicaSet) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	reqLogger := r.logger.WithValues("namespace", req.Namespace, "name", req.Name)
 	reqLogger.Info("starting reconciliation for mongodb replica set")
 	startTime := time.Now()
@@ -94,7 +94,7 @@ func (r *ReconcileMongoDBReplicaset) Reconcile(ctx context.Context, req ctrl.Req
 	}()
 
 	// Fetch the MongoDBReplicaset instance
-	instance := &composev1alpha1.MongoDBReplicaset{}
+	instance := &composev1alpha1.MongoDBReplicaSet{}
 	if err := r.client.Get(ctx, req.NamespacedName, instance); err != nil {
 		if errors.IsNotFound(err) {
 			reqLogger.Info("mongodb replica set resource not found, probably deleted.")
@@ -162,7 +162,7 @@ func (r *ReconcileMongoDBReplicaset) Reconcile(ctx context.Context, req ctrl.Req
 }
 
 func Setup(mgr ctrl.Manager) error {
-	r := &ReconcileMongoDBReplicaset{
+	r := &ReconcileMongoDBReplicaSet{
 		client:   mgr.GetClient(),
 		scheme:   mgr.GetScheme(),
 		recorder: mgr.GetEventRecorderFor(appName),
@@ -207,7 +207,7 @@ func Setup(mgr ctrl.Manager) error {
 	}
 
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&composev1alpha1.MongoDBReplicaset{}).
+		For(&composev1alpha1.MongoDBReplicaSet{}).
 		Watches(&corev1.Pod{},
 			handler.EnqueueRequestsFromMapFunc(podMapFunc),
 			builder.WithPredicates(updatePred), // Apply the predicate
