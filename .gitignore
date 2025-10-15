@@ -25,5 +25,6 @@ go.work
 *~
 .claude
 CLAUDE.md
+AGENTS.md
 .serena
 cover.out
