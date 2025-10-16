@@ -20,6 +20,8 @@ package redisutil
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/go-logr/logr"
 )
 
@@ -37,6 +39,9 @@ type IReplicationAdmin interface {
 
 	// ReplicaOfSource redis replicaof source node
 	ReplicaOfSource(addr, sourceHost, sourcePort string) error
+
+	// WaitReplicaCatchUp waits until the replica at addr catches up to within the provided offset threshold.
+	WaitReplicaCatchUp(addr string, maxOffsetLag int64, timeout time.Duration) error
 }
 
 // ReplicationAdmin wraps redis cluster admin logic
@@ -143,4 +148,41 @@ func (a *ReplicationAdmin) ReplicaOfSource(addr, sourceHost, sourcePort string) 
 	}
 
 	return nil
+}
+
+func (a *ReplicationAdmin) WaitReplicaCatchUp(addr string, maxOffsetLag int64, timeout time.Duration) error {
+	deadline := time.Now().Add(timeout)
+
+	for {
+		node, err := a.getInfos(addr)
+		if err != nil {
+			return fmt.Errorf("failed to check replication offset on [%s]: %v", addr, err)
+		}
+		if node == nil {
+			return fmt.Errorf("failed to check replication offset on [%s]: empty node info", addr)
+		}
+
+		if node.MasterSyncInProgress {
+			if time.Now().After(deadline) {
+				return fmt.Errorf("replica [%s] master sync still in progress after %s", addr, timeout)
+			}
+			time.Sleep(time.Second)
+			continue
+		}
+
+		lag, err := node.OffsetLag()
+		if err != nil {
+			return fmt.Errorf("failed to check replication offset on [%s]: %v", addr, err)
+		}
+
+		if lag <= maxOffsetLag {
+			return nil
+		}
+
+		if time.Now().After(deadline) {
+			return fmt.Errorf("replica [%s] offset lag '%d' exceeds threshold '%d'", addr, lag, maxOffsetLag)
+		}
+
+		time.Sleep(time.Second)
+	}
 }

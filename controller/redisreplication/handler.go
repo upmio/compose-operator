@@ -21,16 +21,22 @@ package redisreplication
 import (
 	"errors"
 	"fmt"
+	"net"
+	"strconv"
+	"time"
+
 	corev1 "k8s.io/api/core/v1"
 	kubeErrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"net"
-	"strconv"
 
 	composev1alpha1 "github.com/upmio/compose-operator/api/v1alpha1"
 	"github.com/upmio/compose-operator/pkg/redisutil"
+)
+
+const (
+	redisSwitchoverCatchUpTimeout = 30 * time.Second
 )
 
 func (r *ReconcileRedisReplication) handleRedisReplicationInstance(syncCtx *syncContext) error {
@@ -120,11 +126,36 @@ func (r *ReconcileRedisReplication) ensureSourceNode(syncCtx *syncContext, repli
 		//switchover logic
 		r.recorder.Eventf(instance, corev1.EventTypeNormal, Synced, "switchover triggered: promoting replica node [%s] to source", address)
 
+		if err := r.ensureAllPodReadOnly(syncCtx); err != nil {
+			return err
+		}
+		r.recorder.Event(instance, corev1.EventTypeNormal, Synced, "switchover triggered: set read-only label to true on all Redis pods")
+
+		if nodeInfo.MasterLinkStatus != "up" {
+			r.recorder.Eventf(instance, corev1.EventTypeNormal, Synced, "switchover triggered: replica node [%s] link status is '%s'", address, nodeInfo.MasterLinkStatus)
+		}
+
+		if nodeInfo.MasterSyncInProgress {
+			r.recorder.Eventf(instance, corev1.EventTypeNormal, Synced, "switchover triggered: replica node [%s] master sync still in progress, waiting until completion", address)
+		}
+
+		r.recorder.Eventf(instance, corev1.EventTypeNormal, Synced, "switchover triggered: waiting for replica node [%s] to reach offset gap '0'", address)
+
+		if err := admin.WaitReplicaCatchUp(address, 0, redisSwitchoverCatchUpTimeout); err != nil {
+			return fmt.Errorf("switchover aborted: %v", err)
+		}
+		r.recorder.Eventf(instance, corev1.EventTypeNormal, Synced, "switchover triggered: replica node [%s] offset lag reached 0", address)
+
 		if err := admin.ReplicaOfNoOne(address); err != nil {
 			return err
 		}
 
 		r.recorder.Eventf(instance, corev1.EventTypeNormal, Synced, "execute REPLICAOF NO ONE on [%s] successfully", address)
+
+		if err := r.ensurePodLabels(syncCtx, instance.Spec.Source.Name, "false"); err != nil {
+			return err
+		}
+		r.recorder.Eventf(instance, corev1.EventTypeNormal, Synced, "switchover triggered: restored read-only label to false on new source pod [%s]", instance.Spec.Source.Name)
 	}
 
 	return nil
@@ -148,7 +179,7 @@ func (r *ReconcileRedisReplication) ensureReplicaNode(syncCtx *syncContext,
 
 	if nodeInfo.Role == redisutil.RedisSourceRole ||
 		(nodeInfo.Role == redisutil.RedisReplicaRole &&
-			(nodeInfo.SourceHost != sourceNodeHost || nodeInfo.SourcePort != sourceNodePort)) || !nodeInfo.Ready {
+			(nodeInfo.SourceHost != sourceNodeHost || nodeInfo.SourcePort != sourceNodePort)) || nodeInfo.MasterLinkStatus != "up" {
 		if err := admin.ReplicaOfSource(address, sourceNodeHost, sourceNodePort); err != nil {
 			return err
 		}
@@ -156,6 +187,23 @@ func (r *ReconcileRedisReplication) ensureReplicaNode(syncCtx *syncContext,
 	}
 
 	return nil
+}
+
+func (r *ReconcileRedisReplication) ensureAllPodReadOnly(syncCtx *syncContext) error {
+	instance := syncCtx.instance
+	var errs []error
+
+	if err := r.ensurePodLabels(syncCtx, instance.Spec.Source.Name, "true"); err != nil {
+		errs = append(errs, err)
+	}
+
+	for _, replica := range instance.Spec.Replica {
+		if err := r.ensurePodLabels(syncCtx, replica.Name, "true"); err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	return errors.Join(errs...)
 }
 
 func (r *ReconcileRedisReplication) ensureService(syncCtx *syncContext, serviceName, isReadOnly string, isExisted bool) error {

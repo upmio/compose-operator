@@ -80,6 +80,18 @@ type RedisReplicationNode struct {
 
 	// SourcePort indicates the port of the source node that this replica node is replicating from.
 	SourcePort int `json:"sourcePort,omitempty"`
+
+	// MasterSyncInProgress indicates whether a replica is currently performing an initial or partial sync.
+	MasterSyncInProgress bool `json:"masterSyncInProgress,omitempty"`
+
+	// MasterLinkStatus reflects the replica link status reported by Redis (`up`/`down`/etc).
+	MasterLinkStatus string `json:"masterLinkStatus,omitempty"`
+
+	// SlaveReplOffset is the replica's own replication offset (slave_repl_offset).
+	SlaveReplOffset int64 `json:"slaveReplOffset,omitempty"`
+
+	// MasterReplOffset captures the source replication offset observed from this node.
+	MasterReplOffset int64 `json:"masterReplOffset,omitempty"`
 }
 
 // RedisReplicationTopology defines the RedisReplication topology

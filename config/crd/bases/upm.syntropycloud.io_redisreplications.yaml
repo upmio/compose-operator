@@ -255,6 +255,19 @@ spec:
                     host:
                       description: Host indicates the host of the Redis node.
                       type: string
+                    masterLinkStatus:
+                      description: MasterLinkStatus reflects the replica link status
+                        reported by Redis (`up`/`down`/etc).
+                      type: string
+                    masterReplOffset:
+                      description: MasterReplOffset captures the source replication
+                        offset observed from this node.
+                      format: int64
+                      type: integer
+                    masterSyncInProgress:
+                      description: MasterSyncInProgress indicates whether a replica
+                        is currently performing an initial or partial sync.
+                      type: boolean
                     port:
                       description: Port indicates the port of the Redis node.
                       type: integer
@@ -266,6 +279,11 @@ spec:
                       description: Role represents the role of the node in the replication
                         topology (e.g., source, replica).
                       type: string
+                    slaveReplOffset:
+                      description: SlaveReplOffset is the replica's own replication
+                        offset (slave_repl_offset).
+                      format: int64
+                      type: integer
                     sourceHost:
                       description: SourceHost indicates the hostname or IP address
                         of the source node that this replica node is replicating from.

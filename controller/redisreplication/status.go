@@ -123,6 +123,26 @@ func compareNodes(nodeA, nodeB *composev1alpha1.RedisReplicationNode, reqLogger 
 		return true
 	}
 
+	if utils.CompareStringValue("Node.MasterLinkStatus", nodeA.MasterLinkStatus, nodeB.MasterLinkStatus, reqLogger) {
+		reqLogger.Info(fmt.Sprintf("found status.Topology[Node].MasterLinkStatus changed: the old one is %v, new one is %v", nodeB.MasterLinkStatus, nodeA.MasterLinkStatus))
+		return true
+	}
+
+	if nodeA.MasterSyncInProgress != nodeB.MasterSyncInProgress {
+		reqLogger.Info(fmt.Sprintf("found status.Topology[Node].MasterSyncInProgress changed: the old one is %v, new one is %v", nodeB.MasterSyncInProgress, nodeA.MasterSyncInProgress))
+		return true
+	}
+
+	if utils.CompareInt64("Node.SlaveReplOffset", nodeA.SlaveReplOffset, nodeB.SlaveReplOffset, reqLogger) {
+		reqLogger.Info(fmt.Sprintf("found status.Topology[Node].SlaveReplOffset changed: the old one is %d, new one is %d", nodeB.SlaveReplOffset, nodeA.SlaveReplOffset))
+		return true
+	}
+
+	if utils.CompareInt64("Node.MasterReplOffset", nodeA.MasterReplOffset, nodeB.MasterReplOffset, reqLogger) {
+		reqLogger.Info(fmt.Sprintf("found status.Topology[Node].MasterReplOffset changed: the old one is %d, new one is %d", nodeB.MasterReplOffset, nodeA.MasterReplOffset))
+		return true
+	}
+
 	if utils.CompareStringValue("Node.SourceHost", nodeA.SourceHost, nodeB.SourceHost, reqLogger) {
 		reqLogger.Info(fmt.Sprintf("found status.Topology[Node].SourceHost changed: the old one is %v, new one is %v", nodeB.SourceHost, nodeA.SourceHost))
 		return true
@@ -141,24 +161,32 @@ func buildDefaultTopologyStatus(instance *composev1alpha1.RedisReplication) comp
 	status.Topology = make(composev1alpha1.RedisReplicationTopology)
 	status.Conditions = instance.Status.Conditions
 	status.Topology[instance.Spec.Source.Name] = &composev1alpha1.RedisReplicationNode{
-		Host:         instance.Spec.Source.Host,
-		Port:         instance.Spec.Source.Port,
-		AnnounceHost: instance.Spec.Source.AnnounceHost,
-		AnnouncePort: instance.Spec.Source.AnnouncePort,
-		Role:         composev1alpha1.RedisReplicationNodeRoleNone,
-		Status:       composev1alpha1.NodeStatusKO,
-		Ready:        false,
+		Host:                 instance.Spec.Source.Host,
+		Port:                 instance.Spec.Source.Port,
+		AnnounceHost:         instance.Spec.Source.AnnounceHost,
+		AnnouncePort:         instance.Spec.Source.AnnouncePort,
+		Role:                 composev1alpha1.RedisReplicationNodeRoleNone,
+		Status:               composev1alpha1.NodeStatusKO,
+		Ready:                false,
+		MasterSyncInProgress: false,
+		MasterLinkStatus:     "",
+		SlaveReplOffset:      0,
+		MasterReplOffset:     0,
 	}
 
 	for _, replica := range instance.Spec.Replica {
 		status.Topology[replica.Name] = &composev1alpha1.RedisReplicationNode{
-			Host:         replica.Host,
-			Port:         replica.Port,
-			AnnounceHost: replica.AnnounceHost,
-			AnnouncePort: replica.AnnouncePort,
-			Role:         composev1alpha1.RedisReplicationNodeRoleNone,
-			Status:       composev1alpha1.NodeStatusKO,
-			Ready:        false,
+			Host:                 replica.Host,
+			Port:                 replica.Port,
+			AnnounceHost:         replica.AnnounceHost,
+			AnnouncePort:         replica.AnnouncePort,
+			Role:                 composev1alpha1.RedisReplicationNodeRoleNone,
+			Status:               composev1alpha1.NodeStatusKO,
+			Ready:                false,
+			MasterSyncInProgress: false,
+			MasterLinkStatus:     "",
+			SlaveReplOffset:      0,
+			MasterReplOffset:     0,
 		}
 	}
 
@@ -174,14 +202,19 @@ func generateTopologyStatusByReplicationInfo(info *redisutil.ReplicationInfo, in
 	if node, ok := info.Nodes[sourceAddr]; ok {
 		instance.Status.Topology[instance.Spec.Source.Name].Role = node.GetRole()
 		instance.Status.Topology[instance.Spec.Source.Name].Status = composev1alpha1.NodeStatusOK
+		instance.Status.Topology[instance.Spec.Source.Name].MasterSyncInProgress = node.MasterSyncInProgress
+		instance.Status.Topology[instance.Spec.Source.Name].MasterLinkStatus = node.MasterLinkStatus
+		instance.Status.Topology[instance.Spec.Source.Name].MasterReplOffset = node.SourceOffset
+		instance.Status.Topology[instance.Spec.Source.Name].SlaveReplOffset = node.ReplicaOffset
+		instance.Status.Topology[instance.Spec.Source.Name].SourceHost = node.SourceHost
+		instance.Status.Topology[instance.Spec.Source.Name].SourcePort = node.GetSourcePort()
+
 		if node.GetRole() == redisutil.RedisSourceRole {
 			instance.Status.Topology[instance.Spec.Source.Name].Ready = true
 		} else {
 			instance.Status.Topology[instance.Spec.Source.Name].Ready = false
 			isInstanceReady = false
 		}
-		instance.Status.Topology[instance.Spec.Source.Name].SourceHost = node.SourceHost
-		instance.Status.Topology[instance.Spec.Source.Name].SourcePort = node.GetSourcePort()
 	} else {
 		isInstanceReady = false
 	}
@@ -191,14 +224,20 @@ func generateTopologyStatusByReplicationInfo(info *redisutil.ReplicationInfo, in
 		if node, ok := info.Nodes[addr]; ok {
 			instance.Status.Topology[replica.Name].Role = node.GetRole()
 			instance.Status.Topology[replica.Name].Status = composev1alpha1.NodeStatusOK
-			if node.GetRole() == redisutil.RedisReplicaRole && node.Ready {
+			instance.Status.Topology[replica.Name].MasterSyncInProgress = node.MasterSyncInProgress
+			instance.Status.Topology[replica.Name].MasterLinkStatus = node.MasterLinkStatus
+			instance.Status.Topology[replica.Name].SlaveReplOffset = node.ReplicaOffset
+			instance.Status.Topology[replica.Name].MasterReplOffset = node.SourceOffset
+			instance.Status.Topology[replica.Name].SourceHost = node.SourceHost
+			instance.Status.Topology[replica.Name].SourcePort = node.GetSourcePort()
+
+			if node.GetRole() == redisutil.RedisReplicaRole && node.MasterLinkStatus == "up" {
 				instance.Status.Topology[replica.Name].Ready = true
 			} else {
 				instance.Status.Topology[replica.Name].Ready = false
 				isInstanceReady = false
 			}
-			instance.Status.Topology[replica.Name].SourceHost = node.SourceHost
-			instance.Status.Topology[replica.Name].SourcePort = node.GetSourcePort()
+
 		} else {
 			isInstanceReady = false
 		}
@@ -207,7 +246,7 @@ func generateTopologyStatusByReplicationInfo(info *redisutil.ReplicationInfo, in
 	instance.Status.Ready = isInstanceReady
 }
 
-// newSucceedSyncTopologyCondition creates a condition when sync topology succeed.
+// newSucceedSyncTopologyCondition creates a condition when sync topology success.
 func newSucceedSyncTopologyCondition() metav1.Condition {
 	return metav1.Condition{
 		Type:    composev1alpha1.ConditionTypeTopologyReady,
