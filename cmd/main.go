@@ -102,7 +102,7 @@ func main() {
 		}),
 		HealthProbeBindAddress:        probeAddr,
 		LeaderElection:                enableLeaderElection,
-		LeaderElectionID:              id,
+		LeaderElectionID:              "compose-operator-leader-election",
 		LeaseDuration:                 ptr.To(10 * time.Second),
 		RenewDeadline:                 ptr.To(5 * time.Second),
 		RetryPeriod:                   ptr.To(2 * time.Second),
