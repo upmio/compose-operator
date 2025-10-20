@@ -82,7 +82,7 @@ type RedisReplicationNode struct {
 	SourcePort int `json:"sourcePort,omitempty"`
 
 	// MasterSyncInProgress indicates whether a replica is currently performing an initial or partial sync.
-	MasterSyncInProgress bool `json:"masterSyncInProgress,omitempty"`
+	MasterSyncInProgress *bool `json:"masterSyncInProgress,omitempty"`
 
 	// MasterLinkStatus reflects the replica link status reported by Redis (`up`/`down`/etc).
 	MasterLinkStatus string `json:"masterLinkStatus,omitempty"`

@@ -49,8 +49,8 @@ func NewDefaultReplicationNode() *ReplicationNode {
 	return &ReplicationNode{
 		Port:                 DefaultRedisPort,
 		MasterLinkStatus:     "",
-		SourceOffset:         -1,
-		ReplicaOffset:        -1,
+		SourceOffset:         0,
+		ReplicaOffset:        0,
 		MasterSyncInProgress: false,
 	}
 }

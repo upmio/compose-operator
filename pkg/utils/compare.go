@@ -55,6 +55,19 @@ func CompareIntPoint(name string, old, new *int, reqLogger logr.Logger) bool {
 	return false
 }
 
+func CompareBoolPoint(name string, old, new *bool, reqLogger logr.Logger) bool {
+	if old == nil || new == nil {
+		return false
+	}
+
+	if *old != *new {
+		reqLogger.V(4).Info(fmt.Sprintf("compare status.%s: %d - %d", name, old, new))
+		return true
+	}
+
+	return false
+}
+
 func CompareStringValue(name string, old, new string, reqLogger logr.Logger) bool {
 	if old != new {
 		reqLogger.V(4).Info(fmt.Sprintf("compare %s: %s - %s", name, old, new))
