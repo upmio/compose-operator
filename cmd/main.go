@@ -28,9 +28,6 @@ import (
 
 	"github.com/upmio/compose-operator/pkg/version"
 
-	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
-	// to ensure that exec-entrypoint and run can make use of them.
-	"k8s.io/apimachinery/pkg/util/uuid"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
 	"k8s.io/apimachinery/pkg/runtime"
@@ -85,12 +82,6 @@ func main() {
 
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
 
-	id, err := os.Hostname()
-	if err != nil {
-		setupLog.Error(err, "unable to get hostname", "webhook", "MysqlReplication")
-	}
-	id = id + "-" + string(uuid.NewUUID())[:8]
-
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme: scheme,
 		Metrics: metricsserver.Options{
@@ -109,7 +100,7 @@ func main() {
 		LeaderElectionReleaseOnCancel: true,
 		// LeaderElectionReleaseOnCancel defines if the leader should step down voluntarily
 		// when the Manager ends. This requires the binary to immediately end when the
-		// Manager is stopped, otherwise, this setting is unsafe. Setting this significantly
+		// Manager is stopped, otherwise this setting is unsafe. Setting this significantly
 		// speeds up voluntary leader transitions as the new leader don't have to wait
 		// LeaseDuration time first.
 		//
