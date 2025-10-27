@@ -51,6 +51,18 @@ func (r *mongodbReplicaSetAdmission) Default(ctx context.Context, obj runtime.Ob
 	instance := obj.(*v1alpha1.MongoDBReplicaSet)
 	mongodbreplicasetlog.Info("default", "name", instance.Name)
 
+	// Set default secret key names
+	if instance.Spec.Secret.Mongod == "" {
+		instance.Spec.Secret.Mongod = "admin"
+	}
+
+	if instance.Spec.AESSecret == nil {
+		instance.Spec.AESSecret = &v1alpha1.AESSecret{
+			Name: "aes-secret-key",
+			Key:  "AES_SECRET_KEY",
+		}
+	}
+
 	return nil
 }
 
@@ -62,8 +74,7 @@ var _ webhook.CustomValidator = &mongodbReplicaSetAdmission{}
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (r *mongodbReplicaSetAdmission) ValidateCreate(ctx context.Context, newObj runtime.Object) (warnings admission.Warnings, err error) {
 	instance := newObj.(*v1alpha1.MongoDBReplicaSet)
-
-	mongodbreplicasetlog.Info("validate delete", "name", instance.Name)
+	mongodbreplicasetlog.Info("validate create", "name", instance.Name)
 
 	return nil, nil
 }
@@ -72,7 +83,7 @@ func (r *mongodbReplicaSetAdmission) ValidateCreate(ctx context.Context, newObj 
 func (r *mongodbReplicaSetAdmission) ValidateUpdate(ctx context.Context, oldObj runtime.Object, newObj runtime.Object) (warnings admission.Warnings, err error) {
 	instance := newObj.(*v1alpha1.MongoDBReplicaSet)
 
-	mongodbreplicasetlog.Info("validate delete", "name", instance.Name)
+	mongodbreplicasetlog.Info("validate update", "name", instance.Name)
 
 	return nil, nil
 }
