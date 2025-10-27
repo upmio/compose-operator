@@ -38,6 +38,29 @@ webhooks:
     service:
       name: {{ include "compose-operator.fullname" . }}-webhook-service
       namespace: {{ $.Release.Namespace }}
+      path: /mutate-upm-syntropycloud-io-v1alpha1-mongodbreplicaset
+    {{- if and (not .Values.webhook.certManager.enabled) .Values.webhook.tls.crt }}
+    caBundle: {{ .Values.webhook.tls.crt }}
+    {{- end }}
+  failurePolicy: Fail
+  name: mmongodbreplicaset.kb.io
+  rules:
+  - apiGroups:
+    - upm.syntropycloud.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - mongodbreplicasets
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: {{ include "compose-operator.fullname" . }}-webhook-service
+      namespace: {{ $.Release.Namespace }}
       path: /mutate-upm-syntropycloud-io-v1alpha1-mysqlreplication
     {{- if and (not .Values.webhook.certManager.enabled) .Values.webhook.tls.crt }}
     caBundle: {{ .Values.webhook.tls.crt }}
