@@ -214,22 +214,27 @@ func generateTopologyStatusByReplicationInfo(info *redisutil.ReplicationInfo, in
 	for _, replica := range instance.Spec.Replica {
 		addr := net.JoinHostPort(replica.Host, strconv.Itoa(replica.Port))
 		if node, ok := info.Nodes[addr]; ok {
-			instance.Status.Topology[replica.Name].Role = node.GetRole()
-			instance.Status.Topology[replica.Name].Status = composev1alpha1.NodeStatusOK
-			instance.Status.Topology[replica.Name].MasterSyncInProgress = &node.MasterSyncInProgress
-			instance.Status.Topology[replica.Name].MasterLinkStatus = node.MasterLinkStatus
-			instance.Status.Topology[replica.Name].SlaveReplOffset = node.ReplicaOffset
-			instance.Status.Topology[replica.Name].MasterReplOffset = node.SourceOffset
-			instance.Status.Topology[replica.Name].SourceHost = node.SourceHost
-			instance.Status.Topology[replica.Name].SourcePort = node.GetSourcePort()
-
-			if node.GetRole() == redisutil.RedisReplicaRole && node.MasterLinkStatus == "up" {
-				instance.Status.Topology[replica.Name].Ready = true
+			// Check if replica node is isolated
+			if replica.Isolated && node.GetRole() == redisutil.RedisReplicaRole && node.MasterLinkStatus != "up" {
+				// Remove replica node from topology if it's isolated
+				delete(instance.Status.Topology, replica.Name)
 			} else {
-				instance.Status.Topology[replica.Name].Ready = false
-				isInstanceReady = false
-			}
+				instance.Status.Topology[replica.Name].Role = node.GetRole()
+				instance.Status.Topology[replica.Name].Status = composev1alpha1.NodeStatusOK
+				instance.Status.Topology[replica.Name].MasterSyncInProgress = &node.MasterSyncInProgress
+				instance.Status.Topology[replica.Name].MasterLinkStatus = node.MasterLinkStatus
+				instance.Status.Topology[replica.Name].SlaveReplOffset = node.ReplicaOffset
+				instance.Status.Topology[replica.Name].MasterReplOffset = node.SourceOffset
+				instance.Status.Topology[replica.Name].SourceHost = node.SourceHost
+				instance.Status.Topology[replica.Name].SourcePort = node.GetSourcePort()
 
+				if node.GetRole() == redisutil.RedisReplicaRole && node.MasterLinkStatus == "up" {
+					instance.Status.Topology[replica.Name].Ready = true
+				} else {
+					instance.Status.Topology[replica.Name].Ready = false
+					isInstanceReady = false
+				}
+			}
 		} else {
 			isInstanceReady = false
 		}

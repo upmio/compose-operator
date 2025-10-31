@@ -227,13 +227,18 @@ var _ = Describe("RedisReplication Controller", func() {
 							},
 						},
 						Service: &composev1alpha1.Service{Type: composev1alpha1.ServiceTypeClusterIP},
-						Replica: composev1alpha1.RedisNodes{
-							&composev1alpha1.RedisNode{
-								CommonNode: composev1alpha1.CommonNode{
-									Name: fmt.Sprintf("%s-1", resourceName),
-									Host: replicaHost,
-									Port: replicaPort,
+						Replica: composev1alpha1.RedisReplicaNodes{
+							&composev1alpha1.RedisReplicaNode{
+								RedisNode: composev1alpha1.RedisNode{
+									CommonNode: composev1alpha1.CommonNode{
+										Name: fmt.Sprintf("%s-1", resourceName),
+										Host: replicaHost,
+										Port: replicaPort,
+									},
+									AnnounceHost: "",
+									AnnouncePort: 0,
 								},
+								Isolated: false,
 							},
 						},
 					},
@@ -276,13 +281,18 @@ var _ = Describe("RedisReplication Controller", func() {
 					},
 				}
 
-				instance.Spec.Replica = composev1alpha1.RedisNodes{
-					&composev1alpha1.RedisNode{
-						CommonNode: composev1alpha1.CommonNode{
-							Name: fmt.Sprintf("%s-0", resourceName),
-							Host: sourceHost,
-							Port: sourcePort,
+				instance.Spec.Replica = composev1alpha1.RedisReplicaNodes{
+					&composev1alpha1.RedisReplicaNode{
+						RedisNode: composev1alpha1.RedisNode{
+							CommonNode: composev1alpha1.CommonNode{
+								Name: fmt.Sprintf("%s-0", resourceName),
+								Host: sourceHost,
+								Port: sourcePort,
+							},
+							AnnounceHost: "",
+							AnnouncePort: 0,
 						},
+						Isolated: false,
 					},
 				}
 

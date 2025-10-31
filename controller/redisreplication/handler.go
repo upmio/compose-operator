@@ -21,8 +21,10 @@ package redisreplication
 import (
 	"errors"
 	"fmt"
+	"github.com/upmio/compose-operator/pkg/mysqlutil"
 	"net"
 	"strconv"
+	"strings"
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
@@ -68,7 +70,7 @@ func (r *ReconcileRedisReplication) handleResources(syncCtx *syncContext) error 
 
 	var errs []error
 	//ensure source pod labels
-	if err := r.ensurePodLabels(syncCtx, instance.Spec.Source.Name, "false"); err != nil {
+	if err := r.ensurePodLabels(syncCtx, instance.Spec.Source.Name, "false", false); err != nil {
 		errs = append(errs, err)
 	}
 
@@ -83,7 +85,7 @@ func (r *ReconcileRedisReplication) handleResources(syncCtx *syncContext) error 
 
 		//ensure replica pod labels
 		for _, replica := range instance.Spec.Replica {
-			if err := r.ensurePodLabels(syncCtx, replica.Name, "true"); err != nil {
+			if err := r.ensurePodLabels(syncCtx, replica.Name, "true", replica.Isolated); err != nil {
 				errs = append(errs, err)
 			}
 		}
@@ -91,13 +93,11 @@ func (r *ReconcileRedisReplication) handleResources(syncCtx *syncContext) error 
 		//ensure readonly service
 		if err := r.ensureService(syncCtx, readOnlyService, "true", true); err != nil {
 			errs = append(errs, err)
-
 		}
 	} else {
 		//ensure readonly service
 		if err := r.ensureService(syncCtx, readOnlyService, "true", false); err != nil {
 			errs = append(errs, err)
-
 		}
 	}
 
@@ -152,10 +152,6 @@ func (r *ReconcileRedisReplication) ensureSourceNode(syncCtx *syncContext, repli
 
 		r.recorder.Eventf(instance, corev1.EventTypeNormal, Synced, "execute REPLICAOF NO ONE on [%s] successfully", address)
 
-		if err := r.ensurePodLabels(syncCtx, instance.Spec.Source.Name, "false"); err != nil {
-			return err
-		}
-		r.recorder.Eventf(instance, corev1.EventTypeNormal, Synced, "switchover triggered: restored read-only label to false on new source pod [%s]", instance.Spec.Source.Name)
 	}
 
 	return nil
@@ -163,7 +159,7 @@ func (r *ReconcileRedisReplication) ensureSourceNode(syncCtx *syncContext, repli
 
 func (r *ReconcileRedisReplication) ensureReplicaNode(syncCtx *syncContext,
 	replicationInfo *redisutil.ReplicationInfo,
-	replica *composev1alpha1.RedisNode) error {
+	replica *composev1alpha1.RedisReplicaNode) error {
 
 	instance := syncCtx.instance
 	admin := syncCtx.admin
@@ -177,15 +173,25 @@ func (r *ReconcileRedisReplication) ensureReplicaNode(syncCtx *syncContext,
 	sourceNodeHost := instance.Spec.Source.Host
 	sourceNodePort := strconv.Itoa(instance.Spec.Source.Port)
 
-	if nodeInfo.Role == redisutil.RedisSourceRole ||
-		(nodeInfo.Role == redisutil.RedisReplicaRole &&
-			(nodeInfo.SourceHost != sourceNodeHost || nodeInfo.SourcePort != sourceNodePort)) || nodeInfo.MasterLinkStatus != "up" {
-		if err := admin.ReplicaOfSource(address, sourceNodeHost, sourceNodePort); err != nil {
-			return err
-		}
-		r.recorder.Eventf(instance, corev1.EventTypeNormal, Synced, "configure replication on [%s] successfully", address)
-	}
+	if replica.Isolated {
+		// isolate the replica node
+		if nodeInfo.Role == mysqlutil.MysqlReplicaRole {
+			if err := admin.ReplicaOfNoOne(address); err != nil {
+				return err
+			}
 
+			r.recorder.Eventf(instance, corev1.EventTypeNormal, Synced, "isolation triggered: replica [%s] marked as isolated, set replica of none completed", address)
+		}
+	} else {
+		if nodeInfo.Role == redisutil.RedisSourceRole ||
+			(nodeInfo.Role == redisutil.RedisReplicaRole &&
+				(nodeInfo.SourceHost != sourceNodeHost || nodeInfo.SourcePort != sourceNodePort)) || nodeInfo.MasterLinkStatus != "up" {
+			if err := admin.ReplicaOfSource(address, sourceNodeHost, sourceNodePort); err != nil {
+				return err
+			}
+			r.recorder.Eventf(instance, corev1.EventTypeNormal, Synced, "configure replication on [%s] successfully", address)
+		}
+	}
 	return nil
 }
 
@@ -193,12 +199,14 @@ func (r *ReconcileRedisReplication) ensureAllPodReadOnly(syncCtx *syncContext) e
 	instance := syncCtx.instance
 	var errs []error
 
-	if err := r.ensurePodLabels(syncCtx, instance.Spec.Source.Name, "true"); err != nil {
+	//ensure source pod labels
+	if err := r.ensurePodLabels(syncCtx, instance.Spec.Source.Name, "true", false); err != nil {
 		errs = append(errs, err)
 	}
 
+	//ensure replica pod labels
 	for _, replica := range instance.Spec.Replica {
-		if err := r.ensurePodLabels(syncCtx, replica.Name, "true"); err != nil {
+		if err := r.ensurePodLabels(syncCtx, replica.Name, "true", false); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -285,19 +293,9 @@ func (r *ReconcileRedisReplication) ensureService(syncCtx *syncContext, serviceN
 	return nil
 }
 
-func (r *ReconcileRedisReplication) ensurePodLabels(syncCtx *syncContext, podName, isReadOnly string) error {
+func (r *ReconcileRedisReplication) ensurePodLabels(syncCtx *syncContext, podName, isReadOnly string, preserveLabels bool) error {
 	ctx := syncCtx.ctx
 	instance := syncCtx.instance
-
-	// Determine the label value based on source node count
-	hostLabelValue := ""
-	portLabelValue := ""
-	sourceNode := instance.Spec.Source
-
-	if sourceNodeStatus := instance.Status.Topology[sourceNode.Name]; sourceNodeStatus.Role == composev1alpha1.RedisReplicationNodeRoleSource && sourceNodeStatus.Status == composev1alpha1.NodeStatusOK {
-		hostLabelValue = sourceNodeStatus.AnnounceHost
-		portLabelValue = strconv.Itoa(sourceNodeStatus.AnnouncePort)
-	}
 
 	foundPod := &corev1.Pod{}
 	if err := r.client.Get(ctx, types.NamespacedName{
@@ -311,37 +309,80 @@ func (r *ReconcileRedisReplication) ensurePodLabels(syncCtx *syncContext, podNam
 		foundPod.Labels = make(map[string]string)
 	}
 
-	var needUpdate bool
-	// Check if the redis source label already has the correct value
-	if readOnlyValue, ok := foundPod.Labels[readOnlyKey]; !ok || readOnlyValue != isReadOnly {
-		foundPod.Labels[readOnlyKey] = isReadOnly
-		needUpdate = true
+	var needsUpdate bool
+	var eventMessage string
+
+	if preserveLabels {
+		// Remove managed labels if they exist
+		needsUpdate, eventMessage = r.removeLabelsFromPod(foundPod, instance.Name)
+	} else {
+		// Ensure labels are set correctly
+		needsUpdate, eventMessage = r.setLabelsOnPod(foundPod, instance.Name, isReadOnly)
 	}
 
-	if instanceValue, ok := foundPod.Labels[defaultKey]; !ok || instanceValue != instance.Name {
-		foundPod.Labels[defaultKey] = instance.Name
-		needUpdate = true
-	}
-
-	if currentHostLabelValue, ok := foundPod.Labels[sourceHostKey]; !ok || currentHostLabelValue != hostLabelValue {
-		foundPod.Labels[sourceHostKey] = hostLabelValue
-		needUpdate = true
-	}
-
-	if currentPortLabelValue, ok := foundPod.Labels[sourcePortKey]; !ok || currentPortLabelValue != portLabelValue {
-		foundPod.Labels[sourcePortKey] = portLabelValue
-		needUpdate = true
-	}
-
-	// Update pod
-	if needUpdate {
+	// Update pod only if changes are needed
+	if needsUpdate {
 		if err := r.client.Update(ctx, foundPod); err != nil {
 			return fmt.Errorf("failed to update pod [%s]: %v", podName, err)
 		}
-		r.recorder.Eventf(instance, corev1.EventTypeNormal, Synced, "pod [%s] update labels successfully", podName)
+		r.recorder.Eventf(instance, corev1.EventTypeNormal, Synced, "pod [%s] %s", podName, eventMessage)
 	}
 
 	return nil
+}
+
+// setLabelsOnPod sets the required labels on the pod and returns whether update is needed
+func (r *ReconcileRedisReplication) setLabelsOnPod(pod *corev1.Pod, instanceName, isReadOnly string) (bool, string) {
+	var needsUpdate bool
+	var updatedLabels []string
+
+	// Check and update readonly label
+	if readOnlyValue, ok := pod.Labels[readOnlyKey]; !ok || readOnlyValue != isReadOnly {
+		pod.Labels[readOnlyKey] = isReadOnly
+		needsUpdate = true
+		updatedLabels = append(updatedLabels, readOnlyKey)
+	}
+
+	// Check and update default label
+	if instanceValue, ok := pod.Labels[defaultKey]; !ok || instanceValue != instanceName {
+		pod.Labels[defaultKey] = instanceName
+		needsUpdate = true
+		updatedLabels = append(updatedLabels, defaultKey)
+	}
+
+	var eventMessage string
+	if needsUpdate {
+		eventMessage = fmt.Sprintf("update labels '%s' successfully", strings.Join(updatedLabels, ", "))
+	}
+
+	return needsUpdate, eventMessage
+}
+
+// removeLabelsFromPod removes the managed labels from the pod and returns whether update is needed
+func (r *ReconcileRedisReplication) removeLabelsFromPod(pod *corev1.Pod, instanceName string) (bool, string) {
+	var needsUpdate bool
+	var removedLabels []string
+
+	// Remove readonly label if it exists
+	if _, ok := pod.Labels[readOnlyKey]; ok {
+		delete(pod.Labels, readOnlyKey)
+		needsUpdate = true
+		removedLabels = append(removedLabels, readOnlyKey)
+	}
+
+	// Remove default label if it exists and matches the instance
+	if instanceValue, ok := pod.Labels[defaultKey]; ok && instanceValue == instanceName {
+		delete(pod.Labels, defaultKey)
+		needsUpdate = true
+		removedLabels = append(removedLabels, defaultKey)
+	}
+
+	var eventMessage string
+	if needsUpdate {
+		eventMessage = fmt.Sprintf("remove labels '%s' successfully", strings.Join(removedLabels, ", "))
+	}
+
+	return needsUpdate, eventMessage
 }
 
 func (r *ReconcileRedisReplication) ensureSentinelPodLabels(syncCtx *syncContext) error {

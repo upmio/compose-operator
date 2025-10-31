@@ -70,7 +70,17 @@ type RedisNode struct {
 	AnnouncePort int    `json:"announcePort,omitempty"`
 }
 
-type RedisNodes []*RedisNode
+type RedisReplicaNode struct {
+	RedisNode `json:",inline"` // Embed base fields from RedisNode
+
+	// Isolated indicates whether this node will be isolated.
+	// If not specified, it defaults to false.
+	// +kubebuilder:default=false
+	// +optional
+	Isolated bool `json:"isolated,omitempty"`
+}
+
+type RedisReplicaNodes []*RedisReplicaNode
 
 // ServiceType reflection of kubernetes service type
 // +kubebuilder:validation:Enum=ClusterIP;NodePort;LoadBalancer;ExternalName

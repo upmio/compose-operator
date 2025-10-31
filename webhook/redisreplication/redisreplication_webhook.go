@@ -190,7 +190,7 @@ func (r *redisReplicationAdmission) validateRedisReplication(instance *v1alpha1.
 	} else {
 		for i, replica := range instance.Spec.Replica {
 			fieldPath := field.NewPath("spec").Child("replica").Index(i)
-			if err := r.validateCommonNode("replica", replica, fieldPath); err != nil {
+			if err := r.validateCommonNode("replica", &replica.RedisNode, fieldPath); err != nil {
 				allErrs = append(allErrs, err...)
 			}
 		}

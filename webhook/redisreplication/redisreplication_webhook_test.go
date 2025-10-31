@@ -317,20 +317,30 @@ var _ = Describe("RedisReplication Webhook", func() {
 							Port: 6379,
 						},
 					},
-					Replica: v1alpha1.RedisNodes{
-						&v1alpha1.RedisNode{
-							CommonNode: v1alpha1.CommonNode{
-								Name: "duplicate-replica", // Same name as next replica
-								Host: "192.168.1.11",
-								Port: 6379,
+					Replica: v1alpha1.RedisReplicaNodes{
+						&v1alpha1.RedisReplicaNode{
+							RedisNode: v1alpha1.RedisNode{
+								CommonNode: v1alpha1.CommonNode{
+									Name: "duplicate-replica",
+									Host: "192.168.1.11",
+									Port: 6379,
+								},
+								AnnounceHost: "",
+								AnnouncePort: 0,
 							},
+							Isolated: false,
 						},
-						&v1alpha1.RedisNode{
-							CommonNode: v1alpha1.CommonNode{
-								Name: "duplicate-replica", // Duplicate name
-								Host: "192.168.1.12",
-								Port: 6379,
+						&v1alpha1.RedisReplicaNode{
+							RedisNode: v1alpha1.RedisNode{
+								CommonNode: v1alpha1.CommonNode{
+									Name: "duplicate-replica",
+									Host: "192.168.1.12",
+									Port: 6379,
+								},
+								AnnounceHost: "",
+								AnnouncePort: 0,
 							},
+							Isolated: false,
 						},
 					},
 				},
@@ -359,13 +369,18 @@ var _ = Describe("RedisReplication Webhook", func() {
 							Port: 6379,
 						},
 					},
-					Replica: v1alpha1.RedisNodes{
-						&v1alpha1.RedisNode{
-							CommonNode: v1alpha1.CommonNode{
-								Name: "duplicate-node", // Duplicate name with source
-								Host: "192.168.1.11",
-								Port: 6379,
+					Replica: v1alpha1.RedisReplicaNodes{
+						&v1alpha1.RedisReplicaNode{
+							RedisNode: v1alpha1.RedisNode{
+								CommonNode: v1alpha1.CommonNode{
+									Name: "duplicate-node",
+									Host: "192.168.1.11",
+									Port: 6379,
+								},
+								AnnounceHost: "",
+								AnnouncePort: 0,
 							},
+							Isolated: false,
 						},
 					},
 				},
@@ -394,13 +409,18 @@ var _ = Describe("RedisReplication Webhook", func() {
 							Port: 6379,
 						},
 					},
-					Replica: v1alpha1.RedisNodes{
-						&v1alpha1.RedisNode{
-							CommonNode: v1alpha1.CommonNode{
-								Name: "replica-node",
-								Host: "invalid..hostname", // Invalid hostname
-								Port: 6379,
+					Replica: v1alpha1.RedisReplicaNodes{
+						&v1alpha1.RedisReplicaNode{
+							RedisNode: v1alpha1.RedisNode{
+								CommonNode: v1alpha1.CommonNode{
+									Name: "replica-node",
+									Host: "invalid..hostname",
+									Port: 6379,
+								},
+								AnnounceHost: "",
+								AnnouncePort: 0,
 							},
+							Isolated: false,
 						},
 					},
 				},
@@ -485,22 +505,33 @@ var _ = Describe("RedisReplication Webhook", func() {
 							Port: 6379,
 						},
 					},
-					Replica: v1alpha1.RedisNodes{
-						&v1alpha1.RedisNode{
-							CommonNode: v1alpha1.CommonNode{
-								Name: "replica-1",
-								Host: "192.168.1.11",
-								Port: 6379,
+					Replica: v1alpha1.RedisReplicaNodes{
+						&v1alpha1.RedisReplicaNode{
+							RedisNode: v1alpha1.RedisNode{
+								CommonNode: v1alpha1.CommonNode{
+									Name: "replica-1",
+									Host: "192.168.1.11",
+									Port: 6379,
+								},
+								AnnounceHost: "",
+								AnnouncePort: 0,
 							},
+							Isolated: false,
 						},
-						&v1alpha1.RedisNode{
-							CommonNode: v1alpha1.CommonNode{
-								Name: "replica-2",
-								Host: "replica-2.example.com",
-								Port: 6379,
+						&v1alpha1.RedisReplicaNode{
+							RedisNode: v1alpha1.RedisNode{
+								CommonNode: v1alpha1.CommonNode{
+									Name: "replica-2",
+									Host: "replica-2.example.com",
+									Port: 6379,
+								},
+								AnnounceHost: "",
+								AnnouncePort: 0,
 							},
+							Isolated: false,
 						},
 					},
+
 					Service: &v1alpha1.Service{Type: v1alpha1.ServiceTypeClusterIP},
 				},
 			}
@@ -712,13 +743,18 @@ var _ = Describe("RedisReplication Webhook", func() {
 							Port: 6379,
 						},
 					},
-					Replica: v1alpha1.RedisNodes{
-						&v1alpha1.RedisNode{
-							CommonNode: v1alpha1.CommonNode{
-								Name: "duplicate-replica", // Same name as next replica
-								Host: "192.168.1.11",
-								Port: 6379,
+					Replica: v1alpha1.RedisReplicaNodes{
+						&v1alpha1.RedisReplicaNode{
+							RedisNode: v1alpha1.RedisNode{
+								CommonNode: v1alpha1.CommonNode{
+									Name: "duplicate-replica", // Same name as next replica
+									Host: "192.168.1.11",
+									Port: 6379,
+								},
+								AnnounceHost: "",
+								AnnouncePort: 0,
 							},
+							Isolated: false,
 						},
 					},
 				},

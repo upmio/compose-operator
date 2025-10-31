@@ -48,13 +48,18 @@ func TestRedisReplication(t *testing.T) {
 				},
 			},
 			Service: &Service{Type: ServiceTypeClusterIP},
-			Replica: RedisNodes{
-				&RedisNode{
-					CommonNode: CommonNode{
-						Name: "node02",
-						Host: "10.0.0.2",
-						Port: 6379,
+			Replica: RedisReplicaNodes{
+				&RedisReplicaNode{
+					RedisNode: RedisNode{
+						CommonNode: CommonNode{
+							Name: "node02",
+							Host: "10.0.0.2",
+							Port: 6379,
+						},
+						AnnounceHost: "",
+						AnnouncePort: 0,
 					},
+					Isolated: false,
 				},
 			},
 		},
@@ -133,13 +138,18 @@ func TestRedisReplicationList(t *testing.T) {
 						},
 					},
 					Service: &Service{Type: ServiceTypeClusterIP},
-					Replica: RedisNodes{
-						&RedisNode{
-							CommonNode: CommonNode{
-								Name: "node02",
-								Host: "10.0.0.2",
-								Port: 6379,
+					Replica: RedisReplicaNodes{
+						&RedisReplicaNode{
+							RedisNode: RedisNode{
+								CommonNode: CommonNode{
+									Name: "node02",
+									Host: "10.0.0.2",
+									Port: 6379,
+								},
+								AnnounceHost: "",
+								AnnouncePort: 0,
 							},
+							Isolated: false,
 						},
 					},
 				},
@@ -233,13 +243,18 @@ func TestRedisReplicationSpec(t *testing.T) {
 			},
 		},
 		Service: &Service{Type: ServiceTypeClusterIP},
-		Replica: RedisNodes{
-			&RedisNode{
-				CommonNode: CommonNode{
-					Name: "node02",
-					Host: "10.0.0.2",
-					Port: 6379,
+		Replica: RedisReplicaNodes{
+			&RedisReplicaNode{
+				RedisNode: RedisNode{
+					CommonNode: CommonNode{
+						Name: "node02",
+						Host: "10.0.0.2",
+						Port: 6379,
+					},
+					AnnounceHost: "",
+					AnnouncePort: 0,
 				},
+				Isolated: false,
 			},
 		},
 	}

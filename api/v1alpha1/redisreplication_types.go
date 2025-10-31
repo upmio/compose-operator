@@ -43,7 +43,7 @@ type RedisReplicationSpec struct {
 	Source *RedisNode `json:"source"`
 
 	// Replica is a list of replica nodes in the Redis replication topology.
-	Replica RedisNodes `json:"replica,omitempty"`
+	Replica RedisReplicaNodes `json:"replica,omitempty"`
 
 	// Service references the service providing the Redis replication endpoint.
 	Service *Service `json:"service"`

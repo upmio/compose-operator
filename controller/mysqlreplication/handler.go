@@ -89,13 +89,11 @@ func (r *ReconcileMysqlReplication) handleResources(syncCtx *syncContext) error 
 		//ensure readonly service
 		if err := r.ensureService(syncCtx, readOnlyService, "true", true); err != nil {
 			errs = append(errs, err)
-
 		}
 	} else {
 		//ensure readonly service
 		if err := r.ensureService(syncCtx, readOnlyService, "true", false); err != nil {
 			errs = append(errs, err)
-
 		}
 	}
 
