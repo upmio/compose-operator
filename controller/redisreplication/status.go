@@ -215,7 +215,7 @@ func generateTopologyStatusByReplicationInfo(info *redisutil.ReplicationInfo, in
 		addr := net.JoinHostPort(replica.Host, strconv.Itoa(replica.Port))
 		if node, ok := info.Nodes[addr]; ok {
 			// Check if replica node is isolated
-			if replica.Isolated && node.GetRole() == redisutil.RedisReplicaRole && node.MasterLinkStatus != "up" {
+			if replica.Isolated && node.GetRole() == redisutil.RedisSourceRole && node.MasterLinkStatus != "up" {
 				// Remove replica node from topology if it's isolated
 				delete(instance.Status.Topology, replica.Name)
 			} else {

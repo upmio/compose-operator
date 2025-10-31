@@ -21,7 +21,6 @@ package redisreplication
 import (
 	"errors"
 	"fmt"
-	"github.com/upmio/compose-operator/pkg/mysqlutil"
 	"net"
 	"strconv"
 	"strings"
@@ -175,7 +174,7 @@ func (r *ReconcileRedisReplication) ensureReplicaNode(syncCtx *syncContext,
 
 	if replica.Isolated {
 		// isolate the replica node
-		if nodeInfo.Role == mysqlutil.MysqlReplicaRole {
+		if nodeInfo.Role == redisutil.RedisReplicaRole {
 			if err := admin.ReplicaOfNoOne(address); err != nil {
 				return err
 			}
