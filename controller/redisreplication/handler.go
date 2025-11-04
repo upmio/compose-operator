@@ -296,6 +296,16 @@ func (r *ReconcileRedisReplication) ensurePodLabels(syncCtx *syncContext, podNam
 	ctx := syncCtx.ctx
 	instance := syncCtx.instance
 
+	// Determine the label value based on source node count
+	hostLabelValue := ""
+	portLabelValue := ""
+	sourceNode := instance.Spec.Source
+
+	if sourceNodeStatus := instance.Status.Topology[sourceNode.Name]; sourceNodeStatus.Role == composev1alpha1.RedisReplicationNodeRoleSource && sourceNodeStatus.Status == composev1alpha1.NodeStatusOK {
+		hostLabelValue = sourceNodeStatus.AnnounceHost
+		portLabelValue = strconv.Itoa(sourceNodeStatus.AnnouncePort)
+	}
+
 	foundPod := &corev1.Pod{}
 	if err := r.client.Get(ctx, types.NamespacedName{
 		Name:      podName,
@@ -313,10 +323,10 @@ func (r *ReconcileRedisReplication) ensurePodLabels(syncCtx *syncContext, podNam
 
 	if preserveLabels {
 		// Remove managed labels if they exist
-		needsUpdate, eventMessage = r.removeLabelsFromPod(foundPod, instance.Name)
+		needsUpdate, eventMessage = r.removeLabelsFromPod(foundPod)
 	} else {
 		// Ensure labels are set correctly
-		needsUpdate, eventMessage = r.setLabelsOnPod(foundPod, instance.Name, isReadOnly)
+		needsUpdate, eventMessage = r.setLabelsOnPod(foundPod, instance.Name, isReadOnly, hostLabelValue, portLabelValue)
 	}
 
 	// Update pod only if changes are needed
@@ -331,7 +341,7 @@ func (r *ReconcileRedisReplication) ensurePodLabels(syncCtx *syncContext, podNam
 }
 
 // setLabelsOnPod sets the required labels on the pod and returns whether update is needed
-func (r *ReconcileRedisReplication) setLabelsOnPod(pod *corev1.Pod, instanceName, isReadOnly string) (bool, string) {
+func (r *ReconcileRedisReplication) setLabelsOnPod(pod *corev1.Pod, instanceName, isReadOnly, hostLabelValue, portLabelValue string) (bool, string) {
 	var needsUpdate bool
 	var updatedLabels []string
 
@@ -349,6 +359,18 @@ func (r *ReconcileRedisReplication) setLabelsOnPod(pod *corev1.Pod, instanceName
 		updatedLabels = append(updatedLabels, defaultKey)
 	}
 
+	if currentHostLabelValue, ok := pod.Labels[sourceHostKey]; !ok || currentHostLabelValue != hostLabelValue {
+		pod.Labels[sourceHostKey] = hostLabelValue
+		needsUpdate = true
+		updatedLabels = append(updatedLabels, sourceHostKey)
+	}
+
+	if currentPortLabelValue, ok := pod.Labels[sourcePortKey]; !ok || currentPortLabelValue != portLabelValue {
+		pod.Labels[sourcePortKey] = portLabelValue
+		needsUpdate = true
+		updatedLabels = append(updatedLabels, sourcePortKey)
+	}
+
 	var eventMessage string
 	if needsUpdate {
 		eventMessage = fmt.Sprintf("update labels '%s' successfully", strings.Join(updatedLabels, ", "))
@@ -358,7 +380,7 @@ func (r *ReconcileRedisReplication) setLabelsOnPod(pod *corev1.Pod, instanceName
 }
 
 // removeLabelsFromPod removes the managed labels from the pod and returns whether update is needed
-func (r *ReconcileRedisReplication) removeLabelsFromPod(pod *corev1.Pod, instanceName string) (bool, string) {
+func (r *ReconcileRedisReplication) removeLabelsFromPod(pod *corev1.Pod) (bool, string) {
 	var needsUpdate bool
 	var removedLabels []string
 
@@ -370,10 +392,24 @@ func (r *ReconcileRedisReplication) removeLabelsFromPod(pod *corev1.Pod, instanc
 	}
 
 	// Remove default label if it exists and matches the instance
-	if instanceValue, ok := pod.Labels[defaultKey]; ok && instanceValue == instanceName {
+	if _, ok := pod.Labels[defaultKey]; ok {
 		delete(pod.Labels, defaultKey)
 		needsUpdate = true
 		removedLabels = append(removedLabels, defaultKey)
+	}
+
+	// Remove sourceHostKey label if it exists and matches the instance
+	if _, ok := pod.Labels[sourceHostKey]; ok {
+		delete(pod.Labels, sourceHostKey)
+		needsUpdate = true
+		removedLabels = append(removedLabels, sourceHostKey)
+	}
+
+	// Remove default label if it exists and matches the instance
+	if _, ok := pod.Labels[sourcePortKey]; ok {
+		delete(pod.Labels, sourcePortKey)
+		needsUpdate = true
+		removedLabels = append(removedLabels, sourcePortKey)
 	}
 
 	var eventMessage string
