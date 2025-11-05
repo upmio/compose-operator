@@ -176,7 +176,7 @@ func (r *ReconcilePostgresReplication) ensurePrimaryNode(syncCtx *syncContext, r
 		}
 
 		//5. execute pg_ctl remote -d
-		cmd := fmt.Sprintf("su postgres -c 'pg_ctl promote -D %s'",
+		cmd := fmt.Sprintf("pg_ctl promote -D %s",
 			nodeInfo.DataDir,
 		)
 
@@ -343,7 +343,7 @@ func (r *ReconcilePostgresReplication) ensureStandbyNode(syncCtx *syncContext,
 		}
 		r.recorder.Eventf(instance, corev1.EventTypeNormal, Synced, "confirmed standby.signal file does not exist in pod [%s]", nodeName)
 
-		cmd = fmt.Sprintf("su postgres -c 'pg_rewind --target-pgdata=%s --source-server=\"host=%s user=%s password=%s port=%s\"'",
+		cmd = fmt.Sprintf("pg_rewind --target-pgdata=%s --source-server='host=%s user=%s password=%s port=%s'",
 			nodeInfo.DataDir,
 			primaryNodeHost,
 			instance.Spec.Secret.Postgresql,
@@ -362,7 +362,7 @@ func (r *ReconcilePostgresReplication) ensureStandbyNode(syncCtx *syncContext,
 				r.recorder.Eventf(instance, corev1.EventTypeNormal, Synced, "remove old data directory on pod [%s] successfully", nodeName)
 
 				// su postgres -c 'PGPASSWORD="D&a6!40Lv82Qq49O" pg_basebackup -h tddotpnq-postgresql-n39-0.tddotpnq-postgresql-n39-headless-svc.demo -D /DATA_MOUNT/backup -U replication -P -v -X stream'
-				cmd = fmt.Sprintf("su postgres -c 'PGPASSWORD=\"%s\" pg_basebackup -h %s -D %s -U %s -P -v -X stream'",
+				cmd = fmt.Sprintf("PGPASSWORD=\"%s\" pg_basebackup -h %s -D %s -U %s -P -v -X stream",
 					replicationPassword,
 					primaryNodeHost,
 					nodeInfo.DataDir,
