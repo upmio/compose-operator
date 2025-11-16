@@ -82,9 +82,29 @@ func (r *ReconcileMongoDBReplicaSet) handleUninitializedCluster(syncCtx *syncCon
 // handlePartialCluster handles adding missing members to the replica set
 func (r *ReconcileMongoDBReplicaSet) handlePartialCluster(syncCtx *syncContext, replicaSetInfo *mongoutil.ReplicaSetInfos) error {
 
-	var errs []error
+	ctx := syncCtx.ctx
+	admin := syncCtx.admin
 
-	//TODO addnode removenode logica
+	var errs []error
+	var needJoinNodeList []*mongoutil.ReplicaSetNode
+	var primaryAddr string
+
+	for _, nodeInfo := range replicaSetInfo.Infos {
+		if nodeInfo.State == mongoutil.MongoPrimaryState {
+			primaryAddr = net.JoinHostPort(nodeInfo.Host, strconv.Itoa(nodeInfo.Port))
+			continue
+		} else if nodeInfo.State == mongoutil.MongoRemovedState {
+			needJoinNodeList = append(needJoinNodeList, nodeInfo)
+		}
+	}
+
+	for _, nodeInfo := range needJoinNodeList {
+		if err := admin.AddMember(ctx, primaryAddr, nodeInfo.Host, nodeInfo.Port); err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	//TODO remove node logic
 
 	return errors.Join(errs...)
 }

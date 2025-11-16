@@ -117,7 +117,7 @@ func (a *ReplicaSetAdmin) GetReplicaSetInfos(ctx context.Context, memberCount in
 
 			// Verify the member is in the replica set configuration
 			if err := a.verifyMemberInConfig(ctx, primaryAddr, node.Host, node.Port); err != nil {
-				a.log.Error(err, "failed to verify member in config", "address", addr)
+				a.log.Info(fmt.Sprintf("failed to verify member in config, %v", err), "address", addr)
 				infos.Infos[addr].State = MongoRemovedState
 			}
 
