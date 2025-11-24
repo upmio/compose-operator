@@ -16,7 +16,7 @@ jobs:
     if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main'
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
       - # Add support for more platforms with QEMU (optional)
@@ -46,7 +46,7 @@ jobs:
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - # Add support for more platforms with QEMU (optional)
         # https://github.com/docker/setup-qemu-action
         name: Set up QEMU
