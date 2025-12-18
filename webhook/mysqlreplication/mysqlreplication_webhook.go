@@ -84,6 +84,17 @@ func (r *mysqlReplicationAdmission) Default(ctx context.Context, obj runtime.Obj
 		}
 	}
 
+	replicaNodeCount := 0
+	for _, replica := range instance.Spec.Replica {
+		if !replica.Isolated {
+			replicaNodeCount++
+		}
+	}
+
+	if replicaNodeCount <= 1 {
+		instance.Spec.Mode = v1alpha1.MysqlRplASync
+	}
+
 	return nil
 }
 
