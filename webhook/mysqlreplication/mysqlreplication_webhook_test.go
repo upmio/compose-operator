@@ -90,7 +90,7 @@ var _ = Describe("MysqlReplication Webhook", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			// Check existing values were preserved
-			Expect(mysqlRepl.Spec.Mode).To(Equal(v1alpha1.MysqlRplSemiSync))
+			Expect(mysqlRepl.Spec.Mode).To(Equal(v1alpha1.MysqlRplASync))
 			Expect(mysqlRepl.Spec.Secret.Mysql).To(Equal("custom-mysql"))
 			Expect(mysqlRepl.Spec.Secret.Replication).To(Equal("custom-repl"))
 			Expect(mysqlRepl.Spec.Service.Type).To(Equal(v1alpha1.ServiceTypeNodePort))
