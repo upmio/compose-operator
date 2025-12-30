@@ -779,11 +779,11 @@ func (in *PostgresReplicationSpec) DeepCopyInto(out *PostgresReplicationSpec) {
 	}
 	if in.Standby != nil {
 		in, out := &in.Standby, &out.Standby
-		*out = make(CommonNodes, len(*in))
+		*out = make(ReplicaNodes, len(*in))
 		for i := range *in {
 			if (*in)[i] != nil {
 				in, out := &(*in)[i], &(*out)[i]
-				*out = new(CommonNode)
+				*out = new(ReplicaNode)
 				**out = **in
 			}
 		}

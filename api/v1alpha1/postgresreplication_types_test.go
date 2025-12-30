@@ -48,11 +48,14 @@ func TestPostgresReplication(t *testing.T) {
 				Port: 5432,
 			},
 			Service: &Service{Type: ServiceTypeClusterIP},
-			Standby: CommonNodes{
-				&CommonNode{
-					Name: "node02",
-					Host: "10.0.0.2",
-					Port: 5432,
+			Standby: ReplicaNodes{
+				&ReplicaNode{
+					CommonNode: CommonNode{
+						Name: "node01",
+						Host: "10.0.0.1",
+						Port: 5432,
+					},
+					Isolated: false,
 				},
 			},
 		},
@@ -128,11 +131,14 @@ func TestPostgresReplicationList(t *testing.T) {
 						Port: 5432,
 					},
 					Service: &Service{Type: ServiceTypeClusterIP},
-					Standby: CommonNodes{
-						&CommonNode{
-							Name: "node02",
-							Host: "10.0.0.2",
-							Port: 5432,
+					Standby: ReplicaNodes{
+						&ReplicaNode{
+							CommonNode: CommonNode{
+								Name: "node02",
+								Host: "10.0.0.2",
+								Port: 5432,
+							},
+							Isolated: false,
 						},
 					},
 				},
@@ -225,11 +231,14 @@ func TestPostgresReplicationSpec(t *testing.T) {
 			Port: 5432,
 		},
 		Service: &Service{Type: ServiceTypeClusterIP},
-		Standby: CommonNodes{
-			&CommonNode{
-				Name: "node02",
-				Host: "10.0.0.2",
-				Port: 5432,
+		Standby: ReplicaNodes{
+			&ReplicaNode{
+				CommonNode: CommonNode{
+					Name: "node02",
+					Host: "10.0.0.2",
+					Port: 5432,
+				},
+				Isolated: false,
 			},
 		},
 	}

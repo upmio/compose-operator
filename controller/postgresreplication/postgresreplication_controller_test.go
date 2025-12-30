@@ -233,11 +233,14 @@ var _ = Describe("PostgresReplication Controller", func() {
 							Port: sourcePort,
 						},
 						Service: &composev1alpha1.Service{Type: composev1alpha1.ServiceTypeClusterIP},
-						Standby: composev1alpha1.CommonNodes{
+						Standby: composev1alpha1.ReplicaNodes{
 							{
-								Name: fmt.Sprintf("%s-1", resourceName),
-								Host: replicaHost,
-								Port: replicaPort,
+								CommonNode: composev1alpha1.CommonNode{
+									Name: fmt.Sprintf("%s-1", resourceName),
+									Host: replicaHost,
+									Port: replicaPort,
+								},
+								Isolated: false,
 							},
 						},
 					},
@@ -277,11 +280,14 @@ var _ = Describe("PostgresReplication Controller", func() {
 					Host: replicaHost,
 					Port: sourcePort,
 				}
-				instance.Spec.Standby = composev1alpha1.CommonNodes{
+				instance.Spec.Standby = composev1alpha1.ReplicaNodes{
 					{
-						Name: fmt.Sprintf("%s-0", resourceName),
-						Host: sourceHost,
-						Port: sourcePort,
+						CommonNode: composev1alpha1.CommonNode{
+							Name: fmt.Sprintf("%s-0", resourceName),
+							Host: sourceHost,
+							Port: sourcePort,
+						},
+						Isolated: false,
 					},
 				}
 

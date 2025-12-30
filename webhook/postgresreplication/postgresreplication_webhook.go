@@ -21,9 +21,10 @@ package postgresreplication
 import (
 	"context"
 	"fmt"
-	"github.com/upmio/compose-operator/api/v1alpha1"
 	"net"
 	"strings"
+
+	"github.com/upmio/compose-operator/api/v1alpha1"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/validation/field"
@@ -177,7 +178,7 @@ func (r *postgresReplicationAdmission) validatePostgresReplication(instance *v1a
 	} else {
 		for i, standby := range instance.Spec.Standby {
 			fieldPath := field.NewPath("spec").Child("standby").Index(i)
-			if err := r.validateCommonNode("standby", standby, fieldPath); err != nil {
+			if err := r.validateReplicaNode(standby, fieldPath); err != nil {
 				allErrs = append(allErrs, err...)
 			}
 		}
@@ -253,6 +254,18 @@ func (r *postgresReplicationAdmission) validateCommonNode(nodeType string, node 
 			"port must be between 1 and 65535",
 		))
 	}
+
+	return allErrs
+}
+
+// validateCommonNode validates common node fields
+func (r *postgresReplicationAdmission) validateReplicaNode(standby *v1alpha1.ReplicaNode, fieldPath *field.Path) field.ErrorList {
+	var allErrs field.ErrorList
+
+	// Validate common node fields
+	allErrs = append(allErrs, r.validateCommonNode("standby", &standby.CommonNode, fieldPath)...)
+
+	// Additional replica-specific validations can be added here
 
 	return allErrs
 }

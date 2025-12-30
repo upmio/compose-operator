@@ -20,6 +20,7 @@ package postgresreplication
 
 import (
 	"context"
+
 	"github.com/upmio/compose-operator/api/v1alpha1"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -161,11 +162,14 @@ var _ = Describe("PostgresReplication Webhook", func() {
 						Host: "192.168.1.10",
 						Port: 5432,
 					},
-					Standby: []*v1alpha1.CommonNode{
+					Standby: []*v1alpha1.ReplicaNode{
 						{
-							Name: "postgres-duplicate", // Duplicate name
-							Host: "192.168.1.11",
-							Port: 5432,
+							CommonNode: v1alpha1.CommonNode{
+								Name: "postgres-duplicate", // Duplicate name
+								Host: "192.168.1.11",
+								Port: 5432,
+							},
+							Isolated: false,
 						},
 					},
 				},
@@ -246,16 +250,22 @@ var _ = Describe("PostgresReplication Webhook", func() {
 						Host: "postgres-primary.default.svc.cluster.local",
 						Port: 5432,
 					},
-					Standby: []*v1alpha1.CommonNode{
+					Standby: []*v1alpha1.ReplicaNode{
 						{
-							Name: "standby-1",
-							Host: "postgres-standby-1.default.svc.cluster.local",
-							Port: 5432,
+							CommonNode: v1alpha1.CommonNode{
+								Name: "standby-1", // Duplicate name
+								Host: "postgres-standby-1.default.svc.cluster.local",
+								Port: 5432,
+							},
+							Isolated: false,
 						},
 						{
-							Name: "standby-2",
-							Host: "postgres-standby-2.default.svc.cluster.local",
-							Port: 5432,
+							CommonNode: v1alpha1.CommonNode{
+								Name: "standby-2", // Duplicate name
+								Host: "postgres-standby-2.default.svc.cluster.local",
+								Port: 5432,
+							},
+							Isolated: false,
 						},
 					},
 				},
@@ -411,16 +421,22 @@ var _ = Describe("PostgresReplication Webhook", func() {
 						Host: "192.168.1.100",
 						Port: 5432,
 					},
-					Standby: []*v1alpha1.CommonNode{
+					Standby: []*v1alpha1.ReplicaNode{
 						{
-							Name: "standby-1",
-							Host: "10.0.0.1",
-							Port: 5432,
+							CommonNode: v1alpha1.CommonNode{
+								Name: "standby-1", // Duplicate name
+								Host: "10.0.0.1",
+								Port: 5432,
+							},
+							Isolated: false,
 						},
 						{
-							Name: "standby-2",
-							Host: "172.16.0.1",
-							Port: 5432,
+							CommonNode: v1alpha1.CommonNode{
+								Name: "standby-2", // Duplicate name
+								Host: "10.0.0.1",
+								Port: 5432,
+							},
+							Isolated: false,
 						},
 					},
 				},
@@ -448,16 +464,34 @@ var _ = Describe("PostgresReplication Webhook", func() {
 						Host: "postgres-primary.default.svc.cluster.local",
 						Port: 5432,
 					},
-					Standby: []*v1alpha1.CommonNode{
+					//Standby: []*v1alpha1.CommonNode{
+					//	{
+					//		Name: "standby-1",
+					//		Host: "example.com",
+					//		Port: 5432,
+					//	},
+					//	{
+					//		Name: "standby-2",
+					//		Host: "postgres-server",
+					//		Port: 5432,
+					//	},
+					//},
+					Standby: []*v1alpha1.ReplicaNode{
 						{
-							Name: "standby-1",
-							Host: "example.com",
-							Port: 5432,
+							CommonNode: v1alpha1.CommonNode{
+								Name: "standby-1",
+								Host: "example.com",
+								Port: 5432,
+							},
+							Isolated: false,
 						},
 						{
-							Name: "standby-2",
-							Host: "postgres-server",
-							Port: 5432,
+							CommonNode: v1alpha1.CommonNode{
+								Name: "standby-2",
+								Host: "postgres-server",
+								Port: 5432,
+							},
+							Isolated: false,
 						},
 					},
 				},
