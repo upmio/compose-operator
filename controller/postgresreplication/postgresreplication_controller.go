@@ -67,6 +67,11 @@ const (
 
 	portName      = "postgresql"
 	containerName = "postgresql"
+
+	desiredUnitStart = "start"
+	desiredUnitStop  = "stop"
+	signalFileName   = "standby.signal"
+	cmdPrefix        = "/bin/sh"
 )
 
 // ReconcilePostgresReplication reconciles a PostgresReplication object

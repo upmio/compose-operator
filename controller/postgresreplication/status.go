@@ -150,11 +150,23 @@ func buildDefaultTopologyStatus(instance *composev1alpha1.PostgresReplication) c
 }
 
 func generateTopologyStatusByReplicationInfo(info *postgresutil.ReplicationInfo, instance *composev1alpha1.PostgresReplication) {
+	if info == nil || instance == nil {
+		return
+	}
 
+	// Ensure Topology is initialized
+	if instance.Status.Topology == nil {
+		instance.Status.Topology = make(composev1alpha1.PostgresReplicationTopology)
+	}
+
+	// Process primary node
 	primaryAddr := net.JoinHostPort(instance.Spec.Primary.Host, strconv.Itoa(instance.Spec.Primary.Port))
+
+	// Process primary node normally
 	if node, ok := info.Nodes[primaryAddr]; ok {
 		instance.Status.Topology[instance.Spec.Primary.Name].Role = node.GetRole()
 		instance.Status.Topology[instance.Spec.Primary.Name].Status = composev1alpha1.NodeStatusOK
+
 		if node.GetRole() == postgresutil.PostgresPrimaryRole {
 			switch instance.Spec.Mode {
 			case composev1alpha1.PostgresRplAsync:
@@ -171,14 +183,22 @@ func generateTopologyStatusByReplicationInfo(info *postgresutil.ReplicationInfo,
 
 	for _, standby := range instance.Spec.Standby {
 		addr := net.JoinHostPort(standby.Host, strconv.Itoa(standby.Port))
-		if nodeInfo, ok := info.Nodes[addr]; ok {
-			instance.Status.Topology[standby.Name].Role = nodeInfo.GetRole()
-			instance.Status.Topology[standby.Name].Status = composev1alpha1.NodeStatusOK
-			instance.Status.Topology[standby.Name].WalDiff = &nodeInfo.WalDiff
-			if node, ok := info.Nodes[primaryAddr]; nodeInfo.GetRole() == postgresutil.PostgresStandbyRole && ok {
-				for _, standbyName := range node.ReplicationStat {
-					if strings.ReplaceAll(standby.Name, "-", "_") == standbyName {
-						instance.Status.Topology[standby.Name].Ready = true
+		if standbyNode, ok := info.Nodes[addr]; ok {
+
+			// Check if standby node is isolated
+			if standby.Isolated && standbyNode.GetRole() == postgresutil.PostgresStandbyRole {
+				// Remove standby node from topology if it's isolated
+				delete(instance.Status.Topology, standby.Name)
+			} else {
+				instance.Status.Topology[standby.Name].Role = standbyNode.GetRole()
+				instance.Status.Topology[standby.Name].Status = composev1alpha1.NodeStatusOK
+				instance.Status.Topology[standby.Name].WalDiff = &standbyNode.WalDiff
+
+				if node, ok := info.Nodes[primaryAddr]; node.GetRole() == postgresutil.PostgresStandbyRole && ok {
+					for _, standbyName := range node.ReplicationStat {
+						if strings.ReplaceAll(standby.Name, "-", "_") == standbyName {
+							instance.Status.Topology[standby.Name].Ready = true
+						}
 					}
 				}
 			}

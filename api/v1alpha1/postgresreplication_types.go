@@ -57,7 +57,7 @@ type PostgresReplicationSpec struct {
 	Service *Service `json:"service"`
 
 	// Standby is a list of standby nodes in the Postgres replication topology.
-	Standby CommonNodes `json:"standby,omitempty"`
+	Standby ReplicaNodes `json:"standby,omitempty"`
 }
 
 // PostgresReplicationNode represents a node in the Postgres replication topology.

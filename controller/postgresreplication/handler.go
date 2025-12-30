@@ -19,6 +19,7 @@ SPDX-License-Identifier: Apache-2.0
 package postgresreplication
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net"
@@ -69,7 +70,7 @@ func (r *ReconcilePostgresReplication) handleResources(syncCtx *syncContext) err
 
 	var errs []error
 	//ensure primary pod labels
-	if err := r.ensurePodLabels(syncCtx, instance.Spec.Primary.Name, "false"); err != nil {
+	if err := r.ensurePodLabels(syncCtx, instance.Spec.Primary.Name, "false", false); err != nil {
 		errs = append(errs, err)
 	}
 
@@ -84,7 +85,7 @@ func (r *ReconcilePostgresReplication) handleResources(syncCtx *syncContext) err
 
 		//ensure standby pod labels
 		for _, standby := range instance.Spec.Standby {
-			if err := r.ensurePodLabels(syncCtx, standby.Name, "true"); err != nil {
+			if err := r.ensurePodLabels(syncCtx, standby.Name, "true", standby.Isolated); err != nil {
 				errs = append(errs, err)
 			}
 		}
@@ -105,25 +106,24 @@ func (r *ReconcilePostgresReplication) handleResources(syncCtx *syncContext) err
 	return errors.Join(errs...)
 }
 
-func (r *ReconcilePostgresReplication) ensurePrimaryNode(syncCtx *syncContext, replicationInfo *postgresutil.ReplicationInfo, replicationPassword, postgresPassword string) (err error) {
+func (r *ReconcilePostgresReplication) ensureSyncMode(syncCtx *syncContext, nodeInfo *postgresutil.Node, address string) (err error) {
+
 	instance := syncCtx.instance
 	admin := syncCtx.admin
 	ctx := syncCtx.ctx
 
-	address := net.JoinHostPort(instance.Spec.Primary.Host, strconv.Itoa(instance.Spec.Primary.Port))
-	nodeInfo, ok := replicationInfo.Nodes[address]
-
-	if !ok {
-		return fmt.Errorf("cannot retrieve status from primary PostgreSQL instance [%s]", address)
-	}
-
 	// 1. ensure sync mode
 	standbyApplications := make([]string, 0)
 	for _, standby := range instance.Spec.Standby {
-		standbyApplications = append(standbyApplications, strings.ReplaceAll(standby.Name, "-", "_"))
+		if !standby.Isolated {
+			standbyApplications = append(standbyApplications, strings.ReplaceAll(standby.Name, "-", "_"))
+		}
 	}
 
 	if instance.Spec.Mode == composev1alpha1.PostgresRplSync && nodeInfo.ReplicationMode != "quorum" {
+		if len(standbyApplications) == 0 {
+			return fmt.Errorf("PostgreSQL synchronous replication is enabled, but no available standby nodes were detected (standby count = 0)")
+		}
 		if err := admin.ConfigureSyncMode(ctx, address, strings.Join(standbyApplications, ",")); err != nil {
 			return err
 		}
@@ -135,24 +135,18 @@ func (r *ReconcilePostgresReplication) ensurePrimaryNode(syncCtx *syncContext, r
 		r.recorder.Eventf(instance, corev1.EventTypeNormal, Synced, "set mode to rpl_async on [%s] successfully", address)
 	}
 
-	// 2. make old primary node to be standby
-	for _, standby := range instance.Spec.Standby {
-		if err := r.ensureStandbyNode(syncCtx,
-			replicationInfo,
-			standby,
-			replicationPassword,
-			postgresPassword); err != nil {
-			r.recorder.Event(instance, corev1.EventTypeWarning, ErrSynced, err.Error())
-		}
-	}
+	return nil
+}
 
-	// 3. switch
+func (r *ReconcilePostgresReplication) switchOver(syncCtx *syncContext, nodeInfo *postgresutil.Node, address string) (err error) {
+	instance := syncCtx.instance
+
 	if nodeInfo.Role == postgresutil.PostgresStandbyRole {
-		r.recorder.Eventf(instance, corev1.EventTypeNormal, Synced, "switchover triggered: promoting standby node [%s] to priamry", address)
+		r.recorder.Eventf(instance, corev1.EventTypeNormal, Synced, "switchover triggered: promoting standby node [%s] to primary", address)
 
 		//1. check this node wal_diff equal 0 or will do nothing.
 		if nodeInfo.WalDiff != 0 {
-			return fmt.Errorf("switchover aborted: replica [%s] wal_diff '%d' exceeds threshol '0'", address, nodeInfo.WalDiff)
+			return fmt.Errorf("switchover aborted: replica [%s] wal_diff '%d' exceeds threshold '0'", address, nodeInfo.WalDiff)
 		}
 
 		//2. set all node pod label readonly to true
@@ -180,17 +174,48 @@ func (r *ReconcilePostgresReplication) ensurePrimaryNode(syncCtx *syncContext, r
 			nodeInfo.DataDir,
 		)
 
-		if _, _, err = r.execer.ExecCommandInContainer(pod, containerName, "/bin/sh", "-c", cmd); err != nil {
+		if _, _, err = r.execer.ExecCommandInContainer(pod, containerName, cmdPrefix, "-c", cmd); err != nil {
 			return fmt.Errorf("failed to execute pg_ctl promote: %v", err)
 		}
-		r.recorder.Eventf(instance, corev1.EventTypeNormal, Synced, "switchover triggered: execute pg_ctl promote on [%] completed", address)
+		r.recorder.Eventf(instance, corev1.EventTypeNormal, Synced, "switchover triggered: execute pg_ctl promote on [%s] completed", address)
 	}
 
 	return nil
 }
+
+func (r *ReconcilePostgresReplication) ensurePrimaryNode(syncCtx *syncContext, replicationInfo *postgresutil.ReplicationInfo, replicationPassword, postgresPassword string) (err error) {
+	instance := syncCtx.instance
+
+	address := net.JoinHostPort(instance.Spec.Primary.Host, strconv.Itoa(instance.Spec.Primary.Port))
+	nodeInfo, ok := replicationInfo.Nodes[address]
+
+	if !ok {
+		return fmt.Errorf("cannot retrieve status from primary PostgreSQL instance [%s]", address)
+	}
+
+	// 1. make all node to be standby first
+	for _, standby := range instance.Spec.Standby {
+		if err := r.ensureStandbyNode(syncCtx,
+			replicationInfo,
+			standby,
+			replicationPassword,
+			postgresPassword); err != nil {
+			r.recorder.Event(instance, corev1.EventTypeWarning, ErrSynced, err.Error())
+		}
+	}
+
+	// 2. switchover
+	if err := r.switchOver(syncCtx, nodeInfo, address); err != nil {
+		return err
+	}
+
+	// 3. ensure sync mode
+	return r.ensureSyncMode(syncCtx, nodeInfo, address)
+}
+
 func (r *ReconcilePostgresReplication) configureStandbyNode(syncCtx *syncContext,
 	replicationInfo *postgresutil.ReplicationInfo,
-	standby *composev1alpha1.CommonNode,
+	standby *composev1alpha1.ReplicaNode,
 	replicationPassword string) (err error) {
 
 	instance := syncCtx.instance
@@ -224,211 +249,270 @@ func (r *ReconcilePostgresReplication) configureStandbyNode(syncCtx *syncContext
 	return nil
 }
 
+func (r *ReconcilePostgresReplication) closeAdminConn(syncCtx *syncContext, address string) error {
+	client, err := syncCtx.admin.Connections().Get(address)
+	if err != nil {
+		return err
+	}
+
+	if err := client.Close(); err != nil {
+		return err
+	}
+
+	syncCtx.reqLogger.Info(fmt.Sprintf("closed [%s] connection successfully", address))
+
+	return nil
+}
+
+func (r *ReconcilePostgresReplication) reopenAdminConn(syncCtx *syncContext, address string) {
+	if err := syncCtx.admin.Connections().Add(address); err != nil {
+		syncCtx.reqLogger.Error(err, fmt.Sprintf("failed to reopen [%s] connection", address))
+		return
+	}
+	syncCtx.reqLogger.Info(fmt.Sprintf("reopen [%s] connection successfully", address))
+}
+
+func (r *ReconcilePostgresReplication) getPod(ctx context.Context, name, ns string) (*corev1.Pod, error) {
+	pod := &corev1.Pod{}
+	if err := r.client.Get(ctx, types.NamespacedName{Name: name, Namespace: ns}, pod); err != nil {
+		return nil, fmt.Errorf("failed to fetch pod [%s]: %v", name, err)
+	}
+	return pod, nil
+}
+
+func (r *ReconcilePostgresReplication) ensurePodReady(pod *corev1.Pod, node string) error {
+	if !k8sutil.IsPodReady(pod) {
+		return fmt.Errorf("standby pod [%s] is not ready", node)
+	}
+	return nil
+}
+
+func (r *ReconcilePostgresReplication) ensureUnitStartup(
+	syncCtx *syncContext,
+	node string,
+	desired string,
+) error {
+
+	unit, err := r.unitController.GetUnit(syncCtx.instance.Namespace, node)
+	if err != nil {
+		return fmt.Errorf("failed to fetch unit [%s]: %v", node, err)
+	}
+
+	var desiredState bool
+	switch desired {
+	case desiredUnitStart:
+		desiredState = true
+	case desiredUnitStop:
+		desiredState = false
+	default:
+		return fmt.Errorf("invalid unit [%s] desired", desired)
+	}
+
+	// already desired state
+	if unit.Spec.Startup == desiredState {
+		return fmt.Errorf("unit [%s] is already marked %s, skipping reconcile", node, desired)
+	}
+
+	unit.Spec.Startup = desiredState
+	if err := r.unitController.UpdateUnit(unit); err != nil {
+		return fmt.Errorf("failed to %s unit [%s]: %v", desired, node, err)
+	}
+
+	r.recorder.Eventf(
+		syncCtx.instance,
+		corev1.EventTypeNormal,
+		Synced,
+		"%s unit [%s] successfully",
+		desired,
+		node,
+	)
+
+	return nil
+}
+
+func (r *ReconcilePostgresReplication) restoreUnit(syncCtx *syncContext, node string) {
+	unit, err := r.unitController.GetUnit(syncCtx.instance.Namespace, node)
+	if err != nil {
+		syncCtx.reqLogger.Error(err, fmt.Sprintf("failed to fetch unit [%s] to restore", node))
+		return
+	}
+
+	if unit.Spec.Startup {
+		return
+	}
+
+	unit.Spec.Startup = true
+	if err := r.unitController.UpdateUnit(unit); err != nil {
+		syncCtx.reqLogger.Error(err, fmt.Sprintf("failed to restore unit [%s]", node))
+	}
+}
+
+func (r *ReconcilePostgresReplication) waitPodStopped(syncCtx *syncContext, name string) error {
+	return r.waitPod(syncCtx.ctx, name, syncCtx, false, desiredUnitStop)
+}
+
+func (r *ReconcilePostgresReplication) waitPodStarted(syncCtx *syncContext, name string) error {
+	return r.waitPod(syncCtx.ctx, name, syncCtx, true, desiredUnitStart)
+}
+
+func (r *ReconcilePostgresReplication) waitPod(
+	ctx context.Context,
+	name string,
+	syncCtx *syncContext,
+	expectReady bool,
+	phase string) error {
+
+	timeout := time.Minute
+	ticker := time.NewTicker(2 * time.Second)
+	defer ticker.Stop()
+
+	timeoutCh := time.After(timeout)
+
+	for {
+		select {
+		case <-ticker.C:
+			pod, err := r.getPod(ctx, name, syncCtx.instance.Namespace)
+			if err != nil {
+				return err
+			}
+
+			ready := k8sutil.IsPodReady(pod)
+			if ready == expectReady {
+				r.recorder.Eventf(syncCtx.instance, corev1.EventTypeNormal, Synced,
+					"pod [%s] %s completed", name, phase)
+				return nil
+			}
+
+		case <-timeoutCh:
+			return fmt.Errorf("waiting pod [%s] %s timeout", name, phase)
+		}
+	}
+}
+
+func (r *ReconcilePostgresReplication) syncStandbyData(
+	syncCtx *syncContext,
+	pod *corev1.Pod,
+	nodeInfo *postgresutil.Node,
+	nodeName, replicationPassword, postgresPassword string) error {
+
+	instance := syncCtx.instance
+	signalFile := filepath.Join(nodeInfo.DataDir, signalFileName)
+
+	var cmd string
+	cmd = fmt.Sprintf("[[ ! -f %s ]] || rm -rf %s",
+		signalFile,
+		signalFile,
+	)
+
+	if _, _, err := r.execer.ExecCommandInContainer(pod, containerName, cmdPrefix, "-c", cmd); err != nil {
+		return fmt.Errorf("failed to confirm %s file does not exist in pod [%s]: %v", signalFileName, nodeName, err)
+	}
+	r.recorder.Eventf(instance, corev1.EventTypeNormal, Synced, "confirmed %s file does not exist in pod [%s]", signalFileName, nodeName)
+
+	primaryNodeHost := instance.Spec.Primary.Host
+	primaryNodePort := strconv.Itoa(instance.Spec.Primary.Port)
+	cmd = fmt.Sprintf("pg_rewind --target-pgdata=%s --source-server='host=%s user=%s password=%s port=%s'",
+		nodeInfo.DataDir,
+		primaryNodeHost,
+		instance.Spec.Secret.Postgresql,
+		postgresPassword,
+		primaryNodePort)
+
+	if _, stderr, err := r.execer.ExecCommandInContainer(pod, containerName, cmdPrefix, "-c", cmd); err != nil {
+		if strings.Contains(stderr, "pg_rewind: error: source and target clusters are from different systems") {
+			cmd = fmt.Sprintf("rm -rf %s",
+				nodeInfo.DataDir,
+			)
+
+			if _, _, err = r.execer.ExecCommandInContainer(pod, containerName, cmdPrefix, "-c", cmd); err != nil {
+				return fmt.Errorf("failed to remove old data directory on pod [%s]: %v", nodeName, err)
+			}
+			r.recorder.Eventf(instance, corev1.EventTypeNormal, Synced, "remove old data directory on pod [%s] successfully", nodeName)
+
+			cmd = fmt.Sprintf("PGPASSWORD=\"%s\" pg_basebackup -h %s -D %s -U %s -P -v -X stream",
+				replicationPassword,
+				primaryNodeHost,
+				nodeInfo.DataDir,
+				instance.Spec.Secret.Replication,
+			)
+
+			if _, _, err = r.execer.ExecCommandInContainer(pod, containerName, cmdPrefix, "-c", cmd); err != nil {
+				return fmt.Errorf("failed to pg_basebackup from primary node: %v", err)
+			}
+			r.recorder.Eventf(instance, corev1.EventTypeNormal, Synced, "pg_basebackup from primary node on pod [%s] successfully", nodeName)
+
+		} else {
+			return fmt.Errorf("failed to execute pg_rewind: %v", err)
+		}
+	}
+
+	cmd = fmt.Sprintf("[[ -f %s ]] || touch %s",
+		signalFile,
+		signalFile,
+	)
+
+	if _, _, err := r.execer.ExecCommandInContainer(pod, containerName, cmdPrefix, "-c", cmd); err != nil {
+		return fmt.Errorf("failed to confirm %s file exists in pod [%s]: %v", signalFileName, nodeName, err)
+	}
+	r.recorder.Eventf(instance, corev1.EventTypeNormal, Synced, "confirmed %s file exists in pod [%s]", signalFileName, nodeName)
+
+	return nil
+}
+
 func (r *ReconcilePostgresReplication) ensureStandbyNode(syncCtx *syncContext,
 	replicationInfo *postgresutil.ReplicationInfo,
-	standby *composev1alpha1.CommonNode,
+	standby *composev1alpha1.ReplicaNode,
 	replicationPassword,
 	postgresPassword string) (err error) {
 
-	instance := syncCtx.instance
-	admin := syncCtx.admin
 	ctx := syncCtx.ctx
 
 	address := net.JoinHostPort(standby.Host, strconv.Itoa(standby.Port))
 	nodeName := standby.Name
 	nodeInfo, ok := replicationInfo.Nodes[address]
 	if !ok {
-		return fmt.Errorf("cannot retrieve status from replica MySQL instance [%s]", address)
+		return fmt.Errorf("cannot retrieve status from replica PostgreSQL instance [%s]", address)
 	}
 
-	primaryNodeHost := instance.Spec.Primary.Host
-	primaryNodePort := strconv.Itoa(instance.Spec.Primary.Port)
-
-	if nodeInfo.Role == postgresutil.PostgresPrimaryRole {
-
-		client, err := admin.Connections().Get(address)
-		if err != nil {
-			syncCtx.reqLogger.Error(err, fmt.Sprintf("failed to get client for [%s] from admin connection pool", address))
-		} else {
-			if err := client.Close(); err != nil {
-				syncCtx.reqLogger.Error(err, fmt.Sprintf("failed to close connection to [%s]", address))
-			} else {
-				syncCtx.reqLogger.Info(fmt.Sprintf("closed connection to [%s] successfully", address))
-			}
-		}
-
-		defer func() {
-			if err := admin.Connections().Add(address); err != nil {
-				syncCtx.reqLogger.Error(err, fmt.Sprintf("failed to add connection to [%s]", address))
-			} else {
-				syncCtx.reqLogger.Info(fmt.Sprintf("successfully added connection to [%s]", address))
-			}
-		}()
-
-		pod := &corev1.Pod{}
-		if err := r.client.Get(ctx, types.NamespacedName{
-			Name:      nodeName,
-			Namespace: instance.Namespace,
-		}, pod); err != nil {
-			return fmt.Errorf("failed to fetch pod [%s]: %v", nodeName, err)
-		}
-
-		if !k8sutil.IsPodReady(pod) {
-			return fmt.Errorf("standby pod [%s] is not ready", nodeName)
-		}
-
-		if unit, err := r.unitController.GetUnit(instance.Namespace, nodeName); err != nil {
-			return fmt.Errorf("failed to fetch unit [%s]: %v", nodeName, err)
-		} else if unit.Spec.Startup {
-			unit.Spec.Startup = false
-			if err := r.unitController.UpdateUnit(unit); err != nil {
-				return fmt.Errorf("failed to set unit [%s] stop: %v", nodeName, err)
-			}
-			r.recorder.Eventf(instance, corev1.EventTypeNormal, Synced, "set unit [%s] stop successfully", nodeName)
-		} else {
-			return fmt.Errorf("unit [%s] is already marked as stop, skipping reconcile", nodeName)
-		}
-
-		defer func() {
-			if unit, err := r.unitController.GetUnit(instance.Namespace, standby.Name); err != nil {
-				syncCtx.reqLogger.Error(err, fmt.Sprintf("failed to fetch unit [%s]", nodeName))
-			} else if !unit.Spec.Startup {
-				unit.Spec.Startup = true
-				if err := r.unitController.UpdateUnit(unit); err != nil {
-					syncCtx.reqLogger.Error(err, fmt.Sprintf("failed to set unit [%s] started", nodeName))
-				}
-			}
-		}()
-
-		//Start the timer and produce a Timer object
-		timeout := time.Minute
-		interval := 2 * time.Second
-
-		timeoutCh1 := time.After(timeout)
-		ticker1 := time.NewTicker(interval)
-		defer ticker1.Stop()
-
-	LOOP1:
-		for {
-			select {
-			case <-ticker1.C:
-				pod := &corev1.Pod{}
-				if err := r.client.Get(ctx, types.NamespacedName{
-					Name:      nodeName,
-					Namespace: instance.Namespace,
-				}, pod); err != nil {
-					return fmt.Errorf("failed to fetch pod [%s]: %v", nodeName, err)
-				}
-
-				if !k8sutil.IsPodReady(pod) {
-					r.recorder.Eventf(instance, corev1.EventTypeNormal, Synced, "finished waiting for pod [%s] to stop", nodeName)
-					break LOOP1
-				}
-
-				syncCtx.reqLogger.Info(fmt.Sprintf("pod [%s] is stopping, will recheck in 5 seconds...", nodeName))
-			case <-timeoutCh1:
-				return fmt.Errorf("waiting for pod [%s] to stop timed out", nodeName)
-			}
-		}
-
-		//execute pg_rewind
-		var cmd string
-		cmd = fmt.Sprintf("[[ ! -f %s ]] || rm -rf %s",
-			filepath.Join(nodeInfo.DataDir, "standby.signal"),
-			filepath.Join(nodeInfo.DataDir, "standby.signal"),
-		)
-
-		if _, _, err = r.execer.ExecCommandInContainer(pod, containerName, "/bin/sh", "-c", cmd); err != nil {
-			return fmt.Errorf("failed to confirm standby.signal file does not exist in pod [%s]: %v", nodeName, err)
-		}
-		r.recorder.Eventf(instance, corev1.EventTypeNormal, Synced, "confirmed standby.signal file does not exist in pod [%s]", nodeName)
-
-		cmd = fmt.Sprintf("pg_rewind --target-pgdata=%s --source-server='host=%s user=%s password=%s port=%s'",
-			nodeInfo.DataDir,
-			primaryNodeHost,
-			instance.Spec.Secret.Postgresql,
-			postgresPassword,
-			primaryNodePort)
-
-		if _, stderr, err := r.execer.ExecCommandInContainer(pod, containerName, "/bin/sh", "-c", cmd); err != nil {
-			if strings.Contains(stderr, "pg_rewind: error: source and target clusters are from different systems") {
-				cmd = fmt.Sprintf("rm -rf %s",
-					nodeInfo.DataDir,
-				)
-
-				if _, _, err = r.execer.ExecCommandInContainer(pod, containerName, "/bin/sh", "-c", cmd); err != nil {
-					return fmt.Errorf("failed to remove old data directory on pod [%s]: %v", nodeName, err)
-				}
-				r.recorder.Eventf(instance, corev1.EventTypeNormal, Synced, "remove old data directory on pod [%s] successfully", nodeName)
-
-				// su postgres -c 'PGPASSWORD="D&a6!40Lv82Qq49O" pg_basebackup -h tddotpnq-postgresql-n39-0.tddotpnq-postgresql-n39-headless-svc.demo -D /DATA_MOUNT/backup -U replication -P -v -X stream'
-				cmd = fmt.Sprintf("PGPASSWORD=\"%s\" pg_basebackup -h %s -D %s -U %s -P -v -X stream",
-					replicationPassword,
-					primaryNodeHost,
-					nodeInfo.DataDir,
-					instance.Spec.Secret.Replication,
-				)
-
-				if _, _, err = r.execer.ExecCommandInContainer(pod, containerName, "/bin/sh", "-c", cmd); err != nil {
-					return fmt.Errorf("failed to pg_basebackup from primary node: %v", err)
-				}
-				r.recorder.Eventf(instance, corev1.EventTypeNormal, Synced, "pg_basebackup from primary node on pod [%s] successfully", nodeName)
-
-			} else {
-				return fmt.Errorf("failed to execute pg_rewind: %v", err)
-			}
-		}
-
-		cmd = fmt.Sprintf("[[ -f %s ]] || touch %s",
-			filepath.Join(nodeInfo.DataDir, "standby.signal"),
-			filepath.Join(nodeInfo.DataDir, "standby.signal"),
-		)
-
-		if _, _, err = r.execer.ExecCommandInContainer(pod, containerName, "/bin/sh", "-c", cmd); err != nil {
-			return fmt.Errorf("failed to confirm standby.signal file exists in pod [%s]: %v", nodeName, err)
-		}
-		r.recorder.Eventf(instance, corev1.EventTypeNormal, Synced, "confirmed standby.signal file exists in pod [%s]", nodeName)
-
-		if unit, err := r.unitController.GetUnit(instance.Namespace, nodeName); err != nil {
-			return fmt.Errorf("failed to fetch unit [%s]: %v", nodeName, err)
-		} else if !unit.Spec.Startup {
-			unit.Spec.Startup = true
-			if err := r.unitController.UpdateUnit(unit); err != nil {
-				return fmt.Errorf("failed to set unit [%s] start: %v", nodeName, err)
-			}
-			r.recorder.Eventf(instance, corev1.EventTypeNormal, Synced, "set unit [%s] start successfully", nodeName)
-		}
-
-		//Start the timer and produce a Timer object
-		timeoutCh2 := time.After(timeout)
-		ticker2 := time.NewTicker(interval)
-		defer ticker2.Stop()
-
-	LOOP2:
-		for {
-			select {
-			case <-ticker2.C:
-				pod := &corev1.Pod{}
-				if err := r.client.Get(ctx, types.NamespacedName{
-					Name:      nodeName,
-					Namespace: instance.Namespace,
-				}, pod); err != nil {
-					return fmt.Errorf("failed to fetch pod [%s]: %v", nodeName, err)
-				}
-
-				if k8sutil.IsPodReady(pod) {
-					r.recorder.Eventf(instance, corev1.EventTypeNormal, Synced, "finished waiting for pod [%s] to start", nodeName)
-					break LOOP2
-				}
-
-				syncCtx.reqLogger.Info(fmt.Sprintf("pod [%s] is starting, will recheck in 5 seconds...", nodeName))
-			case <-timeoutCh2:
-				return fmt.Errorf("[%s] waiting for pod start timeout", nodeName)
-			}
-		}
+	// close postgres connection first, then reopen the connection.
+	if nodeInfo.Role != postgresutil.PostgresPrimaryRole {
+		return nil
 	}
 
-	return nil
+	if err := r.closeAdminConn(syncCtx, address); err != nil {
+		syncCtx.reqLogger.Error(err, fmt.Sprintf("failed to close [%s] connection", address))
+	}
+	defer r.reopenAdminConn(syncCtx, address)
+
+	// check pod is ready or not
+	pod, err := r.getPod(ctx, standby.Name, syncCtx.instance.Namespace)
+	if err != nil {
+		return err
+	}
+	if err := r.ensurePodReady(pod, standby.Name); err != nil {
+		return err
+	}
+
+	// stop unit process
+	if err := r.ensureUnitStartup(syncCtx, standby.Name, "stop"); err != nil {
+		return err
+	}
+	defer r.restoreUnit(syncCtx, standby.Name)
+
+	// wait pod stopped
+	if err := r.waitPodStopped(syncCtx, standby.Name); err != nil {
+		return err
+	}
+
+	if err := r.syncStandbyData(syncCtx, pod, nodeInfo, nodeName, replicationPassword, postgresPassword); err != nil {
+		return err
+	}
+
+	if err := r.ensureUnitStartup(syncCtx, standby.Name, "start"); err != nil {
+		return err
+	}
+
+	return r.waitPodStarted(syncCtx, standby.Name)
 }
 
 func (r *ReconcilePostgresReplication) ensureService(syncCtx *syncContext, serviceName, isReadOnly string, isExisted bool) error {
@@ -515,13 +599,13 @@ func (r *ReconcilePostgresReplication) ensureAllPodReadOnly(syncCtx *syncContext
 	var errs []error
 
 	//ensure primary pod labels
-	if err := r.ensurePodLabels(syncCtx, instance.Spec.Primary.Name, "true"); err != nil {
+	if err := r.ensurePodLabels(syncCtx, instance.Spec.Primary.Name, "true", false); err != nil {
 		errs = append(errs, err)
 	}
 
 	//ensure standby pod labels
 	for _, standby := range instance.Spec.Standby {
-		if err := r.ensurePodLabels(syncCtx, standby.Name, "true"); err != nil {
+		if err := r.ensurePodLabels(syncCtx, standby.Name, "true", false); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -529,7 +613,7 @@ func (r *ReconcilePostgresReplication) ensureAllPodReadOnly(syncCtx *syncContext
 	return errors.Join(errs...)
 }
 
-func (r *ReconcilePostgresReplication) ensurePodLabels(syncCtx *syncContext, podName, isReadOnly string) error {
+func (r *ReconcilePostgresReplication) ensurePodLabels(syncCtx *syncContext, podName, isReadOnly string, preserveLabels bool) error {
 	ctx := syncCtx.ctx
 	instance := syncCtx.instance
 
@@ -545,19 +629,78 @@ func (r *ReconcilePostgresReplication) ensurePodLabels(syncCtx *syncContext, pod
 		foundPod.Labels = make(map[string]string)
 	}
 
-	// update the value of pod readonly label
-	if readOnlyValue, ok := foundPod.Labels[readOnlyKey]; !ok || readOnlyValue != isReadOnly {
-		foundPod.Labels[readOnlyKey] = isReadOnly
-		// update the value of pod default label
-		if instanceValue, ok := foundPod.Labels[defaultKey]; !ok || instanceValue != instance.Name {
-			foundPod.Labels[defaultKey] = instance.Name
-		}
-		// update pod
+	var needsUpdate bool
+	var eventMessage string
+
+	if preserveLabels {
+		// Remove managed labels if they exist
+		needsUpdate, eventMessage = r.removeLabelsFromPod(foundPod, instance.Name)
+	} else {
+		// Ensure labels are set correctly
+		needsUpdate, eventMessage = r.setLabelsOnPod(foundPod, instance.Name, isReadOnly)
+	}
+
+	// Update pod only if changes are needed
+	if needsUpdate {
 		if err := r.client.Update(ctx, foundPod); err != nil {
-			return err
+			return fmt.Errorf("failed to update pod [%s]: %v", podName, err)
 		}
-		r.recorder.Eventf(instance, corev1.EventTypeNormal, Synced, "pod [%s] update labels successfully", podName)
+		r.recorder.Eventf(instance, corev1.EventTypeNormal, Synced, "pod [%s] %s", podName, eventMessage)
 	}
 
 	return nil
+}
+
+// setLabelsOnPod sets the required labels on the pod and returns whether update is needed
+func (r *ReconcilePostgresReplication) setLabelsOnPod(pod *corev1.Pod, instanceName, isReadOnly string) (bool, string) {
+	var needsUpdate bool
+	var updatedLabels []string
+
+	// Check and update readonly label
+	if readOnlyValue, ok := pod.Labels[readOnlyKey]; !ok || readOnlyValue != isReadOnly {
+		pod.Labels[readOnlyKey] = isReadOnly
+		needsUpdate = true
+		updatedLabels = append(updatedLabels, readOnlyKey)
+	}
+
+	// Check and update default label
+	if instanceValue, ok := pod.Labels[defaultKey]; !ok || instanceValue != instanceName {
+		pod.Labels[defaultKey] = instanceName
+		needsUpdate = true
+		updatedLabels = append(updatedLabels, defaultKey)
+	}
+
+	var eventMessage string
+	if needsUpdate {
+		eventMessage = fmt.Sprintf("update labels '%s' successfully", strings.Join(updatedLabels, ", "))
+	}
+
+	return needsUpdate, eventMessage
+}
+
+// removeLabelsFromPod removes the managed labels from the pod and returns whether update is needed
+func (r *ReconcilePostgresReplication) removeLabelsFromPod(pod *corev1.Pod, instanceName string) (bool, string) {
+	var needsUpdate bool
+	var removedLabels []string
+
+	// Remove readonly label if it exists
+	if _, ok := pod.Labels[readOnlyKey]; ok {
+		delete(pod.Labels, readOnlyKey)
+		needsUpdate = true
+		removedLabels = append(removedLabels, readOnlyKey)
+	}
+
+	// Remove default label if it exists and matches the instance
+	if instanceValue, ok := pod.Labels[defaultKey]; ok && instanceValue == instanceName {
+		delete(pod.Labels, defaultKey)
+		needsUpdate = true
+		removedLabels = append(removedLabels, defaultKey)
+	}
+
+	var eventMessage string
+	if needsUpdate {
+		eventMessage = fmt.Sprintf("remove labels '%s' successfully", strings.Join(removedLabels, ", "))
+	}
+
+	return needsUpdate, eventMessage
 }

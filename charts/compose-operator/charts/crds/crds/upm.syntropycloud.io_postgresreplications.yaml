@@ -140,11 +140,18 @@ spec:
                 description: Standby is a list of standby nodes in the Postgres replication
                   topology.
                 items:
-                  description: CommonNode information for node to connect
+                  description: ReplicaNode is a CommonNode with additional replication-specific
+                    info
                   properties:
                     host:
                       description: Host specifies the ip or hostname of node
                       type: string
+                    isolated:
+                      default: false
+                      description: |-
+                        Isolated indicates whether this node will be isolated.
+                        If not specified, it defaults to false.
+                      type: boolean
                     name:
                       description: Name specifies the identifier of node
                       type: string

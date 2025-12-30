@@ -23,7 +23,7 @@ import (
 )
 
 var (
-	GIT_TAG    string = "v1.1.0"
+	GIT_TAG    string = "v1.1.1"
 	GIT_COMMIT string
 	GIT_BRANCH string
 	BUILD_TIME string

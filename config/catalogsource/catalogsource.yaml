@@ -4,6 +4,6 @@ metadata:
   name: compose-operator-catalog
 spec:
   sourceType: grpc
-  image: quay.io/upmio/compose-operator-catalog:v1.1.0
+  image: quay.io/upmio/compose-operator-catalog:v1.1.1
   displayName: compose-operator
   publisher: BSG

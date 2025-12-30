@@ -297,7 +297,7 @@ metadata:
     capabilities: Full Lifecycle
     categories: Application Runtime
     containerImage: quay.io/upmio/compose-operator@sha256:8c1e24930015ee2dd9187d810fc6fce46a36d25111e6ab26cf998f04a8375d6f
-    createdAt: "2025-10-31T06:18:13Z"
+    createdAt: "2025-12-30T08:17:41Z"
     features.operators.openshift.io/disconnected: "true"
     features.operators.openshift.io/fips-compliant: "true"
     features.operators.openshift.io/proxy-aware: "false"
@@ -308,7 +308,7 @@ metadata:
     operatorframework.io/suggested-namespace: upm-system
     operators.operatorframework.io/builder: operator-sdk-v1.39.2
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v4
-  name: compose-operator.v1.1.0
+  name: compose-operator.v1.1.1
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -492,7 +492,7 @@ spec:
           app.kubernetes.io/component: controller
           app.kubernetes.io/instance: compose-operator
           app.kubernetes.io/name: compose-operator
-          app.kubernetes.io/version: v1.1.0
+          app.kubernetes.io/version: v1.1.1
         name: compose-operator-controller-manager
         spec:
           replicas: 1
@@ -508,10 +508,10 @@ spec:
                 app.kubernetes.io/component: controller
                 app.kubernetes.io/instance: compose-operator
                 app.kubernetes.io/name: compose-operator
-                app.kubernetes.io/version: v1.1.0
+                app.kubernetes.io/version: v1.1.1
             spec:
               containers:
-              - image: quay.io/upmio/compose-operator:v1.1.0
+              - image: quay.io/upmio/compose-operator:v1.1.1
                 imagePullPolicy: IfNotPresent
                 livenessProbe:
                   httpGet:
@@ -600,7 +600,7 @@ spec:
   minKubeVersion: 1.26.1
   provider:
     name: Syntropy Pte. Ltd.
-  version: 1.1.0
+  version: 1.1.1
   webhookdefinitions:
   - admissionReviewVersions:
     - v1
