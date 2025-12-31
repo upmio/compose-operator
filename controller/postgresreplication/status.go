@@ -194,7 +194,7 @@ func generateTopologyStatusByReplicationInfo(info *postgresutil.ReplicationInfo,
 				instance.Status.Topology[standby.Name].Status = composev1alpha1.NodeStatusOK
 				instance.Status.Topology[standby.Name].WalDiff = &standbyNode.WalDiff
 
-				if node, ok := info.Nodes[primaryAddr]; node.GetRole() == postgresutil.PostgresStandbyRole && ok {
+				if node, ok := info.Nodes[primaryAddr]; standbyNode.GetRole() == postgresutil.PostgresStandbyRole && ok {
 					for _, standbyName := range node.ReplicationStat {
 						if strings.ReplaceAll(standby.Name, "-", "_") == standbyName {
 							instance.Status.Topology[standby.Name].Ready = true
