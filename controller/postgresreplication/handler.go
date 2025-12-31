@@ -250,10 +250,12 @@ func (r *ReconcilePostgresReplication) configureStandbyNode(syncCtx *syncContext
 		}
 	}
 
-	if err = admin.ConfigureStandby(ctx, address, standby.Name, primaryNodeHost, primaryNodePort, replicationUser, replicationPassword); err != nil {
-		return err
+	if !standby.Isolated {
+		if err = admin.ConfigureStandby(ctx, address, standby.Name, primaryNodeHost, primaryNodePort, replicationUser, replicationPassword); err != nil {
+			return err
+		}
+		r.recorder.Eventf(instance, corev1.EventTypeNormal, Synced, "configure replication on [%s] successfully", address)
 	}
-	r.recorder.Eventf(instance, corev1.EventTypeNormal, Synced, "configure replication on [%s] successfully", address)
 
 	return nil
 }
