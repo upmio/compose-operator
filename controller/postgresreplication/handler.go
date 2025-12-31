@@ -28,6 +28,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/upmio/compose-operator/pkg/utils"
 	corev1 "k8s.io/api/core/v1"
 	kubeErrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -120,7 +121,7 @@ func (r *ReconcilePostgresReplication) ensureSyncMode(syncCtx *syncContext, node
 		}
 	}
 
-	if instance.Spec.Mode == composev1alpha1.PostgresRplSync && nodeInfo.ReplicationMode != "quorum" {
+	if instance.Spec.Mode == composev1alpha1.PostgresRplSync && nodeInfo.ReplicationMode != "quorum" && utils.EqualSlicesIgnoreOrder(nodeInfo.ReplicationStat, standbyApplications) {
 		if len(standbyApplications) == 0 {
 			return fmt.Errorf("PostgreSQL synchronous replication is enabled, but no available standby nodes were detected (standby count = 0)")
 		}
@@ -235,7 +236,15 @@ func (r *ReconcilePostgresReplication) configureStandbyNode(syncCtx *syncContext
 	if nodeInfo.Role == postgresutil.PostgresStandbyRole {
 		for _, standbyName := range replicationInfo.Nodes[net.JoinHostPort(primaryNodeHost, primaryNodePort)].ReplicationStat {
 			if strings.ReplaceAll(standby.Name, "-", "_") == standbyName {
-				syncCtx.reqLogger.Info(fmt.Sprintf("standby node [%s] found in pg_stat_replication of primary node, skipping reconcile", address))
+				if standby.Isolated {
+					syncCtx.reqLogger.Info(fmt.Sprintf("standby node [%s] found in pg_stat_replication of primary node, need to isolate", address))
+					if err = admin.ConfigureIsolated(ctx, address); err != nil {
+						return err
+					}
+				} else {
+					syncCtx.reqLogger.Info(fmt.Sprintf("standby node [%s] found in pg_stat_replication of primary node, skipping reconcile", address))
+				}
+
 				return nil
 			}
 		}

@@ -76,3 +76,24 @@ func CompareStringValue(name string, old, new string, reqLogger logr.Logger) boo
 
 	return false
 }
+
+func EqualSlicesIgnoreOrder[T comparable](a, b []T) bool {
+	if len(a) != len(b) {
+		return false
+	}
+
+	count := make(map[T]int)
+
+	for _, v := range a {
+		count[v]++
+	}
+
+	for _, v := range b {
+		if count[v] == 0 {
+			return false
+		}
+		count[v]--
+	}
+
+	return true
+}

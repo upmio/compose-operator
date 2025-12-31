@@ -49,6 +49,9 @@ type IAdmin interface {
 
 	// ConfigureAsyncMode set postgres replication to asynchronous
 	ConfigureAsyncMode(ctx context.Context, addr string) error
+
+	// ConfigureIsolated clean postgres replication config
+	ConfigureIsolated(ctx context.Context, addr string) error
 }
 
 // AdminOptions optional options for redis admin
@@ -278,6 +281,23 @@ func (a *Admin) ConfigureStandby(ctx context.Context, addr, nodeName, sourceHost
 
 	if _, err := c.Exec(ctx, sqlStr); err != nil {
 		return fmt.Errorf("failed to configure replication on %s: %v", addr, err)
+	}
+
+	if _, err := c.Exec(ctx, reloadConfSql); err != nil {
+		return fmt.Errorf("failed to reload config on %s: %v", addr, err)
+	}
+
+	return nil
+}
+
+func (a *Admin) ConfigureIsolated(ctx context.Context, addr string) error {
+	c, err := a.cnx.Get(addr)
+	if err != nil {
+		return err
+	}
+
+	if _, err := c.Exec(ctx, cleanPrimaryConnInfoSql); err != nil {
+		return fmt.Errorf("failed to clean replication on %s: %v", addr, err)
 	}
 
 	if _, err := c.Exec(ctx, reloadConfSql); err != nil {

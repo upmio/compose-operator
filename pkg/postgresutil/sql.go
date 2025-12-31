@@ -25,6 +25,7 @@ const (
 	getDataDirSql             = `SHOW data_directory;`
 	setPG16PrimaryConnInfoSql = `ALTER SYSTEM SET primary_conninfo='application_name=%s user=%s password=%s host=%s port=%d channel_binding=prefer sslmode=prefer sslcompression=0 sslcertmode=allow sslsni=1 ssl_min_protocol_version=TLSv1.2 gssencmode=prefer krbsrvname=postgres gssdelegation=0 target_session_attrs=any load_balance_hosts=disable'`
 	setPG15PrimaryConnInfoSql = `ALTER SYSTEM SET primary_conninfo='application_name=%s user=%s password=%s host=%s port=%d channel_binding=prefer sslmode=prefer sslcompression=0 sslsni=1 ssl_min_protocol_version=TLSv1.2 gssencmode=prefer krbsrvname=postgres target_session_attrs=any'`
+	cleanPrimaryConnInfoSql   = `ALTER SYSTEM SET primary_conninfo = ''`
 	reloadConfSql             = `SELECT pg_reload_conf()`
 	setSyncSql                = `ALTER SYSTEM SET synchronous_standby_names='ANY 1 (%s)'`
 	setAsyncSql               = `ALTER SYSTEM SET synchronous_standby_names=''`
