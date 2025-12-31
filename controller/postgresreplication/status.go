@@ -185,21 +185,19 @@ func generateTopologyStatusByReplicationInfo(info *postgresutil.ReplicationInfo,
 		addr := net.JoinHostPort(standby.Host, strconv.Itoa(standby.Port))
 		if standbyNode, ok := info.Nodes[addr]; ok {
 
-			// Check if standby node is isolated
-			if standby.Isolated && standbyNode.GetRole() == postgresutil.PostgresStandbyRole {
-				// Remove standby node from topology if it's isolated
-				delete(instance.Status.Topology, standby.Name)
-			} else {
-				instance.Status.Topology[standby.Name].Role = standbyNode.GetRole()
-				instance.Status.Topology[standby.Name].Status = composev1alpha1.NodeStatusOK
-				instance.Status.Topology[standby.Name].WalDiff = &standbyNode.WalDiff
+			instance.Status.Topology[standby.Name].Role = standbyNode.GetRole()
+			instance.Status.Topology[standby.Name].Status = composev1alpha1.NodeStatusOK
+			instance.Status.Topology[standby.Name].WalDiff = &standbyNode.WalDiff
 
-				if node, ok := info.Nodes[primaryAddr]; standbyNode.GetRole() == postgresutil.PostgresStandbyRole && ok {
-					for _, standbyName := range node.ReplicationStat {
-						if strings.ReplaceAll(standby.Name, "-", "_") == standbyName {
-							instance.Status.Topology[standby.Name].Ready = true
-						}
+			if node, ok := info.Nodes[primaryAddr]; standbyNode.GetRole() == postgresutil.PostgresStandbyRole && ok {
+				instance.Status.Topology[standby.Name].Ready = false
+				for _, standbyName := range node.ReplicationStat {
+					if strings.ReplaceAll(standby.Name, "-", "_") == standbyName {
+						instance.Status.Topology[standby.Name].Ready = true
 					}
+				}
+				if !instance.Status.Topology[standby.Name].Ready && standby.Isolated {
+					delete(instance.Status.Topology, standby.Name)
 				}
 			}
 		}
