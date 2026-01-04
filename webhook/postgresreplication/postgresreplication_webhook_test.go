@@ -90,7 +90,7 @@ var _ = Describe("PostgresReplication Webhook", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			// Check existing values were preserved
-			Expect(postgresRepl.Spec.Mode).To(Equal(v1alpha1.PostgresRplSync))
+			Expect(postgresRepl.Spec.Mode).To(Equal(v1alpha1.PostgresRplAsync))
 			Expect(postgresRepl.Spec.Secret.Postgresql).To(Equal("custom-postgres"))
 			Expect(postgresRepl.Spec.Secret.Replication).To(Equal("custom-repl"))
 			Expect(postgresRepl.Spec.Service.Type).To(Equal(v1alpha1.ServiceTypeNodePort))
