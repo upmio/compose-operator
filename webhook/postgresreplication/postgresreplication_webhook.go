@@ -85,6 +85,17 @@ func (r *postgresReplicationAdmission) Default(ctx context.Context, obj runtime.
 		}
 	}
 
+	standbyNodeCount := 0
+	for _, standby := range instance.Spec.Standby {
+		if !standby.Isolated {
+			standbyNodeCount++
+		}
+	}
+
+	if standbyNodeCount <= 1 {
+		instance.Spec.Mode = v1alpha1.PostgresRplAsync
+	}
+
 	return nil
 }
 
