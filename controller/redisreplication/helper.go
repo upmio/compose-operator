@@ -22,9 +22,10 @@ import (
 	"context"
 	"net"
 	"reflect"
-	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"strconv"
 	"time"
+
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
@@ -57,7 +58,7 @@ func newRedisAdmin(instance *composev1alpha1.RedisReplication, password string, 
 }
 
 // decryptSecret returns the current redis password.
-func decryptSecret(client client.Client, reqLogger logr.Logger, instance *composev1alpha1.RedisReplication) (string, error) {
+func decryptSecret(client client.Client, instance *composev1alpha1.RedisReplication) (string, error) {
 	passwords, err := k8sutil.DecryptSecretPasswords(
 		client,
 		instance.Spec.Secret.Name,

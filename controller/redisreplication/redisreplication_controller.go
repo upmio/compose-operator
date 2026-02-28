@@ -120,7 +120,7 @@ func (r *ReconcileRedisReplication) Reconcile(ctx context.Context, req ctrl.Requ
 	instance.Status = buildDefaultTopologyStatus(instance)
 
 	// Get the password of Redis for connection and replication.
-	password, err := decryptSecret(r.client, reqLogger, instance)
+	password, err := decryptSecret(r.client, instance)
 	if err != nil {
 		meta.SetStatusCondition(&instance.Status.Conditions, newFailedSyncTopologyCondition(err))
 		r.recorder.Event(instance, corev1.EventTypeWarning, ErrSynced, err.Error())
