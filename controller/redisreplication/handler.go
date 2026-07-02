@@ -69,7 +69,7 @@ func (r *ReconcileRedisReplication) handleResources(syncCtx *syncContext) error 
 
 	var errs []error
 	//ensure source pod labels
-	if err := r.ensurePodLabels(syncCtx, instance.Spec.Source.Name, "false", false); err != nil {
+	if err := r.ensureSourcePodLabels(syncCtx); err != nil {
 		errs = append(errs, err)
 	}
 
@@ -296,15 +296,7 @@ func (r *ReconcileRedisReplication) ensurePodLabels(syncCtx *syncContext, podNam
 	ctx := syncCtx.ctx
 	instance := syncCtx.instance
 
-	// Determine the label value based on source node count
-	hostLabelValue := ""
-	portLabelValue := ""
-	sourceNode := instance.Spec.Source
-
-	if sourceNodeStatus := instance.Status.Topology[sourceNode.Name]; sourceNodeStatus.Role == composev1alpha1.RedisReplicationNodeRoleSource && sourceNodeStatus.Status == composev1alpha1.NodeStatusOK {
-		hostLabelValue = sourceNodeStatus.AnnounceHost
-		portLabelValue = strconv.Itoa(sourceNodeStatus.AnnouncePort)
-	}
+	hostLabelValue, portLabelValue, updateSourceLabels := sourceRoutingLabels(instance)
 
 	foundPod := &corev1.Pod{}
 	if err := r.client.Get(ctx, types.NamespacedName{
@@ -326,7 +318,14 @@ func (r *ReconcileRedisReplication) ensurePodLabels(syncCtx *syncContext, podNam
 		needsUpdate, eventMessage = r.removeLabelsFromPod(foundPod)
 	} else {
 		// Ensure labels are set correctly
-		needsUpdate, eventMessage = r.setLabelsOnPod(foundPod, instance.Name, isReadOnly, hostLabelValue, portLabelValue)
+		needsUpdate, eventMessage = r.setLabelsOnPod(
+			foundPod,
+			instance.Name,
+			isReadOnly,
+			hostLabelValue,
+			portLabelValue,
+			updateSourceLabels,
+		)
 	}
 
 	// Update pod only if changes are needed
@@ -340,8 +339,87 @@ func (r *ReconcileRedisReplication) ensurePodLabels(syncCtx *syncContext, podNam
 	return nil
 }
 
+func (r *ReconcileRedisReplication) ensureSourcePodLabels(syncCtx *syncContext) error {
+	instance := syncCtx.instance
+	pod := &corev1.Pod{}
+	if err := r.client.Get(syncCtx.ctx, types.NamespacedName{
+		Name:      instance.Spec.Source.Name,
+		Namespace: instance.Namespace,
+	}, pod); err != nil {
+		return fmt.Errorf("failed to fetch pod [%s]: %v", instance.Spec.Source.Name, err)
+	}
+	if pod.Labels == nil {
+		pod.Labels = make(map[string]string)
+	}
+
+	host, port, healthy := sourceRoutingLabels(instance)
+	var changed bool
+	var eventMessage string
+	if healthy {
+		changed, eventMessage = r.setLabelsOnPod(pod, instance.Name, "false", host, port, true)
+	} else {
+		changed, eventMessage = clearFailedSourcePodLabels(pod, instance.Name)
+	}
+
+	if !changed {
+		return nil
+	}
+	if err := r.client.Update(syncCtx.ctx, pod); err != nil {
+		return fmt.Errorf("failed to update pod [%s]: %v", pod.Name, err)
+	}
+	r.recorder.Eventf(instance, corev1.EventTypeNormal, Synced, "pod [%s] %s", pod.Name, eventMessage)
+	return nil
+}
+
+func sourceRoutingLabels(instance *composev1alpha1.RedisReplication) (string, string, bool) {
+	if instance == nil || instance.Spec.Source == nil {
+		return "", "", false
+	}
+
+	sourceStatus, found := instance.Status.Topology[instance.Spec.Source.Name]
+	if !found || sourceStatus == nil ||
+		sourceStatus.Role != composev1alpha1.RedisReplicationNodeRoleSource ||
+		sourceStatus.Status != composev1alpha1.NodeStatusOK {
+		return "", "", false
+	}
+
+	return sourceStatus.AnnounceHost, strconv.Itoa(sourceStatus.AnnouncePort), true
+}
+
+func clearFailedSourcePodLabels(pod *corev1.Pod, instanceName string) (bool, string) {
+	if pod.Labels == nil {
+		pod.Labels = make(map[string]string)
+	}
+
+	changed := false
+	changedLabels := make([]string, 0, 4)
+	if pod.Labels[defaultKey] != instanceName {
+		pod.Labels[defaultKey] = instanceName
+		changed = true
+		changedLabels = append(changedLabels, defaultKey)
+	}
+
+	for _, key := range []string{readOnlyKey, sourceHostKey, sourcePortKey} {
+		if _, found := pod.Labels[key]; found {
+			delete(pod.Labels, key)
+			changed = true
+			changedLabels = append(changedLabels, key)
+		}
+	}
+
+	if !changed {
+		return false, ""
+	}
+
+	return true, fmt.Sprintf("update labels '%s' successfully", strings.Join(changedLabels, ", "))
+}
+
 // setLabelsOnPod sets the required labels on the pod and returns whether update is needed
-func (r *ReconcileRedisReplication) setLabelsOnPod(pod *corev1.Pod, instanceName, isReadOnly, hostLabelValue, portLabelValue string) (bool, string) {
+func (r *ReconcileRedisReplication) setLabelsOnPod(
+	pod *corev1.Pod,
+	instanceName, isReadOnly, hostLabelValue, portLabelValue string,
+	updateSourceLabels bool,
+) (bool, string) {
 	var needsUpdate bool
 	var updatedLabels []string
 
@@ -359,16 +437,18 @@ func (r *ReconcileRedisReplication) setLabelsOnPod(pod *corev1.Pod, instanceName
 		updatedLabels = append(updatedLabels, defaultKey)
 	}
 
-	if currentHostLabelValue, ok := pod.Labels[sourceHostKey]; !ok || currentHostLabelValue != hostLabelValue {
-		pod.Labels[sourceHostKey] = hostLabelValue
-		needsUpdate = true
-		updatedLabels = append(updatedLabels, sourceHostKey)
-	}
+	if updateSourceLabels {
+		if currentHostLabelValue, ok := pod.Labels[sourceHostKey]; !ok || currentHostLabelValue != hostLabelValue {
+			pod.Labels[sourceHostKey] = hostLabelValue
+			needsUpdate = true
+			updatedLabels = append(updatedLabels, sourceHostKey)
+		}
 
-	if currentPortLabelValue, ok := pod.Labels[sourcePortKey]; !ok || currentPortLabelValue != portLabelValue {
-		pod.Labels[sourcePortKey] = portLabelValue
-		needsUpdate = true
-		updatedLabels = append(updatedLabels, sourcePortKey)
+		if currentPortLabelValue, ok := pod.Labels[sourcePortKey]; !ok || currentPortLabelValue != portLabelValue {
+			pod.Labels[sourcePortKey] = portLabelValue
+			needsUpdate = true
+			updatedLabels = append(updatedLabels, sourcePortKey)
+		}
 	}
 
 	var eventMessage string
@@ -424,14 +504,9 @@ func (r *ReconcileRedisReplication) ensureSentinelPodLabels(syncCtx *syncContext
 	ctx := syncCtx.ctx
 	instance := syncCtx.instance
 
-	// Determine the label value based on source node count
-	hostLabelValue := ""
-	portLabelValue := ""
-	sourceNode := instance.Spec.Source
-
-	if sourceNodeStatus := instance.Status.Topology[sourceNode.Name]; sourceNodeStatus.Role == composev1alpha1.RedisReplicationNodeRoleSource && sourceNodeStatus.Status == composev1alpha1.NodeStatusOK {
-		hostLabelValue = sourceNodeStatus.AnnounceHost
-		portLabelValue = strconv.Itoa(sourceNodeStatus.AnnouncePort)
+	hostLabelValue, portLabelValue, healthy := sourceRoutingLabels(instance)
+	if !healthy {
+		return nil
 	}
 
 	var errs []error
