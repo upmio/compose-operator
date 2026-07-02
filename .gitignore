@@ -11,6 +11,8 @@ Dockerfile.cross
 # Test binary, built with `go test -c`
 *.test
 
+.DS_Store
+
 # Go workspace file
 go.work
 
