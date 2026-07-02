@@ -21,9 +21,10 @@ package redisreplication
 import (
 	"context"
 	"fmt"
-	"github.com/upmio/compose-operator/api/v1alpha1"
 	"net"
 	"strings"
+
+	"github.com/upmio/compose-operator/api/v1alpha1"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/validation/field"
@@ -80,6 +81,10 @@ func (r *redisReplicationAdmission) Default(ctx context.Context, obj runtime.Obj
 	}
 
 	if len(instance.Spec.Sentinel) != 0 {
+		if instance.Annotations == nil {
+			instance.Annotations = map[string]string{}
+		}
+
 		instance.Annotations[v1alpha1.SkipReconcileKey] = "true"
 	}
 
