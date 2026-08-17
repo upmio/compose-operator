@@ -1,5 +1,5 @@
 # Build the compose-operator binary
-FROM golang:1.24.10 AS builder
+FROM golang:1.26.6 AS builder
 
 ARG TARGETOS
 ARG TARGETARCH
