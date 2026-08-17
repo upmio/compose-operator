@@ -73,7 +73,7 @@ jobs:
       - name: Build and push catalog image
         run: make catalog-build catalog-push
       - name: Set up kubectl
-        uses: azure/setup-kubectl@v3
+        uses: azure/setup-kubectl@v5
         with:
           version: 'v1.32.0'
       - name: Build CRDs
